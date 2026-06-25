@@ -1,0 +1,1009 @@
+import { useState, useEffect, useMemo } from 'react'
+import { supabase } from '../lib/supabase'
+import { useAuth } from '../context/AuthContext'
+import { useNavigate } from 'react-router-dom'
+import toast from 'react-hot-toast'
+import {
+  LayoutDashboard, Store, Users, BarChart2, Settings, LogOut,
+  X, Mail, Eye, EyeOff, Check, Crown, Activity, Search,
+  TrendingUp, ArrowUpRight, UtensilsCrossed,
+} from 'lucide-react'
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell,
+} from 'recharts'
+
+// ─── Design tokens (reference app palette) ────────────────────────────────────
+const CREAM       = '#fbf9f8'
+const CREAM_DARK  = '#efeded'
+const CREAM_LIGHT = '#ffffff'
+const CHARCOAL    = '#1b1c1c'
+const CHARCOAL_L  = '#5f5e5e'
+
+// ─── Theme system ──────────────────────────────────────────────────────────────
+const ADMIN_THEMES = [
+  {
+    id: 'terracotta',
+    name: 'Terracotta',
+    accent: '#a03b13',
+    accentLight: '#c0532a',
+    sidebarBg: CHARCOAL,
+    swatches: ['#a03b13', '#fbf9f8'],
+  },
+  {
+    id: 'ocean',
+    name: 'Azul Océano',
+    accent: '#1d4ed8',
+    accentLight: '#3b82f6',
+    sidebarBg: '#0f172a',
+    swatches: ['#1d4ed8', '#eff6ff'],
+  },
+  {
+    id: 'forest',
+    name: 'Bosque',
+    accent: '#166534',
+    accentLight: '#16a34a',
+    sidebarBg: '#052e16',
+    swatches: ['#166534', '#f0fdf4'],
+  },
+]
+
+function loadTheme() {
+  try {
+    return ADMIN_THEMES.find(t => t.id === localStorage.getItem('admin_theme')) ?? ADMIN_THEMES[0]
+  } catch { return ADMIN_THEMES[0] }
+}
+function persistTheme(id) {
+  try { localStorage.setItem('admin_theme', id) } catch {}
+}
+
+// ─── Plan helpers ──────────────────────────────────────────────────────────────
+const PLAN_LABEL = { free: 'Free', pro: 'Pro', premium: 'Premium' }
+const PLAN_BADGE = {
+  free:    { bg: CREAM_DARK,  color: CHARCOAL_L },
+  pro:     { bg: '#dbeafe',   color: '#1d4ed8' },
+  premium: { bg: '#fff7ed',   color: '#c2410c' },
+}
+
+// ─── Chart data builder ────────────────────────────────────────────────────────
+function buildChartData(restaurants, period) {
+  const now = new Date()
+  if (period === 'DIARIO') {
+    return Array.from({ length: 14 }, (_, i) => {
+      const d = new Date(now)
+      d.setDate(d.getDate() - (13 - i))
+      return {
+        name: d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }),
+        Registros: restaurants.filter(r => new Date(r.created_at).toDateString() === d.toDateString()).length,
+      }
+    })
+  }
+  if (period === 'SEMANAL') {
+    return Array.from({ length: 8 }, (_, i) => {
+      const start = new Date(now)
+      start.setDate(start.getDate() - (7 - i) * 7)
+      const end = new Date(start)
+      end.setDate(end.getDate() + 7)
+      return {
+        name: start.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }),
+        Registros: restaurants.filter(r => { const d = new Date(r.created_at); return d >= start && d < end }).length,
+      }
+    })
+  }
+  if (period === 'ANUAL') {
+    return Array.from({ length: 4 }, (_, i) => {
+      const year = now.getFullYear() - (3 - i)
+      return {
+        name: String(year),
+        Registros: restaurants.filter(r => new Date(r.created_at).getFullYear() === year).length,
+      }
+    })
+  }
+  return Array.from({ length: 12 }, (_, i) => {
+    const d = new Date(now)
+    d.setDate(1)
+    d.setMonth(d.getMonth() - (11 - i))
+    const m = d.getMonth(), y = d.getFullYear()
+    return {
+      name: d.toLocaleDateString('es-ES', { month: 'short' }),
+      Registros: restaurants.filter(r => {
+        const rd = new Date(r.created_at)
+        return rd.getMonth() === m && rd.getFullYear() === y
+      }).length,
+    }
+  })
+}
+
+// ─── Custom chart tooltip ──────────────────────────────────────────────────────
+function ChartTooltip({ active, payload, label, accent }) {
+  if (!active || !payload?.length) return null
+  return (
+    <div style={{ background: CREAM_LIGHT, border: `1px solid ${CREAM_DARK}`, borderRadius: 12, padding: '10px 16px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+      <p style={{ color: CHARCOAL_L, fontSize: 11, marginBottom: 2 }}>{label}</p>
+      <p style={{ color: accent, fontWeight: 700, fontSize: 13 }}>{payload[0].value} registros</p>
+    </div>
+  )
+}
+
+// ─── Settings Modal ────────────────────────────────────────────────────────────
+function SettingsModal({ user, onClose, onSignOut, theme, onThemeChange }) {
+  const [newEmail, setNewEmail]     = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPwd, setConfirmPwd] = useState('')
+  const [showPwd, setShowPwd]       = useState(false)
+  const [savingEmail, setSavingEmail] = useState(false)
+  const [savingPwd, setSavingPwd]   = useState(false)
+
+  const inputStyle = {
+    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    border: `1px solid ${CREAM_DARK}`,
+    borderRadius: 12,
+    padding: '10px 14px',
+    fontSize: 13,
+    color: CHARCOAL,
+    background: CREAM_LIGHT,
+    outline: 'none',
+    width: '100%',
+    transition: 'border-color 0.15s, box-shadow 0.15s',
+  }
+
+  const handleSaveEmail = async () => {
+    if (!newEmail.trim()) return
+    setSavingEmail(true)
+    const { error } = await supabase.auth.updateUser({ email: newEmail.trim() })
+    setSavingEmail(false)
+    if (error) { toast.error(error.message); return }
+    toast.success('Revisa tu nuevo email para confirmar el cambio')
+    setNewEmail('')
+  }
+
+  const handleSavePassword = async () => {
+    if (newPassword.length < 6) { toast.error('Mínimo 6 caracteres'); return }
+    if (newPassword !== confirmPwd) { toast.error('Las contraseñas no coinciden'); return }
+    setSavingPwd(true)
+    const { error } = await supabase.auth.updateUser({ password: newPassword })
+    setSavingPwd(false)
+    if (error) { toast.error(error.message); return }
+    toast.success('Contraseña actualizada')
+    setNewPassword(''); setConfirmPwd('')
+  }
+
+  return (
+    <>
+      <div
+        style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(27,28,28,0.45)', backdropFilter: 'blur(6px)' }}
+        onClick={onClose}
+      />
+      <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, pointerEvents: 'none' }}>
+        <div
+          style={{
+            width: '100%', maxWidth: 440, background: CREAM, borderRadius: 24,
+            boxShadow: '0 24px 64px rgba(27,28,28,0.14)', pointerEvents: 'auto',
+            display: 'flex', flexDirection: 'column', overflow: 'hidden',
+            maxHeight: '92vh', border: `1px solid ${CREAM_DARK}`,
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+          }}
+        >
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px 16px', borderBottom: `1px solid ${CREAM_DARK}` }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 10, background: `${theme.accent}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Settings size={14} style={{ color: theme.accent }} />
+              </div>
+              <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, fontWeight: 700, color: CHARCOAL, margin: 0 }}>Configuración</h2>
+            </div>
+            <button
+              onClick={onClose}
+              style={{ width: 32, height: 32, borderRadius: 10, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: CHARCOAL_L }}
+              onMouseEnter={e => e.currentTarget.style.background = CREAM_DARK}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              <X size={15} />
+            </button>
+          </div>
+
+          <div style={{ overflowY: 'auto', flex: 1, padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+            {/* Email actual */}
+            <div>
+              <p style={{ fontSize: 10, fontWeight: 700, color: CHARCOAL_L, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Email actual</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 12, background: CREAM_LIGHT, border: `1px solid ${CREAM_DARK}` }}>
+                <Mail size={13} style={{ color: CHARCOAL_L, flexShrink: 0 }} />
+                <span style={{ fontSize: 13, color: CHARCOAL, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email}</span>
+              </div>
+            </div>
+
+            {/* Cambiar email */}
+            <div>
+              <p style={{ fontSize: 10, fontWeight: 700, color: CHARCOAL_L, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Cambiar email</p>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input
+                  type="email"
+                  value={newEmail}
+                  onChange={e => setNewEmail(e.target.value)}
+                  placeholder="nuevo@email.com"
+                  style={{ ...inputStyle, flex: 1 }}
+                  onFocus={e => { e.target.style.borderColor = theme.accent; e.target.style.boxShadow = `0 0 0 3px ${theme.accent}18` }}
+                  onBlur={e => { e.target.style.borderColor = CREAM_DARK; e.target.style.boxShadow = 'none' }}
+                />
+                <button
+                  onClick={handleSaveEmail}
+                  disabled={savingEmail || !newEmail.trim()}
+                  style={{ padding: '10px 16px', borderRadius: 12, background: theme.accent, color: '#fff', fontSize: 13, fontWeight: 700, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', opacity: savingEmail || !newEmail.trim() ? 0.45 : 1, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                >
+                  {savingEmail ? '…' : 'Guardar'}
+                </button>
+              </div>
+              <p style={{ fontSize: 11, color: CHARCOAL_L, marginTop: 6 }}>Se enviará confirmación a la nueva dirección.</p>
+            </div>
+
+            {/* Cambiar contraseña */}
+            <div>
+              <p style={{ fontSize: 10, fontWeight: 700, color: CHARCOAL_L, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Cambiar contraseña</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type={showPwd ? 'text' : 'password'}
+                    value={newPassword}
+                    onChange={e => setNewPassword(e.target.value)}
+                    placeholder="Nueva contraseña (mín. 6 caracteres)"
+                    style={{ ...inputStyle, paddingRight: 40 }}
+                    onFocus={e => { e.target.style.borderColor = theme.accent; e.target.style.boxShadow = `0 0 0 3px ${theme.accent}18` }}
+                    onBlur={e => { e.target.style.borderColor = CREAM_DARK; e.target.style.boxShadow = 'none' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPwd(p => !p)}
+                    style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: CHARCOAL_L, display: 'flex', alignItems: 'center' }}
+                  >
+                    {showPwd ? <EyeOff size={14} /> : <Eye size={14} />}
+                  </button>
+                </div>
+                <input
+                  type={showPwd ? 'text' : 'password'}
+                  value={confirmPwd}
+                  onChange={e => setConfirmPwd(e.target.value)}
+                  placeholder="Confirmar contraseña"
+                  style={inputStyle}
+                  onFocus={e => { e.target.style.borderColor = theme.accent; e.target.style.boxShadow = `0 0 0 3px ${theme.accent}18` }}
+                  onBlur={e => { e.target.style.borderColor = CREAM_DARK; e.target.style.boxShadow = 'none' }}
+                />
+                <button
+                  onClick={handleSavePassword}
+                  disabled={savingPwd || !newPassword || !confirmPwd}
+                  style={{ padding: '11px 16px', borderRadius: 12, background: theme.accent, color: '#fff', fontSize: 13, fontWeight: 700, border: 'none', cursor: 'pointer', opacity: savingPwd || !newPassword || !confirmPwd ? 0.45 : 1, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                >
+                  {savingPwd ? 'Actualizando…' : 'Cambiar contraseña'}
+                </button>
+              </div>
+            </div>
+
+            {/* Tema */}
+            <div>
+              <p style={{ fontSize: 10, fontWeight: 700, color: CHARCOAL_L, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>Tema de la plataforma</p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                {ADMIN_THEMES.map(t => {
+                  const selected = theme.id === t.id
+                  return (
+                    <button
+                      key={t.id}
+                      onClick={() => onThemeChange(t.id)}
+                      style={{
+                        borderRadius: 14, padding: '10px 12px',
+                        border: selected ? `2px solid ${t.accent}` : `2px solid ${CREAM_DARK}`,
+                        background: selected ? `${t.accent}08` : CREAM_LIGHT,
+                        textAlign: 'left', cursor: 'pointer', position: 'relative', transition: 'all 0.15s',
+                        fontFamily: "'Plus Jakarta Sans', sans-serif",
+                      }}
+                    >
+                      <div style={{ display: 'flex', gap: 4, marginBottom: 8, flexWrap: 'wrap' }}>
+                        {t.swatches.map((c, i) => (
+                          <div key={i} style={{ width: 18, height: 18, borderRadius: '50%', background: c, border: '1px solid rgba(0,0,0,0.08)' }} />
+                        ))}
+                      </div>
+                      <p style={{ fontSize: 11, fontWeight: 700, color: CHARCOAL, margin: 0 }}>{t.name}</p>
+                      {selected && (
+                        <div style={{ position: 'absolute', top: 8, right: 8, width: 16, height: 16, borderRadius: '50%', background: t.accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Check size={8} color="#fff" />
+                        </div>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div style={{ padding: '16px 24px 20px', borderTop: `1px solid ${CREAM_DARK}`, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <button
+              onClick={onClose}
+              style={{ padding: '12px 16px', borderRadius: 12, background: theme.accent, color: '#fff', fontSize: 13, fontWeight: 700, border: 'none', cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+            >
+              Guardar cambios
+            </button>
+            <button
+              onClick={onSignOut}
+              style={{ padding: '10px 16px', borderRadius: 12, background: 'transparent', color: '#dc2626', fontSize: 13, fontWeight: 700, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+              onMouseEnter={e => e.currentTarget.style.background = '#fef2f2'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              <LogOut size={13} />
+              Cerrar sesión
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}
+
+// ─── Main Component ────────────────────────────────────────────────────────────
+export default function AdminPage() {
+  const { user, signOut } = useAuth()
+  const navigate = useNavigate()
+
+  const [restaurants, setRestaurants]   = useState([])
+  const [loading, setLoading]           = useState(true)
+  const [search, setSearch]             = useState('')
+  const [toggling, setToggling]           = useState(null)
+  const [changingPlan, setChangingPlan]   = useState(null)
+  const [changingTheme, setChangingTheme] = useState(null)
+  const [planFilter, setPlanFilter]     = useState('all')
+  const [period, setPeriod]             = useState('MENSUAL')
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [theme, setTheme]               = useState(loadTheme)
+
+  const handleThemeChange = (id) => {
+    const t = ADMIN_THEMES.find(t => t.id === id) ?? ADMIN_THEMES[0]
+    setTheme(t)
+    persistTheme(id)
+  }
+
+  useEffect(() => { fetchAll() }, [])
+
+  const fetchAll = async () => {
+    setLoading(true)
+    const { data, error } = await supabase.rpc('admin_get_all_restaurants')
+    if (error) { toast.error(error.message); setLoading(false); return }
+    setRestaurants(data || [])
+    setLoading(false)
+  }
+
+  const handleToggle = async (id, current) => {
+    setToggling(id)
+    const { error } = await supabase.rpc('admin_set_restaurant_active', { p_restaurant_id: id, p_active: !current })
+    if (error) { toast.error(error.message); setToggling(null); return }
+    setRestaurants(prev => prev.map(r => r.id === id ? { ...r, active: !current } : r))
+    toast.success(!current ? 'Restaurante activado' : 'Restaurante desactivado')
+    setToggling(null)
+  }
+
+  const handleChangeTheme = async (id, newTheme) => {
+    setChangingTheme(id)
+    const { error } = await supabase.rpc('admin_set_restaurant_theme', { p_restaurant_id: id, p_theme: newTheme })
+    if (error) { toast.error(error.message); setChangingTheme(null); return }
+    setRestaurants(prev => prev.map(r => r.id === id ? { ...r, theme: newTheme } : r))
+    toast.success(`Tema actualizado`)
+    setChangingTheme(null)
+  }
+
+  const handleChangePlan = async (id, newPlan) => {
+    setChangingPlan(id)
+    const { error } = await supabase.rpc('admin_set_restaurant_plan', { p_restaurant_id: id, p_plan: newPlan })
+    if (error) { toast.error(error.message); setChangingPlan(null); return }
+    setRestaurants(prev => prev.map(r => r.id === id ? { ...r, plan: newPlan } : r))
+    toast.success(`Plan actualizado a ${PLAN_LABEL[newPlan]}`)
+    setChangingPlan(null)
+  }
+
+  const handleSignOut = async () => { await signOut(); navigate('/login') }
+
+  // ── Derived stats ────────────────────────────────────────────────────────────
+  const freeCount    = restaurants.filter(r => (r.plan || 'free') === 'free').length
+  const proCount     = restaurants.filter(r => r.plan === 'pro').length
+  const premiumCount = restaurants.filter(r => r.plan === 'premium').length
+  const activeCount  = restaurants.filter(r => r.active).length
+  const paidCount    = proCount + premiumCount
+  const today        = new Date()
+  const newToday     = restaurants.filter(r =>
+    new Date(r.created_at).toDateString() === today.toDateString()
+  ).length
+  const thisMonthCount = restaurants.filter(r => {
+    const d = new Date(r.created_at)
+    return d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear()
+  }).length
+
+  const chartData = useMemo(() => buildChartData(restaurants, period), [restaurants, period])
+
+  const donutData = useMemo(() => [
+    { name: 'Free',    value: freeCount,    color: CREAM_DARK },
+    { name: 'Pro',     value: proCount,     color: '#3b82f6' },
+    { name: 'Premium', value: premiumCount, color: theme.accent },
+  ].filter(d => d.value > 0), [freeCount, proCount, premiumCount, theme.accent])
+
+  const filtered = useMemo(() => restaurants
+    .filter(r => planFilter === 'all' || (r.plan || 'free') === planFilter)
+    .filter(r =>
+      r.name?.toLowerCase().includes(search.toLowerCase()) ||
+      r.owner_email?.toLowerCase().includes(search.toLowerCase())
+    ), [restaurants, planFilter, search])
+
+  const initial = (user?.email || 'A')[0].toUpperCase()
+
+  const statCards = [
+    {
+      label: 'Total restaurantes',
+      value: restaurants.length,
+      sub: `+${thisMonthCount} este mes`,
+      icon: Store,
+      iconBg: `${theme.accent}14`,
+      iconColor: theme.accent,
+    },
+    {
+      label: 'Usuarios registrados',
+      value: restaurants.length,
+      sub: `${activeCount} activos`,
+      icon: Users,
+      iconBg: '#dbeafe',
+      iconColor: '#1d4ed8',
+    },
+    {
+      label: 'Registros hoy',
+      value: newToday,
+      sub: `${activeCount} activos en total`,
+      icon: Activity,
+      iconBg: '#fce7f3',
+      iconColor: '#be185d',
+    },
+    {
+      label: 'Planes de pago',
+      value: paidCount,
+      sub: `${proCount} Pro · ${premiumCount} Premium`,
+      icon: Crown,
+      iconBg: '#fff7ed',
+      iconColor: '#c2410c',
+    },
+  ]
+
+  // ── Shared style helpers ─────────────────────────────────────────────────────
+  const card = {
+    background: CREAM_LIGHT,
+    border: `1px solid ${CREAM_DARK}`,
+    borderRadius: 20,
+    boxShadow: '0px 4px 16px rgba(27,28,28,0.05), 0px 1px 3px rgba(27,28,28,0.03)',
+  }
+
+  const labelStyle = {
+    fontSize: 10,
+    fontWeight: 700,
+    color: CHARCOAL_L,
+    textTransform: 'uppercase',
+    letterSpacing: '0.08em',
+  }
+
+  const headingSerif = {
+    fontFamily: "'Playfair Display', serif",
+    fontWeight: 700,
+    color: CHARCOAL,
+  }
+
+  return (
+    <div style={{ display: 'flex', minHeight: '100vh', background: CREAM, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+
+      {/* ── SIDEBAR ─────────────────────────────────────────────────────────── */}
+      <aside
+        style={{
+          position: 'fixed', left: 0, top: 0, bottom: 0, width: 64,
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+          padding: '20px 0', zIndex: 20, background: theme.sidebarBg,
+        }}
+      >
+        {/* Logo */}
+        <div
+          style={{
+            width: 36, height: 36, borderRadius: 12, marginBottom: 28,
+            background: theme.accent, display: 'flex', alignItems: 'center',
+            justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 15,
+            fontFamily: "'Playfair Display', serif", flexShrink: 0,
+          }}
+        >
+          M
+        </div>
+
+        {/* Nav */}
+        <nav style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flex: 1 }}>
+          {[
+            { Icon: LayoutDashboard, tip: 'Dashboard', active: true },
+            { Icon: Store,           tip: 'Restaurantes' },
+            { Icon: Users,           tip: 'Usuarios' },
+            { Icon: BarChart2,       tip: 'Analítica' },
+          ].map(({ Icon, tip, active }) => (
+            <button
+              key={tip}
+              title={tip}
+              style={{
+                width: 40, height: 40, borderRadius: 12, border: 'none', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: active ? `${theme.accent}28` : 'transparent',
+                color: active ? theme.accent : 'rgba(255,255,255,0.32)',
+                transition: 'background 0.15s, color 0.15s',
+              }}
+              onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'rgba(255,255,255,0.07)' }}
+              onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}
+            >
+              <Icon size={17} />
+            </button>
+          ))}
+        </nav>
+
+        {/* Bottom */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          <button
+            title="Ajustes"
+            onClick={() => setSettingsOpen(true)}
+            style={{
+              width: 40, height: 40, borderRadius: 12, border: 'none', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'transparent', color: 'rgba(255,255,255,0.4)',
+              transition: 'background 0.15s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.07)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+          >
+            <Settings size={17} />
+          </button>
+          <button
+            title="Mi perfil"
+            onClick={() => setSettingsOpen(true)}
+            style={{
+              width: 36, height: 36, borderRadius: 10, border: `2px solid ${theme.accent}60`,
+              cursor: 'pointer', background: theme.accent,
+              color: '#fff', fontWeight: 800, fontSize: 14, display: 'flex',
+              alignItems: 'center', justifyContent: 'center', fontFamily: "'Plus Jakarta Sans', sans-serif",
+            }}
+          >
+            {initial}
+          </button>
+        </div>
+      </aside>
+
+      {/* ── MAIN CONTENT ─────────────────────────────────────────────────────── */}
+      <div style={{ marginLeft: 64, flex: 1, minHeight: '100vh', background: CREAM }}>
+
+        {/* Header */}
+        <header
+          style={{
+            background: `${CREAM}f2`, backdropFilter: 'blur(12px)',
+            borderBottom: `1px solid ${CREAM_DARK}`,
+            padding: '14px 32px', display: 'flex', alignItems: 'center',
+            justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10,
+            boxShadow: '0 1px 8px rgba(27,28,28,0.04)',
+          }}
+        >
+          <div>
+            <h1 style={{ ...headingSerif, fontSize: 22, margin: 0 }}>Panel de Administración</h1>
+            <p style={{ ...labelStyle, marginTop: 2, marginBottom: 0 }}>
+              {today.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
+            </p>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ position: 'relative' }}>
+              <Search size={12} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: CHARCOAL_L }} />
+              <input
+                type="text"
+                placeholder="Buscar restaurante…"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                style={{
+                  paddingLeft: 30, paddingRight: 14, paddingTop: 8, paddingBottom: 8,
+                  fontSize: 13, borderRadius: 12, border: `1px solid ${CREAM_DARK}`,
+                  background: CREAM_LIGHT, color: CHARCOAL, outline: 'none',
+                  width: 200, fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  transition: 'border-color 0.15s, box-shadow 0.15s',
+                }}
+                onFocus={e => { e.target.style.borderColor = theme.accent; e.target.style.boxShadow = `0 0 0 3px ${theme.accent}18` }}
+                onBlur={e => { e.target.style.borderColor = CREAM_DARK; e.target.style.boxShadow = 'none' }}
+              />
+            </div>
+            <button
+              onClick={() => setSettingsOpen(true)}
+              style={{
+                width: 36, height: 36, borderRadius: 10, background: theme.accent,
+                border: 'none', cursor: 'pointer', color: '#fff', fontWeight: 800,
+                fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+              }}
+            >
+              {initial}
+            </button>
+          </div>
+        </header>
+
+        <main style={{ padding: '28px 32px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+          {/* ── WELCOME BANNER ── */}
+          <section>
+            <h2 style={{ ...headingSerif, fontSize: 28, margin: 0 }}>Panel de Control</h2>
+            <p style={{ color: CHARCOAL_L, fontSize: 14, marginTop: 4, marginBottom: 0 }}>
+              Bienvenido de nuevo. Aquí tienes el resumen de la plataforma.
+            </p>
+          </section>
+
+          {/* ── STAT CARDS ── */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}
+            className="lg:grid-cols-4"
+          >
+            {/* Hero card */}
+            <div
+              style={{
+                ...card,
+                gridColumn: 'span 2',
+                padding: 24,
+                position: 'relative',
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                minHeight: 140,
+              }}
+            >
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: theme.accent, animation: 'pulse 2s infinite', display: 'inline-block' }} />
+                  <span style={{ ...labelStyle, color: theme.accent }}>PLATAFORMA ACTIVA</span>
+                </div>
+                <p style={{ ...labelStyle, marginBottom: 0 }}>{activeCount} restaurantes publicados</p>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginTop: 16 }}>
+                <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 48, fontWeight: 700, color: CHARCOAL, lineHeight: 1 }}>
+                  {restaurants.length}
+                </span>
+                <span style={{ ...labelStyle }}>RESTAURANTES TOTALES</span>
+              </div>
+              <div style={{ position: 'absolute', right: -20, bottom: -20, opacity: 0.04, color: CHARCOAL, pointerEvents: 'none' }}>
+                <UtensilsCrossed size={160} />
+              </div>
+            </div>
+
+            {statCards.slice(1).map(({ label, value, sub, icon: Icon, iconBg, iconColor }) => (
+              <div key={label} style={{ ...card, padding: 20 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
+                  <div style={{ padding: 8, borderRadius: 10, background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Icon size={17} style={{ color: iconColor }} />
+                  </div>
+                  <TrendingUp size={13} style={{ color: CHARCOAL_L, marginTop: 4 }} />
+                </div>
+                <p style={{ ...labelStyle, marginBottom: 4 }}>{label}</p>
+                <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 32, fontWeight: 700, color: CHARCOAL, margin: 0, lineHeight: 1 }}>{value}</p>
+                <p style={{ fontSize: 11, color: CHARCOAL_L, marginTop: 6, marginBottom: 0 }}>{sub}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* ── CHARTS ROW ── */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16 }}
+            className="lg:grid-cols-3"
+          >
+            {/* Area chart */}
+            <div style={{ ...card, padding: 24, gridColumn: 'span 2' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+                <div>
+                  <h2 style={{ ...headingSerif, fontSize: 19, margin: 0 }}>Evolución de registros</h2>
+                  <p style={{ fontSize: 12, color: CHARCOAL_L, marginTop: 2, marginBottom: 0 }}>Nuevos restaurantes por período</p>
+                </div>
+                <div style={{ display: 'flex', gap: 4, background: CREAM_DARK, borderRadius: 12, padding: 4 }}>
+                  {['DIARIO', 'SEMANAL', 'MENSUAL', 'ANUAL'].map(p => (
+                    <button
+                      key={p}
+                      onClick={() => setPeriod(p)}
+                      style={{
+                        padding: '5px 10px', borderRadius: 8, fontSize: 10, fontWeight: 700,
+                        border: 'none', cursor: 'pointer', letterSpacing: '0.04em',
+                        transition: 'all 0.15s', fontFamily: "'Plus Jakarta Sans', sans-serif",
+                        background: period === p ? CREAM_LIGHT : 'transparent',
+                        color: period === p ? theme.accent : CHARCOAL_L,
+                        boxShadow: period === p ? '0 1px 4px rgba(27,28,28,0.08)' : 'none',
+                      }}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <ResponsiveContainer width="100%" height={210}>
+                <AreaChart data={chartData}>
+                  <defs>
+                    <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%"  stopColor={theme.accent} stopOpacity={0.10} />
+                      <stop offset="95%" stopColor={theme.accent} stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke={CREAM_DARK} vertical={false} />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: CHARCOAL_L, fontSize: 10, fontFamily: "'Plus Jakarta Sans', sans-serif" }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: CHARCOAL_L, fontSize: 10, fontFamily: "'Plus Jakarta Sans', sans-serif" }} allowDecimals={false} width={22} />
+                  <Tooltip content={<ChartTooltip accent={theme.accent} />} />
+                  <Area
+                    type="monotone" dataKey="Registros"
+                    stroke={theme.accent} strokeWidth={2.5}
+                    fill="url(#chartGrad)" dot={false}
+                    activeDot={{ r: 5, fill: theme.accent, strokeWidth: 0 }}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Donut + distribution */}
+            <div style={{ ...card, padding: 24 }}>
+              <h2 style={{ ...headingSerif, fontSize: 19, margin: 0 }}>Distribución</h2>
+              <p style={{ fontSize: 12, color: CHARCOAL_L, marginTop: 2, marginBottom: 20 }}>Planes activos</p>
+
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+                <PieChart width={150} height={150}>
+                  <Pie
+                    data={donutData.length > 0 ? donutData : [{ name: 'Sin datos', value: 1, color: CREAM_DARK }]}
+                    cx={70} cy={70}
+                    innerRadius={44} outerRadius={68}
+                    paddingAngle={3} dataKey="value" strokeWidth={0}
+                  >
+                    {(donutData.length > 0 ? donutData : [{ color: CREAM_DARK }]).map((e, i) => (
+                      <Cell key={i} fill={e.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={{ borderRadius: 12, border: `1px solid ${CREAM_DARK}`, fontSize: 12, fontFamily: "'Plus Jakarta Sans', sans-serif" }} />
+                </PieChart>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {[
+                  { label: 'Free',    count: freeCount,    color: '#9ca3af' },
+                  { label: 'Pro',     count: proCount,     color: '#3b82f6' },
+                  { label: 'Premium', count: premiumCount, color: theme.accent },
+                ].map(item => (
+                  <div key={item.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: item.color, flexShrink: 0 }} />
+                      <span style={{ fontSize: 13, color: CHARCOAL_L }}>{item.label}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: CHARCOAL }}>{item.count}</span>
+                      <span style={{ fontSize: 11, color: CHARCOAL_L, width: 32, textAlign: 'right' }}>
+                        {restaurants.length ? Math.round(item.count / restaurants.length * 100) : 0}%
+                      </span>
+                    </div>
+                  </div>
+                ))}
+
+                <div style={{ paddingTop: 12, marginTop: 4, borderTop: `1px solid ${CREAM_DARK}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 11, color: CHARCOAL_L }}>Ingreso estimado</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: theme.accent, fontFamily: "'Playfair Display', serif" }}>
+                    {proCount * 29 + premiumCount * 49}€/mes
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── TABLE ── */}
+          <div style={{ ...card, overflow: 'hidden' }}>
+            {/* Toolbar */}
+            <div style={{ padding: '18px 24px', borderBottom: `1px solid ${CREAM_DARK}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+              <div>
+                <h2 style={{ ...headingSerif, fontSize: 19, margin: 0 }}>Restaurantes</h2>
+                <p style={{ fontSize: 11, color: CHARCOAL_L, marginTop: 2, marginBottom: 0 }}>
+                  {filtered.length} {filtered.length === 1 ? 'resultado' : 'resultados'}
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: 4, background: CREAM_DARK, borderRadius: 12, padding: 4 }}>
+                {['all', 'free', 'pro', 'premium'].map(f => (
+                  <button
+                    key={f}
+                    onClick={() => setPlanFilter(f)}
+                    style={{
+                      padding: '5px 12px', borderRadius: 8, fontSize: 11, fontWeight: 700, textTransform: 'capitalize',
+                      border: 'none', cursor: 'pointer', transition: 'all 0.15s', fontFamily: "'Plus Jakarta Sans', sans-serif",
+                      background: planFilter === f ? CREAM_LIGHT : 'transparent',
+                      color: planFilter === f ? theme.accent : CHARCOAL_L,
+                      boxShadow: planFilter === f ? '0 1px 4px rgba(27,28,28,0.08)' : 'none',
+                    }}
+                  >
+                    {f === 'all' ? 'Todos' : PLAN_LABEL[f]}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Body */}
+            {loading ? (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '64px 0' }}>
+                <div
+                  style={{
+                    width: 28, height: 28, borderRadius: '50%',
+                    border: `2px solid ${CREAM_DARK}`,
+                    borderTopColor: theme.accent,
+                    animation: 'spin 0.8s linear infinite',
+                  }}
+                />
+              </div>
+            ) : filtered.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '64px 0' }}>
+                <Store size={28} style={{ margin: '0 auto 8px', color: CREAM_DARK }} />
+                <p style={{ fontSize: 13, color: CHARCOAL_L }}>No se encontraron restaurantes</p>
+              </div>
+            ) : (
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ background: CREAM }}>
+                      {['Nombre', 'Email', 'Plan', 'Tema', 'Estado', 'Fecha alta', 'Acciones'].map(h => (
+                        <th
+                          key={h}
+                          style={{
+                            ...labelStyle, textAlign: 'left',
+                            padding: '12px 20px', whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map((r, idx) => {
+                      const rPlan = r.plan || 'free'
+                      const badge = PLAN_BADGE[rPlan]
+                      return (
+                        <tr
+                          key={r.id}
+                          style={{
+                            borderTop: `1px solid ${CREAM_DARK}`,
+                            transition: 'background 0.12s',
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.background = CREAM}
+                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                        >
+                          {/* Nombre */}
+                          <td style={{ padding: '14px 20px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                              <div
+                                style={{
+                                  width: 32, height: 32, borderRadius: 10,
+                                  background: `${theme.accent}14`,
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  color: theme.accent, fontSize: 12, fontWeight: 700, flexShrink: 0,
+                                  fontFamily: "'Playfair Display', serif",
+                                }}
+                              >
+                                {(r.name || '?')[0].toUpperCase()}
+                              </div>
+                              <span style={{ fontSize: 13, fontWeight: 700, color: CHARCOAL, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 140 }}>{r.name}</span>
+                            </div>
+                          </td>
+
+                          {/* Email */}
+                          <td style={{ padding: '14px 20px', fontSize: 13, color: CHARCOAL_L, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.owner_email}</td>
+
+                          {/* Plan */}
+                          <td style={{ padding: '14px 20px' }}>
+                            <select
+                              value={rPlan}
+                              disabled={changingPlan === r.id}
+                              onChange={e => handleChangePlan(r.id, e.target.value)}
+                              style={{
+                                fontSize: 11, fontWeight: 700, borderRadius: 8,
+                                padding: '4px 10px', border: 'none', cursor: 'pointer',
+                                background: badge.bg, color: badge.color, outline: 'none',
+                                opacity: changingPlan === r.id ? 0.5 : 1,
+                                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                              }}
+                            >
+                              <option value="free">Free</option>
+                              <option value="pro">Pro</option>
+                              <option value="premium">Premium</option>
+                            </select>
+                          </td>
+
+                          {/* Tema visual */}
+                          <td style={{ padding: '14px 20px' }}>
+                            <select
+                              value={r.theme || 'default'}
+                              disabled={changingTheme === r.id}
+                              onChange={e => handleChangeTheme(r.id, e.target.value)}
+                              style={{
+                                fontSize: 11, fontWeight: 700, borderRadius: 8,
+                                padding: '4px 10px', border: `1px solid ${CREAM_DARK}`, cursor: 'pointer',
+                                background: CREAM_LIGHT, color: CHARCOAL, outline: 'none',
+                                opacity: changingTheme === r.id ? 0.5 : 1,
+                                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                              }}
+                            >
+                              <option value="default">Default (naranja)</option>
+                              <option value="jungle">Jungle (verde dorado)</option>
+                              <option value="maibacht">Maibacht (negro dorado)</option>
+                            </select>
+                          </td>
+
+                          {/* Estado */}
+                          <td style={{ padding: '14px 20px' }}>
+                            <span
+                              style={{
+                                display: 'inline-flex', alignItems: 'center', gap: 6,
+                                fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 8,
+                                background: r.active ? '#dcfce7' : CREAM_DARK,
+                                color: r.active ? '#15803d' : CHARCOAL_L,
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              <span style={{ width: 6, height: 6, borderRadius: '50%', background: r.active ? '#16a34a' : '#9ca3af', flexShrink: 0 }} />
+                              {r.active ? 'Activo' : 'Inactivo'}
+                            </span>
+                          </td>
+
+                          {/* Fecha */}
+                          <td style={{ padding: '14px 20px', fontSize: 12, color: CHARCOAL_L, whiteSpace: 'nowrap' }}>
+                            {new Date(r.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                          </td>
+
+                          {/* Toggle */}
+                          <td style={{ padding: '14px 20px' }}>
+                            <button
+                              onClick={() => handleToggle(r.id, r.active)}
+                              disabled={toggling === r.id}
+                              aria-label={r.active ? 'Desactivar' : 'Activar'}
+                              style={{
+                                position: 'relative', width: 44, height: 24, borderRadius: 12,
+                                border: 'none', cursor: 'pointer', transition: 'background 0.2s',
+                                background: r.active ? theme.accent : CREAM_DARK,
+                                opacity: toggling === r.id ? 0.5 : 1,
+                              }}
+                            >
+                              <span
+                                style={{
+                                  position: 'absolute', top: 4, width: 16, height: 16,
+                                  borderRadius: '50%', background: '#fff',
+                                  boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                                  transform: r.active ? 'translateX(24px)' : 'translateX(4px)',
+                                  transition: 'transform 0.2s',
+                                }}
+                              />
+                            </button>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+        </main>
+      </div>
+
+      {/* ── SETTINGS MODAL ── */}
+      {settingsOpen && (
+        <SettingsModal
+          user={user}
+          onClose={() => setSettingsOpen(false)}
+          onSignOut={handleSignOut}
+          theme={theme}
+          onThemeChange={handleThemeChange}
+        />
+      )}
+
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50%       { opacity: 0.4; }
+        }
+        .lg\\:grid-cols-4 { grid-template-columns: repeat(2, 1fr); }
+        .lg\\:grid-cols-3 { grid-template-columns: 1fr; }
+        @media (min-width: 1024px) {
+          .lg\\:grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+          .lg\\:grid-cols-3 { grid-template-columns: 2fr 1fr; }
+        }
+      `}</style>
+    </div>
+  )
+}
