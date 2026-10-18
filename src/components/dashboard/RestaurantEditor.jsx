@@ -551,7 +551,7 @@ export default function RestaurantEditor({ restaurant, onUpdate }) {
               <span style={sectionLabelStyle}>Imágenes de la carta</span>
 
               {/* Carrusel de imágenes independiente de los platos */}
-              <Row icon={<Image size={18} color="#9CA3AF" />} label="Carrusel de imágenes y ofertas" sublabel="Sube, ordena y cambia tus promociones" onClick={() => !isFree && toggle('slides')} rightEl={isFree ? <Lock size={15} color="#9CA3AF" /> : <ChevronRight size={15} color="#9CA3AF" />} />
+              <Row icon={<Image size={18} color="#9CA3AF" />} label="Destacado" sublabel="Sube, ordena y cambia tus promociones" onClick={() => !isFree && toggle('slides')} rightEl={isFree ? <Lock size={15} color="#9CA3AF" /> : <ChevronRight size={15} color="#9CA3AF" />} />
               {expanded === 'slides' && !isFree && restaurant && <MenuSlidesEditor restaurant={restaurant} userId={user?.id} onUpdate={onUpdate} />}
               {/* Banner */}
               <Row

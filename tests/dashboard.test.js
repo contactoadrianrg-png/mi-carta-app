@@ -35,7 +35,7 @@ function setup(plan = 'premium', restaurantExists = true) {
 function text(node) { return typeof node === 'string' ? node : (node.children ?? []).map(text).join('') }
 function button(tree, label) { return tree.root.findAllByType('button').find(node => text(node).includes(label)) }
 
-test('los accesos abren platos, categorías, carrusel, identidad, reservas y QR', async () => {
+test('los accesos abren platos, categorías, destacado, identidad, reservas y QR', async () => {
   const { counts, updates } = setup()
   let tree
   try {
@@ -46,8 +46,8 @@ test('los accesos abren platos, categorías, carrusel, identidad, reservas y QR'
     await act(async () => button(tree, 'Categorías').props.onClick())
     assert.equal(tree.root.findByProps({ 'data-widget': 'CategoryManager' }).type, 'div')
     await act(async () => button(tree, 'Inicio').props.onClick())
-    await act(async () => button(tree, 'Carrusel de ofertas').props.onClick())
-    assert.equal(tree.root.findByProps({ 'aria-label': 'Añadir imágenes al carrusel' }).type, 'input')
+    await act(async () => button(tree, 'Destacado').props.onClick())
+    assert.equal(tree.root.findByProps({ 'aria-label': 'Añadir imágenes al destacado' }).type, 'input')
     await act(async () => button(tree, 'Inicio').props.onClick())
     await act(async () => button(tree, 'Nombre y logo').props.onClick())
     assert.equal(tree.root.findByProps({ role: 'dialog' }).props['aria-label'], 'Personalizar mi restaurante')
@@ -71,7 +71,7 @@ test('un restaurante Free mantiene el bloqueo Pro y una cuenta nueva llega a con
   setup('free'); let tree
   try {
     await act(async () => { tree = create(React.createElement(Dashboard)) })
-    await act(async () => button(tree, 'Carrusel de ofertas').props.onClick())
+    await act(async () => button(tree, 'Destacado').props.onClick())
     assert.match(JSON.stringify(tree.toJSON()), /Disponible en el Plan Pro/)
     assert.equal(tree.root.findAllByProps({ type: 'file' }).length, 0)
   } finally { if (tree) await act(async () => tree.unmount()) }

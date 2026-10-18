@@ -33,7 +33,7 @@ test('sube y ordena imágenes; reintentar un fallo al guardar no vuelve a subir 
     const descriptions = tree.root.findAllByProps({ maxLength: 160 })
     await act(async () => { descriptions[0].props.onChange({ target: { value: 'Primera oferta' } }) })
     await act(async () => { tree.root.findByProps({ 'aria-label': 'Bajar imagen 1' }).props.onClick() })
-    const save = () => tree.root.findAllByType('button').find(node => node.children.includes('Guardar carrusel'))
+    const save = () => tree.root.findAllByType('button').find(node => node.children.includes('Guardar destacado'))
     await act(async () => { await save().props.onClick() })
     assert.equal(uploads.length, 2)
     assert.ok(uploads.every(upload => upload.path.startsWith('owner/slides/')))

@@ -7,7 +7,7 @@ const SIDE_NAV = [
   { id: 'home', label: 'Inicio', Icon: Home },
   { id: 'dishes', label: 'Mi carta', Icon: UtensilsCrossed },
   { id: 'customize', label: 'Personalizar', Icon: Brush },
-  { id: 'slides', label: 'Ofertas', Icon: Tags },
+  { id: 'slides', label: 'Destacado', Icon: Tags },
   { id: 'reservations', label: 'Reservas y redes', Icon: CalendarDays },
   { id: 'stats', label: 'Estadísticas', Icon: BarChart3 },
   { id: 'restaurant', label: 'Ajustes', Icon: Settings },
@@ -15,10 +15,10 @@ const SIDE_NAV = [
 const MOBILE_NAV = [
   { id: 'home', label: 'Inicio', Icon: Home },
   { id: 'dishes', label: 'Carta', Icon: UtensilsCrossed },
-  { id: 'slides', label: 'Ofertas', Icon: Tags },
+  { id: 'slides', label: 'Destacado', Icon: Tags },
   { id: 'account', label: 'Perfil', Icon: User },
 ]
-const TITLES = { home: 'Panel de control', dishes: 'Mi carta', categories: 'Mi carta', slides: 'Carrusel de ofertas', reservations: 'Reservas y redes', socials: 'Redes sociales', stats: 'Estadísticas', restaurant: 'Ajustes del restaurante', account: 'Mi cuenta' }
+const TITLES = { home: 'Panel de control', dishes: 'Mi carta', categories: 'Mi carta', slides: 'Destacado', reservations: 'Reservas y redes', socials: 'Redes sociales', stats: 'Estadísticas', restaurant: 'Ajustes del restaurante', account: 'Mi cuenta' }
 
 export function RestaurantAvatar({ restaurant }) {
   const [failed, setFailed] = useState(null)

@@ -9,7 +9,7 @@ export default function DashboardHome({ restaurant, dishCount, categoryCount, pl
   const actions = [
     { id: 'dishes', title: 'Platos y categorías', detail: 'Edita tu carta', Icon: UtensilsCrossed, onClick: () => onNavigate('dishes') },
     { id: 'customize', title: 'Nombre y logo', detail: 'Tu identidad', Icon: Brush, onClick: onShowCustomize },
-    { id: 'slides', title: 'Carrusel de ofertas', detail: 'Imágenes y promociones', Icon: Tags, onClick: () => onNavigate('slides'), featured: true },
+    { id: 'slides', title: 'Destacado', detail: 'Imágenes y promociones', Icon: Tags, onClick: () => onNavigate('slides'), featured: true },
     { id: 'reservations', title: 'Reservas y redes', detail: 'Conecta con tus clientes', Icon: Share2, onClick: () => onNavigate('reservations') },
     { id: 'qr', title: 'Mi QR', detail: 'Mesas y enlace para redes', Icon: QrCode, onClick: onShowQR },
     { id: 'public', title: 'Ver mi carta', detail: 'Vista del cliente', Icon: ArrowUpRight, href: menuUrl },
