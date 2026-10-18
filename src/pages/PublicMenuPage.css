@@ -423,6 +423,32 @@
 .messa-banner-carousel {
   padding-top:0;
 }
+.messa-highlight-rail.messa-banner-loop {
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:0;
+  padding:0;
+  overflow:hidden;
+  border-radius:18px;
+  touch-action:pan-y pinch-zoom;
+  user-select:none;
+}
+.messa-banner-loop .messa-banner-slide {
+  grid-area:1 / 1;
+  width:100%;
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition:opacity .65s ease,visibility .65s;
+}
+.messa-banner-loop .messa-banner-slide.is-active {
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+}
+@media(prefers-reduced-motion:reduce) {
+  .messa-banner-loop .messa-banner-slide { transition:none; }
+}
 .messa-banner-slide {
   flex:0 0 100%;
   min-width:0;
@@ -453,7 +479,7 @@
   justify-content:space-between;
   align-items:center;
   gap:16px;
-  margin-top:0;
+  margin-top:10px;
 }
 .messa-banner-navigation>span {
   font-size:11px;
