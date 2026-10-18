@@ -506,9 +506,10 @@ export default function RestaurantEditor({ restaurant, onUpdate }) {
           {/* ---- Mi carta ---- */}
           {restaurant && (
             <div style={cardStyle}>
-              <span style={sectionLabelStyle}>Mi carta pública</span>
+              <span style={sectionLabelStyle}>Enlace para la bio de tus redes</span>
 
               <div style={{ padding: '12px 16px 0' }}>
+                <p style={{ fontSize: 12, color: '#6B7280', lineHeight: 1.6, margin: '0 0 12px' }}>Abre la bienvenida con los botones «Ver la carta» y «Reservar mesa». El QR de las mesas abre directamente los platos.</p>
                 <div style={{
                   background: '#F9FAFB', borderRadius: 8, padding: '10px 12px',
                   display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10,
@@ -519,6 +520,7 @@ export default function RestaurantEditor({ restaurant, onUpdate }) {
                   </p>
                   <button
                     onClick={handleCopyUrl}
+                    aria-label="Copiar enlace para redes"
                     style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, flexShrink: 0, display: 'flex' }}
                   >
                     {copied ? <Check size={16} color="#10B981" /> : <Copy size={16} color="#9CA3AF" />}
@@ -537,7 +539,7 @@ export default function RestaurantEditor({ restaurant, onUpdate }) {
                   }}
                 >
                   <ExternalLink size={17} />
-                  Ver mi carta
+                  Ver bienvenida
                 </a>
               </div>
             </div>

@@ -29,7 +29,14 @@ const INPUT_STYLE = {
 }
 
 /* ── QR Modal ────────────────────────────────────────── */
-function QRModal({ url, onClose }) {
+function QRModal({ url, socialUrl, onClose }) {
+  const [copied, setCopied] = useState(false)
+  async function copySocialLink() {
+    try {
+      await navigator.clipboard.writeText(socialUrl)
+      setCopied(true)
+    } catch { toast.error('No se ha podido copiar. Puedes seleccionar el enlace y copiarlo.') }
+  }
   const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(url)}&format=png`
   return (
     <div
@@ -43,23 +50,30 @@ function QRModal({ url, onClose }) {
       <div
         style={{
           background: '#FFF', borderRadius: '20px 20px 0 0',
-          padding: '24px 24px 40px', width: '100%', maxWidth: 480,
+          padding: '24px 24px 40px', width: '100%', maxWidth: 480, maxHeight: '90svh', overflowY: 'auto',
           textAlign: 'center', boxSizing: 'border-box',
         }}
         role="dialog" aria-modal="true" aria-label="Mi QR"
         onClick={e => e.stopPropagation()}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-          <p style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#1A1A1A' }}>Mi QR</p>
+          <p style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#1A1A1A' }}>QR para las mesas</p>
           <button type="button" aria-label="Cerrar QR" onClick={onClose} style={{ background: '#F3F4F6', border: 'none', borderRadius: '50%', width: 34, height: 34, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <IconX size={18} color="#374151" />
           </button>
         </div>
+        <p style={{ fontSize: 13, color: '#6B7280', margin: '0 0 18px' }}>Abre directamente los platos, sin pantalla de bienvenida.</p>
         <img src={qrSrc} alt="QR de mi carta" style={{ width: 210, height: 210, borderRadius: 12, display: 'block', margin: '0 auto' }} />
         <p style={{ margin: '14px 0 0', fontSize: 12, color: '#9CA3AF', wordBreak: 'break-all' }}>{url}</p>
         <a href={url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', marginTop: 20, padding: '13px 0', borderRadius: 12, background: ORANGE, color: '#FFF', fontSize: 15, fontWeight: 600, textDecoration: 'none' }}>
           Abrir carta →
         </a>
+        <section style={{ textAlign: 'left', borderTop: '1px solid #E5E7EB', marginTop: 24, paddingTop: 20 }} aria-label="Enlace para redes">
+          <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Enlace para la bio de tus redes</h2>
+          <p style={{ fontSize: 12, color: '#6B7280', lineHeight: 1.6, margin: '8px 0 12px' }}>Muestra la bienvenida con «Ver la carta» y «Reservar mesa».</p>
+          <input aria-label="Enlace para redes" value={socialUrl} readOnly onFocus={event => event.target.select()} style={{ width: '100%', minHeight: 44, padding: 10, border: '1px solid #E5E7EB', borderRadius: 10, fontSize: 12, boxSizing: 'border-box' }} />
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 12, alignItems: 'center' }}><button type="button" onClick={copySocialLink} style={{ minHeight: 44, padding: '10px 16px', background: ORANGE_LIGHT, color: ORANGE, border: 0, borderRadius: 10, fontWeight: 600 }} aria-live="polite">{copied ? 'Enlace copiado' : 'Copiar enlace para redes'}</button><a href={socialUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#4B5563', fontSize: 13, padding: '12px 0' }}>Ver bienvenida ↗</a></div>
+        </section>
       </div>
     </div>
   )
@@ -321,7 +335,8 @@ export default function DashboardPage() {
   }, [restaurant?.id, activeTab])
 
   const plan    = restaurant?.plan || 'free'
-  const menuUrl = restaurant ? `${window.location.origin}/carta/${restaurant.slug}` : ''
+  const socialUrl = restaurant ? `${window.location.origin}/carta/${restaurant.slug}` : ''
+  const menuUrl = socialUrl ? `${socialUrl}/menu` : ''
 
   if (loading) {
     return (
@@ -349,7 +364,7 @@ export default function DashboardPage() {
       {activeTab === 'stats' && <StatsPanel restaurantId={restaurant?.id} />}
       {activeTab === 'account' && <div className="md-content-card"><AccountPanel /></div>}
       {!restaurant && ['categories', 'dishes', 'slides', 'reservations'].includes(activeTab) && <section className="md-empty"><h2>Primero crea tu restaurante</h2><p>Después podrás gestionar todos los detalles de tu carta.</p><button type="button" className="md-primary" onClick={() => setActiveTab('restaurant')}>Configurar restaurante</button></section>}
-      {showQR && menuUrl && <QRModal url={menuUrl} onClose={() => setShowQR(false)} />}
+      {showQR && menuUrl && <QRModal url={menuUrl} socialUrl={socialUrl} onClose={() => setShowQR(false)} />}
       {showCustomize && restaurant && <CustomizeModal restaurant={restaurant} user={user} onClose={() => setShowCustomize(false)} onUpdate={updated => { setRestaurant(updated); setShowCustomize(false) }} />}
     </DashboardLayout>
   )

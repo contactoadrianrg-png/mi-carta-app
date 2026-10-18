@@ -1,0 +1,43 @@
+.restaurant-entry{min-height:100vh;min-height:100svh;background:#f3f0eb;padding:48px 32px;display:grid;place-items:center;color:#28251f;font-family:inherit}
+.restaurant-entry *{box-sizing:border-box}
+.restaurant-entry-card{width:100%;max-width:1120px;min-height:650px;display:grid;grid-template-columns:1.08fr 1fr;background:#fffdf9;border-radius:28px;overflow:hidden;box-shadow:0 24px 90px #30241713}
+.restaurant-entry-hero{position:relative;isolation:isolate;display:flex;align-items:flex-end;padding:44px;min-width:0;background:#25251f}
+.restaurant-entry-photo,.restaurant-entry-shade{position:absolute;inset:0;width:100%;height:100%;z-index:-1}
+.restaurant-entry-photo{object-fit:cover;object-position:center}
+.restaurant-entry-shade{background:linear-gradient(180deg,#16140f18 8%,#16140f12 35%,#16140fdd 100%)}
+.restaurant-entry-hero.without-image{background:radial-gradient(ellipse at 90% 10%,#ffffff21,transparent 65%),var(--entry-accent)}
+.restaurant-entry-tag{position:absolute;top:30px;left:30px;display:inline-flex;align-items:center;gap:8px;padding:8px 13px;border:1px solid #ffffff50;border-radius:30px;background:#1a1a1a88;color:#fff;font-size:11px;font-weight:500;backdrop-filter:blur(12px)}
+.restaurant-entry-tag>span{height:5px;width:5px;border-radius:50%;background:#fff}
+.restaurant-entry-identity{color:#fff;width:100%;overflow-wrap:anywhere}
+.restaurant-entry-logo,.restaurant-entry-initial{width:70px;height:70px;border-radius:18px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;background:#fff;box-shadow:0 6px 24px #0002;border:3px solid #fff}
+.restaurant-entry-logo{object-fit:contain}
+.restaurant-entry-initial{font:38px/1 Georgia,'Times New Roman',serif;color:#28251f}
+.restaurant-entry-identity h1{font:400 clamp(30px,3.7vw,48px)/1.1 Georgia,'Times New Roman',serif;letter-spacing:-.025em;margin:0;text-shadow:0 2px 15px #0003}
+.restaurant-entry-identity p{font-size:14px;line-height:1.6;color:#fffffff0;margin:12px 0 0;max-width:380px}
+.restaurant-entry-content{padding:64px 40px 36px;display:flex;flex-direction:column;justify-content:center;min-width:0;background:#fffdf9}
+.restaurant-entry-intro h2{font:400 clamp(29px,3vw,39px)/1.15 Georgia,'Times New Roman',serif;letter-spacing:-.035em;margin:0 0 14px}
+.restaurant-entry-intro>p{font-size:13px;color:#6c665c;line-height:1.65;margin:0}
+.restaurant-entry-actions{display:grid;gap:15px;margin-top:34px}
+.restaurant-entry-action{min-height:96px;border-radius:18px;padding:20px;display:flex;align-items:center;gap:16px;text-decoration:none;transition:transform .18s ease,box-shadow .18s ease;border:1px solid transparent}
+.restaurant-entry-action.primary{background:var(--entry-accent);color:#fff;box-shadow:0 8px 18px #28251f0c}
+.restaurant-entry-action.secondary{background:#fffdf9;border-color:#d6cdbf;color:#28251f}
+.restaurant-entry-action.unavailable{background:#f4f2ed;color:#6b655b;border-color:#ded8cd}
+.restaurant-entry-action-icon{display:grid;place-items:center;width:30px;flex-shrink:0}
+.restaurant-entry-action.secondary .restaurant-entry-action-icon,.restaurant-entry-action.secondary>svg{color:var(--entry-accent)}
+.restaurant-entry-action>span:nth-child(2){min-width:0;flex:1}
+.restaurant-entry-action strong{display:block;font:400 21px/1.25 Georgia,'Times New Roman',serif}
+.restaurant-entry-action small{display:block;font-size:11px;line-height:1.5;margin-top:5px}
+.restaurant-entry-action>svg{flex-shrink:0}
+.restaurant-entry-action:hover{transform:translateY(-2px);box-shadow:0 10px 24px #28251f12}
+.restaurant-entry-action:focus-visible{outline:3px solid #28251f;outline-offset:4px}
+.restaurant-entry-footer{display:flex;align-items:center;justify-content:center;gap:16px;font:12px/1.5 Georgia,'Times New Roman',serif;color:#777167;padding-top:68px}
+.restaurant-entry-footer>span:empty{width:70px;height:1px;background:#e8e1d6}
+.restaurant-entry-state{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:32px;background:#fffdf9;text-align:center;color:#777467}
+.restaurant-entry-state h1{font-size:22px;color:#28251f;font-weight:700;margin:0}
+.restaurant-entry-state p{font-size:14px;margin:0}
+.restaurant-entry-state button{min-height:48px;border:1px solid #d7d2c7;border-radius:12px;padding:12px 24px;color:#28251f;background:#fff}
+.restaurant-entry-spinner{height:32px;width:32px;border:2px solid #e5e1d8;border-top-color:#777467;border-radius:50%;animation:entry-spin .8s linear infinite}
+@keyframes entry-spin{to{transform:rotate(360deg)}}
+@media(max-width:767px){.restaurant-entry{padding:0;display:block;background:#fffdf9}.restaurant-entry-card{border-radius:0;box-shadow:none;grid-template-columns:1fr;min-height:100svh;grid-template-rows:auto 1fr}.restaurant-entry-hero{min-height:46svh;padding:90px 25px 48px}.restaurant-entry-tag{top:22px;left:24px}.restaurant-entry-logo,.restaurant-entry-initial{height:56px;width:56px;border-radius:14px;margin-bottom:15px}.restaurant-entry-initial{font-size:32px}.restaurant-entry-identity h1{font-size:clamp(29px,8.8vw,40px)}.restaurant-entry-identity p{font-size:12px;margin-top:9px}.restaurant-entry-content{position:relative;border-radius:26px 26px 0 0;margin-top:-24px;padding:27px 24px 24px;justify-content:flex-start}.restaurant-entry-intro h2{font-size:30px;line-height:1.12;margin:0 0 11px}.restaurant-entry-intro>p{font-size:12px}.restaurant-entry-actions{margin-top:23px;gap:13px}.restaurant-entry-action{min-height:86px;padding:17px;gap:13px}.restaurant-entry-action strong{font-size:21px}.restaurant-entry-action small{font-size:10px}.restaurant-entry-footer{padding-top:30px}}
+@media(min-width:768px) and (max-width:1000px){.restaurant-entry{padding:28px}.restaurant-entry-card{min-height:600px}.restaurant-entry-content{padding:40px 26px 28px}.restaurant-entry-hero{padding:30px}.restaurant-entry-action{gap:10px;padding:14px}.restaurant-entry-action strong{font-size:19px}.restaurant-entry-action small{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.restaurant-entry-action{transition:none}.restaurant-entry-spinner{animation:none}}
