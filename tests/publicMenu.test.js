@@ -168,14 +168,19 @@ test('el menú del día abre su ficha, mantiene sus platos fuera de la carta y s
   const data = setup({ restaurants: { data: { ...restaurant, daily_menu: daily }, error: null } }); let tree
   try {
     await act(async () => { tree = create(view()) })
-    assert.ok(button(tree, 'Menú del día'))
+    const nav = tree.root.findByProps({ 'aria-label': 'Categorías de la carta' })
+    assert.deepEqual(nav.findAllByType('button').map(node => node.children.join('')), ['Todos', 'Menú del día', 'Entrantes'])
+    assert.equal(button(tree, 'Menú del día').props['aria-haspopup'], 'dialog')
     assert.doesNotMatch(text(tree), /Sopa exclusiva del menú/)
+    await act(async () => button(tree, 'Entrantes').props.onClick())
     await act(async () => button(tree, 'Menú del día').props.onClick())
+    assert.equal(button(tree, 'Menú del día').props['aria-pressed'], true)
     assert.equal(tree.root.findByProps({ role: 'dialog' }).props['aria-modal'], 'true')
     assert.match(text(tree), /Sopa exclusiva del menú/)
     assert.match(text(tree), /Pollo del menú/)
     assert.equal(data.inserts.filter(entry => entry.table === 'plate_views').length, 0)
     await act(async () => data.listeners.get('keydown')({ key: 'Escape', preventDefault() {} }))
+    assert.equal(button(tree, 'Entrantes').props['aria-pressed'], true)
     assert.doesNotMatch(text(tree), /Sopa exclusiva del menú/)
     data.state.restaurants.data = { ...restaurant, daily_menu: { ...daily, enabled: false } }
     await act(async () => data.channels[0].handlers[2]())

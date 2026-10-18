@@ -5,10 +5,14 @@ import { textOnAccent } from '../../lib/menuContrast'
 
 const FALLBACK = { accent: '#FF6B35', bg: '#FFF8F2', bgTint: '#FFF8F2' }
 
-export default function CategoryTabs({ categories = [], activeId = null, onChange, theme }) {
+export default function CategoryTabs({ categories = [], activeId = null, onChange, theme, onOpenDailyMenu, dailyMenuOpen = false }) {
   const t = { ...FALLBACK, ...(theme || {}) }
 
-  const tabs = [{ id: null, name: 'Todos' }, ...categories]
+  const tabs = [
+    { id: null, name: 'Todos' },
+    ...(onOpenDailyMenu ? [{ id: 'daily-menu', name: 'Menú del día', onClick: onOpenDailyMenu }] : []),
+    ...categories,
+  ]
 
   return (
     <nav
@@ -18,13 +22,14 @@ export default function CategoryTabs({ categories = [], activeId = null, onChang
     >
       <ul className="flex items-center gap-2 px-4 py-3 w-max">
         {tabs.map((cat) => {
-          const active = cat.id === activeId
+          const active = cat.onClick ? dailyMenuOpen : !dailyMenuOpen && cat.id === activeId
           return (
             <li key={cat.id ?? 'todos'}>
               <button
                 type="button"
-                onClick={() => onChange?.(cat.id)}
+                onClick={cat.onClick ?? (() => onChange?.(cat.id))}
                 aria-pressed={active}
+                aria-haspopup={cat.onClick ? 'dialog' : undefined}
                 className="whitespace-nowrap rounded-full px-4 py-2 text-[13px] font-semibold transition-colors"
                 style={
                   active
