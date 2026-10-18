@@ -66,10 +66,10 @@ export default function DishDetailSheet({ dish, onClose, theme, isFavorite = fal
 
         {/* Contenido */}
         <div className="flex-1 overflow-y-auto bg-white rounded-t-3xl -mt-5 relative z-10 px-5 pt-6 pb-28">
-          <h2 id="dish-detail-title" className="font-bold text-[#1A1A1A]" style={{ fontSize: 26 }}>{dish.name}</h2>
+          <h2 id="dish-detail-title" className="font-extrabold text-[#1A1A1A] leading-tight break-words" style={{ fontSize: 30 }}>{dish.name}</h2>
 
           <div className="mt-4 flex items-baseline gap-3">
-            <p className="font-bold" style={{ fontSize: 24, color: accentOnWhite(accent) }}>
+            <p className="font-extrabold" style={{ fontSize: 27, color: accentOnWhite(accent) }}>
               {Number(dish.price).toFixed(2)}€
             </p>
             {Number(dish.original_price) > Number(dish.price) && (
@@ -80,7 +80,7 @@ export default function DishDetailSheet({ dish, onClose, theme, isFavorite = fal
           </div>
 
           {dish.description && (
-            <p className="text-gray-500 mt-2 leading-relaxed" style={{ fontSize: 15 }}>{dish.description}</p>
+            <p className="text-gray-600 mt-2 leading-relaxed" style={{ fontSize: 16 }}>{dish.description}</p>
           )}
 
           {children}

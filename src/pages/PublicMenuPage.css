@@ -252,8 +252,8 @@
   flex:1;
 }
 .messa-dish-card-copy h3 {
-  font-size:14px;
-  font-weight:750;
+  font-size:18px;
+  font-weight:800;
   line-height:1.4;
   display:-webkit-box;
   -webkit-line-clamp:2;
@@ -261,9 +261,9 @@
   overflow:hidden;
 }
 .messa-dish-card-copy>p {
-  font-size:12px;
+  font-size:14px;
   line-height:1.6;
-  opacity:.6;
+  opacity:.8;
   margin-top:6px;
   display:-webkit-box;
   -webkit-line-clamp:2;
@@ -285,7 +285,7 @@
   gap:6px;
 }
 .messa-dish-card-bottom strong {
-  font-size:16px;
+  font-size:20px;
   font-weight:800;
 }
 .messa-dish-card-bottom del {
@@ -350,7 +350,7 @@
     gap:10px;
   }
   .messa-menu-section-heading h2 {
-    font-size:20px;
+    font-size:24px;
   }
   .messa-menu-section-heading p {
     font-size:8px;
@@ -377,13 +377,13 @@
     padding:11px;
   }
   .messa-dish-card-copy h3 {
-    font-size:13px;
+    font-size:17px;
   }
   .messa-dish-card-copy>p {
-    font-size:11px;
+    font-size:14px;
   }
   .messa-dish-card-bottom strong {
-    font-size:15px;
+    font-size:19px;
   }
   .messa-dish-label {
     top:7px;
@@ -524,8 +524,8 @@
 .messa-daily-card>svg{flex-shrink:0}.messa-daily-card:focus-visible{outline:3px solid var(--menu-accent);outline-offset:3px}
 .messa-daily-sections{margin-top:22px;color:#262626}.messa-daily-sections>section+section{margin-top:24px}
 .messa-daily-section-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;flex-wrap:wrap}
-.messa-daily-section-heading h3,.messa-daily-includes h3{font-size:18px;font-weight:750}.messa-daily-section-heading>span{font-size:11px;color:#757575}
-.messa-daily-sections ul{list-style:none;padding:0;margin:0}.messa-daily-sections li{display:flex;align-items:baseline;gap:10px;padding:10px 0;border-bottom:1px solid #f0eeea;font-size:14px;line-height:1.6;overflow-wrap:anywhere}
+.messa-daily-section-heading h3,.messa-daily-includes h3{font-size:21px;font-weight:800}.messa-daily-section-heading>span{font-size:13px;color:#626262}
+.messa-daily-sections ul{list-style:none;padding:0;margin:0}.messa-daily-sections li{display:flex;align-items:baseline;gap:10px;padding:12px 0;border-bottom:1px solid #f0eeea;font-size:17px;font-weight:700;line-height:1.5;overflow-wrap:anywhere}
 .messa-daily-sections li>span{width:5px;height:5px;border-radius:50%;flex-shrink:0}.messa-daily-includes{background:#faf7f1;padding:16px;border-radius:14px}
-.messa-daily-includes p{font-size:14px;line-height:1.6;color:#666;margin-top:6px;overflow-wrap:anywhere}.messa-daily-availability{display:flex;align-items:center;gap:8px;font-size:12px;color:#6b6b6b;margin-bottom:20px}.messa-daily-availability>svg{flex-shrink:0}
+.messa-daily-includes p{font-size:16px;font-weight:600;line-height:1.6;color:#444;margin-top:6px;overflow-wrap:anywhere}.messa-daily-availability{display:flex;align-items:center;gap:8px;font-size:14px;color:#555;margin-bottom:20px}.messa-daily-availability>svg{flex-shrink:0}
 @media(max-width:380px){.messa-daily-card{gap:11px;padding:11px}.messa-daily-card-image{width:72px;height:100px}.messa-daily-card-copy>strong{font-size:18px}}
