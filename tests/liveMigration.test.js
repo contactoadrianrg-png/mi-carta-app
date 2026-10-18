@@ -4,6 +4,9 @@ import { readFile } from 'node:fs/promises'
 import { PGlite } from '@electric-sql/pglite'
 import { restaurantProfileUpdates } from '../src/lib/restaurantProfile.js'
 
+// Use synthetic identities when reproducing administrative email checks in memory.
+const readFixtureSQL = async (path) => (await readFile(new URL(path, import.meta.url), 'utf8')).replace(/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/g, 'admin@example.test')
+
 test('la migración es compatible con el esquema real y conserva sus filas', async (t) => {
   const db = new PGlite()
   const admin = '11111111-1111-4111-8111-111111111111'
@@ -23,9 +26,9 @@ test('la migración es compatible con el esquema real y conserva sus filas', asy
         select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid;
       $$;
     `)
-    await db.exec(await readFile(new URL('./fixtures/live-schema-20261018.sql', import.meta.url), 'utf8'))
-    await db.exec(await readFile(new URL('./fixtures/updated-at-20261018.sql', import.meta.url), 'utf8'))
-    await db.query('insert into auth.users values ($1,$2),($3,$4),($5,$6)', [admin, 'infocreativeadrian@gmail.com', owner, 'owner@example.com', other, 'other@example.com'])
+    await db.exec(await readFixtureSQL('./fixtures/live-schema-20261018.sql'))
+    await db.exec(await readFixtureSQL('./fixtures/updated-at-20261018.sql'))
+    await db.query('insert into auth.users values ($1,$2),($3,$4),($5,$6)', [admin, 'admin@example.test', owner, 'owner@example.test', other, 'other@example.test'])
     await db.query("insert into public.restaurants (id,owner_id,name,slug,plan,theme) values ($1,$2,'Uno','uno','premium','jungle'),($3,$4,'Dos','dos','pro','default')", [restaurant, owner, another, other])
     await db.query("insert into public.categories (id,restaurant_id,name) values ($1,$2,'Entrantes')", [category, restaurant])
     await db.query("insert into public.dishes (id,restaurant_id,category_id,name,price) values ($1,$2,$3,'Ensalada',8.25)", [dish, restaurant, category])
@@ -48,10 +51,11 @@ test('la migración es compatible con el esquema real y conserva sus filas', asy
         await db.query('select public.admin_set_restaurant_active($1,false)', [restaurant])
       })
     })
-    await db.exec(await readFile(new URL('../supabase/migrations/20261018091900_repair_menu_and_admin_permissions.sql', import.meta.url), 'utf8'))
-    await db.exec(await readFile(new URL('../supabase/migrations/20261018092206_repair_restaurant_contact_fields.sql', import.meta.url), 'utf8'))
+    await db.exec(await readFixtureSQL('../supabase/migrations/20261018091900_repair_menu_and_admin_permissions.sql'))
+    await db.exec(await readFixtureSQL('../supabase/migrations/20261018092206_repair_restaurant_contact_fields.sql'))
 
-    await db.exec(await readFile(new URL('../supabase/migrations/20261018110550_add_restaurant_menu_slides.sql', import.meta.url), 'utf8'))
+    await db.exec(await readFixtureSQL('../supabase/migrations/20261018110550_add_restaurant_menu_slides.sql'))
+    await db.exec(await readFixtureSQL('../supabase/migrations/20261018115641_add_restaurant_dish_reordering.sql'))
 
     await t.test('no cambia nombres, precios, planes, temas ni filas existentes', async () => {
       const after = await snapshot()
@@ -95,6 +99,29 @@ test('la migración es compatible con el esquema real y conserva sus filas', asy
       await asRole('anon', null, async () => { await assert.rejects(db.query('update public.restaurants set menu_slides=$1 where id=$2', [slides, restaurant]), /permission denied/) })
       await asRole('authenticated', owner, async () => { await assert.rejects(db.query('update public.restaurants set menu_slides=$1 where id=$2', [JSON.stringify(Array(7).fill({ image_url: 'https://example.com/image.jpg' })), restaurant]), /constraint/) })
       await asRole('authenticated', owner, async () => { await assert.rejects(db.query('update public.restaurants set menu_slides=$1 where id=$2', ['{}', restaurant]), /constraint|cannot get array length/) })
+    })
+    await t.test('reordena la lista completa sin alterar precios ni disponibilidad y rechaza listas inválidas', async () => {
+      await asRole('authenticated', owner, async () => {
+        const extra = (await db.query("insert into public.dishes (restaurant_id,name,price,available,sort_order) values ($1,'Sopa',5,true,2),($1,'Oculto',9,false,4) returning id", [restaurant])).rows
+        const ids = [extra[1].id, dish, extra[0].id]
+        const before = (await db.query('select id,name,price,available from public.dishes where restaurant_id=$1 order by id', [restaurant])).rows
+        await db.query('select public.reorder_restaurant_dishes($1,$2::uuid[])', [restaurant, ids])
+        const ordered = (await db.query('select id,sort_order from public.dishes where restaurant_id=$1 order by sort_order', [restaurant])).rows
+        assert.deepEqual(ordered.map(row => row.id), ids)
+        assert.deepEqual(ordered.map(row => row.sort_order), [0, 1, 2])
+        assert.deepEqual((await db.query('select id,name,price,available from public.dishes where restaurant_id=$1 order by id', [restaurant])).rows, before)
+        for (const invalid of [[dish,dish,extra[0].id], [dish], [dish,null,extra[0].id], [dish,'88888888-8888-4888-8888-888888888888',extra[0].id]]) {
+          await db.exec('savepoint invalid_order')
+          await assert.rejects(db.query('select public.reorder_restaurant_dishes($1,$2::uuid[])', [restaurant, invalid]), /repetidos|ha cambiado|no es válido/)
+          await db.exec('rollback to savepoint invalid_order')
+          assert.deepEqual((await db.query('select id,sort_order from public.dishes where restaurant_id=$1 order by sort_order', [restaurant])).rows, ordered)
+        }
+      })
+    })
+    await t.test('reordenar solo está permitido al propietario autenticado', async () => {
+      await asRole('anon', null, async () => { await assert.rejects(db.query('select public.reorder_restaurant_dishes($1,$2::uuid[])', [restaurant,[dish]]), /permission denied/) })
+      await asRole('authenticated', other, async () => { await assert.rejects(db.query('select public.reorder_restaurant_dishes($1,$2::uuid[])', [restaurant,[dish]]), /No tienes permiso/) })
+      await asRole('authenticated', null, async () => { await assert.rejects(db.query('select public.reorder_restaurant_dishes($1,$2::uuid[])', [restaurant,[dish]]), /No tienes permiso/) })
     })
     await t.test('acepta estadísticas válidas y solo el propietario puede leerlas', async () => {
       await db.exec('begin')

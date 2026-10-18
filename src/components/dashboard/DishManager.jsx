@@ -4,7 +4,8 @@ import { useAuth } from '../../context/AuthContext'
 import toast from 'react-hot-toast'
 import DishForm from './DishForm'
 import ImportMenuModal from './ImportMenuModal'
-import { Plus, Pencil, Trash2, Eye, EyeOff, UtensilsCrossed, Star, TrendingUp, Tag, Flame, Sparkles, Lock } from 'lucide-react'
+import DishOrderEditor from './DishOrderEditor'
+import { Plus, Pencil, Trash2, Eye, EyeOff, UtensilsCrossed, Star, TrendingUp, Tag, Flame, Sparkles, Lock, ArrowUpDown } from 'lucide-react'
 
 const FREE_DISH_LIMIT = 20
 
@@ -16,6 +17,7 @@ export default function DishManager({ restaurantId, plan = 'free' }) {
   const [showForm, setShowForm] = useState(false)
   const [editingDish, setEditingDish] = useState(null)
   const [showImport, setShowImport] = useState(false)
+  const [reordering, setReordering] = useState(false)
 
   const isFree = plan === 'free'
   const atFreeLimit = isFree && dishes.length >= FREE_DISH_LIMIT
@@ -32,6 +34,14 @@ export default function DishManager({ restaurantId, plan = 'free' }) {
   }, [restaurantId])
 
   useEffect(() => { load() }, [load])
+
+  async function saveOrder(ordered) {
+    const { error } = await supabase.rpc('reorder_restaurant_dishes', { p_restaurant_id: restaurantId, p_dish_ids: ordered.map(dish => dish.id) })
+    if (error) throw error
+    setDishes(ordered.map((dish, index) => ({ ...dish, sort_order: index })))
+    setReordering(false)
+    toast.success('Orden de los platos guardado')
+  }
 
   const toggleSpecial = async (dish) => {
     if (isFree) {
@@ -117,6 +127,8 @@ export default function DishManager({ restaurantId, plan = 'free' }) {
     </div>
   )
 
+  if (reordering) return <DishOrderEditor dishes={dishes} onSave={saveOrder} onCancel={() => setReordering(false)} onReload={() => { setReordering(false); load() }} />
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -132,7 +144,8 @@ export default function DishManager({ restaurantId, plan = 'free' }) {
             </span>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {dishes.length > 1 && <button type="button" onClick={() => setReordering(true)} disabled={showForm || showImport} className="flex items-center gap-2 min-h-11 font-semibold px-4 py-2.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 text-sm disabled:opacity-40"><ArrowUpDown size={16} />Reordenar</button>}
           {/* Importar carta con IA */}
           <button
             onClick={handleImportClick}
