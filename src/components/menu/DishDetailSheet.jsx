@@ -44,10 +44,10 @@ export default function DishDetailSheet({ dish, onClose, theme, isFavorite = fal
       <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="dish-detail-title" tabIndex={-1}
         className="messa-dish-dialog fixed inset-x-0 bottom-0 z-50 flex flex-col overflow-hidden shadow-2xl animate-slide-up outline-none">
 
-        {/* Foto — 45% altura */}
+        {/* La foto llena todo el recuadro superior, con recorte centrado. */}
         <div className="messa-dish-detail-hero relative" style={{ background: `linear-gradient(145deg, ${accent}, ${bgTint})` }}>
           {dish.image_url && dish.image_url !== failedImage ? (
-            <img src={dish.image_url} alt={dish.name} className="w-full h-full object-contain p-5" onError={() => setFailedImage(dish.image_url)} />
+            <img src={dish.image_url} alt={dish.name} className="w-full h-full object-cover object-center" onError={() => setFailedImage(dish.image_url)} />
           ) : (
             <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: bgTint }}>
               <span className="text-7xl opacity-20">🍽️</span>
