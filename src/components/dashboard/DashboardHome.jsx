@@ -8,6 +8,7 @@ export default function DashboardHome({ restaurant, dishCount, categoryCount, pl
   const banner = restaurant.banner_url && restaurant.banner_url !== failedBanner ? restaurant.banner_url : null
   const actions = [
     { id: 'dishes', title: 'Platos y categorías', detail: 'Edita tu carta', Icon: UtensilsCrossed, onClick: () => onNavigate('dishes') },
+    { id: 'daily-menu', title: 'Menú del día', detail: 'Platos a elegir y precio', Icon: UtensilsCrossed, onClick: () => onNavigate('daily-menu') },
     { id: 'customize', title: 'Nombre y logo', detail: 'Tu identidad', Icon: Brush, onClick: onShowCustomize },
     { id: 'slides', title: 'Destacado', detail: 'Imágenes y promociones', Icon: Tags, onClick: () => onNavigate('slides'), featured: true },
     { id: 'reservations', title: 'Reservas y redes', detail: 'Conecta con tus clientes', Icon: Share2, onClick: () => onNavigate('reservations') },

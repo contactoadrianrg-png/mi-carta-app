@@ -42,7 +42,7 @@ test('la migración es compatible con el esquema real y conserva sus filas', asy
       } finally { await db.exec('rollback') }
     }
     const snapshot = async () => (await db.query(`select jsonb_build_object(
-      'restaurants',(select jsonb_agg(to_jsonb(r) - 'updated_at' - 'address') from public.restaurants r),
+      'restaurants',(select jsonb_agg(to_jsonb(r) - 'updated_at' - 'address' - 'daily_menu') from public.restaurants r),
       'categories',(select jsonb_agg(to_jsonb(c) - 'parent_id') from public.categories c),
       'dishes',(select jsonb_agg(to_jsonb(d) - 'allergens') from public.dishes d)) as data`)).rows[0].data
     const before = await snapshot()
@@ -56,6 +56,7 @@ test('la migración es compatible con el esquema real y conserva sus filas', asy
 
     await db.exec(await readFixtureSQL('../supabase/migrations/20261018110550_add_restaurant_menu_slides.sql'))
     await db.exec(await readFixtureSQL('../supabase/migrations/20261018120855_add_restaurant_dish_reordering.sql'))
+    await db.exec(await readFixtureSQL('../supabase/migrations/20261018145838_add_restaurant_daily_menu.sql'))
 
     await t.test('no cambia nombres, precios, planes, temas ni filas existentes', async () => {
       const after = await snapshot()
@@ -99,6 +100,24 @@ test('la migración es compatible con el esquema real y conserva sus filas', asy
       await asRole('anon', null, async () => { await assert.rejects(db.query('update public.restaurants set menu_slides=$1 where id=$2', [slides, restaurant]), /permission denied/) })
       await asRole('authenticated', owner, async () => { await assert.rejects(db.query('update public.restaurants set menu_slides=$1 where id=$2', [JSON.stringify(Array(7).fill({ image_url: 'https://example.com/image.jpg' })), restaurant]), /constraint/) })
       await asRole('authenticated', owner, async () => { await assert.rejects(db.query('update public.restaurants set menu_slides=$1 where id=$2', ['{}', restaurant]), /constraint|cannot get array length/) })
+    })
+    await t.test('el menú del día es independiente, solo lo edita su propietario y valida sus platos y precio', async () => {
+      const menu = { enabled: true, title: 'Menú del día', description: '', price: 12.5, image_url: '', firsts: ['Sopa del día'], seconds: ['Pollo guisado'], desserts: ['Flan'], includes: 'Bebida y pan', availability: 'Lunes a viernes' }
+      const beforeDishes = (await db.query('select * from public.dishes order by id')).rows
+      await asRole('authenticated', owner, async () => {
+        const saved = await db.query('update public.restaurants set daily_menu=$1 where id=$2 returning daily_menu', [JSON.stringify(menu), restaurant])
+        assert.deepEqual(saved.rows[0].daily_menu, menu)
+        assert.equal((await db.query('update public.restaurants set daily_menu=$1 where id=$2 returning id', [JSON.stringify(menu), another])).rows.length, 0)
+        assert.deepEqual((await db.query('select * from public.dishes order by id')).rows, beforeDishes)
+      })
+      await asRole('anon', null, async () => { await assert.rejects(db.query('update public.restaurants set daily_menu=$1 where id=$2', [JSON.stringify(menu), restaurant]), /permission denied/) })
+      for (const invalid of [{ ...menu, price: -2 }, { ...menu, price: 12.555 }, { ...menu, price: null }, { ...menu, firsts: Array(11).fill('Sopa') }, { ...menu, firsts: [null] }, { ...menu, firsts: [''] }, { ...menu, firsts: [], seconds: [] }, { ...menu, image_url: 'javascript:alert(1)' }, { ...menu, enabled: 'true' }]) {
+        await asRole('authenticated', owner, async () => { await assert.rejects(db.query('update public.restaurants set daily_menu=$1 where id=$2', [JSON.stringify(invalid), restaurant]), /constraint/) })
+      }
+      await asRole('authenticated', owner, async () => {
+        const hidden = { ...menu, enabled: false, price: null, firsts: [], seconds: [], desserts: [] }
+        await db.query('update public.restaurants set daily_menu=$1 where id=$2', [JSON.stringify(hidden), restaurant])
+      })
     })
     await t.test('reordena la lista completa sin alterar precios ni disponibilidad y rechaza listas inválidas', async () => {
       await asRole('authenticated', owner, async () => {

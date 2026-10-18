@@ -12,6 +12,7 @@ import toast from 'react-hot-toast'
 import DashboardLayout from '../components/dashboard/DashboardLayout'
 import DashboardHome from '../components/dashboard/DashboardHome'
 import MenuSlidesEditor from '../components/dashboard/MenuSlidesEditor'
+import DailyMenuEditor from '../components/dashboard/DailyMenuEditor'
 import ReservationsPanel from '../components/dashboard/ReservationsPanel'
 import { IconBolt, IconExternalLink, IconX, IconCamera } from '@tabler/icons-react'
 
@@ -358,12 +359,13 @@ export default function DashboardPage() {
       {activeTab === 'restaurant' && <RestaurantEditor restaurant={restaurant} onUpdate={setRestaurant} />}
       {activeTab === 'categories' && restaurant && <div className="md-content-card"><CategoryManager restaurantId={restaurant.id} /></div>}
       {activeTab === 'dishes' && restaurant && <div className="md-content-card"><DishManager restaurantId={restaurant.id} plan={plan} /></div>}
+      {activeTab === 'daily-menu' && restaurant && <div className="md-content-card"><DailyMenuEditor restaurant={restaurant} userId={user?.id} onUpdate={setRestaurant} /></div>}
       {activeTab === 'slides' && restaurant && (plan === 'free' ? gate : <div className="md-content-card md-slides-content"><h2>Imágenes y ofertas de tu carta</h2><p>Tu próxima oferta, justo donde tus clientes la ven.</p><MenuSlidesEditor restaurant={restaurant} userId={user?.id} onUpdate={setRestaurant} /></div>)}
       {activeTab === 'reservations' && restaurant && (plan === 'free' ? gate : <div className="md-connections"><ReservationsPanel restaurant={restaurant} onUpdate={setRestaurant} /><SocialsPanel restaurant={restaurant} onUpdate={setRestaurant} /></div>)}
       {activeTab === 'socials' && <SocialsPanel restaurant={restaurant} onUpdate={setRestaurant} />}
       {activeTab === 'stats' && <StatsPanel restaurantId={restaurant?.id} />}
       {activeTab === 'account' && <div className="md-content-card"><AccountPanel /></div>}
-      {!restaurant && ['categories', 'dishes', 'slides', 'reservations'].includes(activeTab) && <section className="md-empty"><h2>Primero crea tu restaurante</h2><p>Después podrás gestionar todos los detalles de tu carta.</p><button type="button" className="md-primary" onClick={() => setActiveTab('restaurant')}>Configurar restaurante</button></section>}
+      {!restaurant && ['categories', 'dishes', 'daily-menu', 'slides', 'reservations'].includes(activeTab) && <section className="md-empty"><h2>Primero crea tu restaurante</h2><p>Después podrás gestionar todos los detalles de tu carta.</p><button type="button" className="md-primary" onClick={() => setActiveTab('restaurant')}>Configurar restaurante</button></section>}
       {showQR && menuUrl && <QRModal url={menuUrl} socialUrl={socialUrl} onClose={() => setShowQR(false)} />}
       {showCustomize && restaurant && <CustomizeModal restaurant={restaurant} user={user} onClose={() => setShowCustomize(false)} onUpdate={updated => { setRestaurant(updated); setShowCustomize(false) }} />}
     </DashboardLayout>

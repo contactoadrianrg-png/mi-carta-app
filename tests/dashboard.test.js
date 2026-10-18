@@ -41,6 +41,9 @@ test('los accesos abren platos, categorías, destacado, identidad, reservas y QR
   try {
     await act(async () => { tree = create(React.createElement(Dashboard)) })
     assert.ok(counts.find(count => count.table === 'dishes' && count.filters.available === true))
+    await act(async () => button(tree, 'Menú del día').props.onClick())
+    assert.equal(tree.root.findByProps({ 'aria-label': 'Primeros del menú' }).type, 'textarea')
+    await act(async () => button(tree, 'Inicio').props.onClick())
     await act(async () => button(tree, 'Platos y categorías').props.onClick())
     assert.equal(tree.root.findByProps({ 'data-widget': 'DishManager' }).type, 'div')
     await act(async () => button(tree, 'Categorías').props.onClick())

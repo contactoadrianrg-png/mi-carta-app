@@ -6,6 +6,7 @@ import { join } from 'node:path'
 import { build } from 'esbuild'
 import React from 'react'
 import { create, act } from 'react-test-renderer'
+import { emptyDailyMenu } from '../src/lib/dailyMenu.js'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 
 // Bundle the actual JSX, replacing only the external Supabase connection.
@@ -159,4 +160,26 @@ test('una carga que termina después de desmontar no abre suscripciones ni regis
   await act(async () => { resolve({ data: restaurant, error: null }) })
   assert.equal(data.channels.length, 0)
   assert.equal(data.inserts.length, 0)
+})
+
+
+test('el menú del día abre su ficha, mantiene sus platos fuera de la carta y se oculta al desactivarlo', async () => {
+  const daily = { ...emptyDailyMenu(), enabled: true, price: 12.5, firsts: ['Sopa exclusiva del menú'], seconds: ['Pollo del menú'], includes: 'Bebida y postre' }
+  const data = setup({ restaurants: { data: { ...restaurant, daily_menu: daily }, error: null } }); let tree
+  try {
+    await act(async () => { tree = create(view()) })
+    assert.ok(button(tree, 'Menú del día'))
+    assert.doesNotMatch(text(tree), /Sopa exclusiva del menú/)
+    await act(async () => button(tree, 'Menú del día').props.onClick())
+    assert.equal(tree.root.findByProps({ role: 'dialog' }).props['aria-modal'], 'true')
+    assert.match(text(tree), /Sopa exclusiva del menú/)
+    assert.match(text(tree), /Pollo del menú/)
+    assert.equal(data.inserts.filter(entry => entry.table === 'plate_views').length, 0)
+    await act(async () => data.listeners.get('keydown')({ key: 'Escape', preventDefault() {} }))
+    assert.doesNotMatch(text(tree), /Sopa exclusiva del menú/)
+    data.state.restaurants.data = { ...restaurant, daily_menu: { ...daily, enabled: false } }
+    await act(async () => data.channels[0].handlers[2]())
+    assert.equal(button(tree, 'Menú del día'), undefined)
+    assert.match(text(tree), /Ensalada/)
+  } finally { if (tree) await act(async () => tree.unmount()) }
 })

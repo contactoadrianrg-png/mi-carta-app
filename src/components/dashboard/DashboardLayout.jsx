@@ -6,6 +6,7 @@ export const SUPPORT_URL = 'https://wa.me/34674460692?text=Hola,%20necesito%20ay
 const SIDE_NAV = [
   { id: 'home', label: 'Inicio', Icon: Home },
   { id: 'dishes', label: 'Mi carta', Icon: UtensilsCrossed },
+  { id: 'daily-menu', label: 'Menú del día', Icon: UtensilsCrossed },
   { id: 'customize', label: 'Personalizar', Icon: Brush },
   { id: 'slides', label: 'Destacado', Icon: Tags },
   { id: 'reservations', label: 'Reservas y redes', Icon: CalendarDays },
@@ -18,7 +19,7 @@ const MOBILE_NAV = [
   { id: 'slides', label: 'Destacado', Icon: Tags },
   { id: 'account', label: 'Perfil', Icon: User },
 ]
-const TITLES = { home: 'Panel de control', dishes: 'Mi carta', categories: 'Mi carta', slides: 'Destacado', reservations: 'Reservas y redes', socials: 'Redes sociales', stats: 'Estadísticas', restaurant: 'Ajustes del restaurante', account: 'Mi cuenta' }
+const TITLES = { home: 'Panel de control', dishes: 'Mi carta', categories: 'Mi carta', 'daily-menu': 'Menú del día', slides: 'Destacado', reservations: 'Reservas y redes', socials: 'Redes sociales', stats: 'Estadísticas', restaurant: 'Ajustes del restaurante', account: 'Mi cuenta' }
 
 export function RestaurantAvatar({ restaurant }) {
   const [failed, setFailed] = useState(null)

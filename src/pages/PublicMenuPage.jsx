@@ -4,6 +4,8 @@ import { supabase } from '../lib/supabase'
 import DishDetailSheet from '../components/menu/DishDetailSheet'
 import RestaurantHeader from '../components/menu/RestaurantHeader'
 import MenuHighlights from '../components/menu/MenuHighlights'
+import { DailyMenuCard, DailyMenuSheet } from '../components/menu/DailyMenu'
+import { normalizeDailyMenu } from '../lib/dailyMenu'
 import './PublicMenuPage.css'
 import { normalizeMenuSlides } from '../lib/menuSlides'
 import CategoryTabs from '../components/menu/CategoryTabs'
@@ -26,10 +28,14 @@ export default function PublicMenuPage() {
   const [activeCategory, setActiveCategory] = useState(catId ?? null)
   const [showFavorites, setShowFavorites] = useState(false)
   const [selectedDish, setSelectedDish] = useState(null)
+  const [showDailyMenu, setShowDailyMenu] = useState(false)
   const [loadError, setLoadError] = useState(false)
   const [retry, setRetry] = useState(0)
   const [favorites, setFavorites] = useState(() => readMenuFavorites(slug))
   const closeDish = useCallback(() => setSelectedDish(null), [])
+  const closeDailyMenu = useCallback(() => setShowDailyMenu(false), [])
+  const dailyMenu = useMemo(() => normalizeDailyMenu(restaurant?.daily_menu), [restaurant?.daily_menu])
+  useEffect(() => { if (!dailyMenu?.enabled) setShowDailyMenu(false) }, [dailyMenu?.enabled])
 
   const trackPlateView = useCallback(async (restaurantId, dish) => {
     await supabase.from('plate_views').insert({
@@ -51,6 +57,7 @@ export default function PublicMenuPage() {
     setCategories([])
     setDishes([])
     setSelectedDish(null)
+    setShowDailyMenu(false)
     setShowFavorites(false)
     setFavorites(readMenuFavorites(slug))
 
@@ -99,6 +106,7 @@ export default function PublicMenuPage() {
   }, [restaurant?.theme])
 
   const handleDishClick = useCallback((dish) => {
+    setShowDailyMenu(false)
     setSelectedDish(dish)
     if (restaurant?.id) trackPlateView(restaurant.id, dish).catch(() => {})
   }, [restaurant, trackPlateView])
@@ -191,6 +199,7 @@ export default function PublicMenuPage() {
     <div className="messa-public-menu min-h-screen" style={{ backgroundColor: theme.bg, '--menu-bg': theme.bg, '--menu-tint': theme.bgTint, '--menu-accent': theme.accent, '--menu-text': theme.text ?? '#252a21', '--menu-card': theme.text ? theme.bgTint : '#ffffff', '--menu-border': theme.cardBorder ?? 'rgba(35,40,30,.09)' }}>
       <RestaurantHeader restaurant={restaurant} theme={theme} favoriteCount={planDishes.filter(dish => favorites.includes(dish.id)).length} showFavorites={showFavorites} onToggleFavorites={() => { setActiveCategory(null); setShowFavorites(value => !value) }} />
       {!showFavorites && <MenuHighlights slides={slides} />}
+      {!showFavorites && !activeCategory && dailyMenu?.enabled && <DailyMenuCard menu={dailyMenu} onOpen={() => { setSelectedDish(null); setShowDailyMenu(true) }} />}
       <div className="messa-menu-categories"><CategoryTabs categories={topCats} activeId={activeTab} onChange={setActiveCategory} theme={theme} /></div>
       <main className="messa-menu-main">
         {featured.length > 0 && <section className="messa-featured-section" aria-labelledby="featured-heading"><div className="messa-menu-section-heading"><div><p>LOS IMPRESCINDIBLES</p><h2 id="featured-heading">Platos destacados</h2></div></div><div className="messa-dishes-grid">{featured.map(dish => <DishGridCard key={dish.id} dish={dish} onClick={() => handleDishClick(dish)} theme={theme} isFavorite={favorites.includes(dish.id)} />)}</div></section>}
@@ -232,6 +241,7 @@ export default function PublicMenuPage() {
         <DishDetailSheet key={selectedDish.id} dish={selectedDish} onClose={closeDish} theme={theme}
           isFavorite={favorites.includes(selectedDish.id)} onToggleFavorite={toggleFavorite} />
       )}
+      {showDailyMenu && dailyMenu?.enabled && <DailyMenuSheet menu={dailyMenu} onClose={closeDailyMenu} theme={theme} />}
     </div>
   )
 }

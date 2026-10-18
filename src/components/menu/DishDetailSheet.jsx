@@ -4,7 +4,7 @@ import { textOnAccent, accentOnWhite } from '../../lib/menuContrast'
 
 const DEFAULT_THEME = { accent: '#FF6B35', bgTint: '#FFF8F2' }
 
-export default function DishDetailSheet({ dish, onClose, theme, isFavorite = false, onToggleFavorite }) {
+export default function DishDetailSheet({ dish, onClose, theme, isFavorite = false, onToggleFavorite, children, priceLabel = 'Precio' }) {
   const { accent, bgTint } = theme ?? DEFAULT_THEME
   const dialogRef = useRef(null)
   const [failedImage, setFailedImage] = useState(null)
@@ -83,6 +83,8 @@ export default function DishDetailSheet({ dish, onClose, theme, isFavorite = fal
             <p className="text-gray-500 mt-2 leading-relaxed" style={{ fontSize: 15 }}>{dish.description}</p>
           )}
 
+          {children}
+
           {(dish.is_special || dish.best_seller) && (
             <div className="flex flex-wrap gap-2 mt-4">
               {dish.is_special && (
@@ -125,7 +127,7 @@ export default function DishDetailSheet({ dish, onClose, theme, isFavorite = fal
         {/* Barra inferior fija */}
         <div className="messa-dish-detail-footer absolute bottom-0 inset-x-0 bg-white border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] px-5 py-4 flex flex-wrap gap-3 items-center justify-between z-20">
           <div>
-            <p className="text-xs text-gray-400 leading-none mb-1">Precio</p>
+            <p className="text-xs text-gray-400 leading-none mb-1">{priceLabel}</p>
             <p className="font-bold text-xl leading-none" style={{ color: accentOnWhite(accent) }}>{Number(dish.price).toFixed(2)}€</p>
           </div>
           {onToggleFavorite && <button
