@@ -86,7 +86,7 @@ referencia con `FOREIGN KEY`).
 
 `schema.sql` es una referencia para instalaciones nuevas. Las políticas,
 publicaciones y firmas de funciones pueden existir ya con otra definición.
-Consultar `REVISION-MESSA.md` antes de migrar una base en uso.
+Consultar el informe de revisión de la entrega privada antes de migrar una base en uso.
 
 En el proyecto actual ya están registradas las migraciones
 `20261018091900_repair_menu_and_admin_permissions` y

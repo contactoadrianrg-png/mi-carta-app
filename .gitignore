@@ -11,3 +11,4 @@ dist/
 
 # Informes privados de la base de datos
 supabase/audits/
+REVISION-MESSA.md

@@ -37,15 +37,25 @@ export const SOCIALS = [
   },
 ]
 
+function profileUrl(domain, value, prefix = '') {
+  const domainPattern = domain.replaceAll('.', '\\.')
+  const profile = value
+    .replace(new RegExp(`^(?:https?:\\/\\/)?(?:www\\.)?${domainPattern}(?:\\/|$)`, 'i'), '')
+    .replace(/^\/+|\/+$/g, '')
+    .replace(/^@/, '')
+  if (!profile || /^\w+:/.test(profile)) return null
+  return `https://${domain}/${prefix}${profile}`
+}
+
 export function buildSocialUrl(key, value) {
   if (!value) return null
   const v = value.trim()
   if (!v) return null
   switch (key) {
     case 'whatsapp': return `https://wa.me/${v.replace(/\D/g, '')}`
-    case 'instagram': return `https://instagram.com/${v.replace(/^@/, '')}`
-    case 'facebook': return v.startsWith('http') ? v : `https://facebook.com/${v.replace(/^\//, '')}`
-    case 'tiktok': return `https://tiktok.com/@${v.replace(/^@/, '')}`
+    case 'instagram': return profileUrl('instagram.com', v)
+    case 'facebook': return profileUrl('facebook.com', v)
+    case 'tiktok': return profileUrl('tiktok.com', v, '@')
     case 'phone': return `tel:${v}`
     case 'web': return v.startsWith('http') ? v : `https://${v}`
     default: return v
