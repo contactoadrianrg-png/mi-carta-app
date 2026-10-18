@@ -51,10 +51,12 @@ test('la migración es compatible con el esquema real y conserva sus filas', asy
     await db.exec(await readFile(new URL('../supabase/migrations/20261018091900_repair_menu_and_admin_permissions.sql', import.meta.url), 'utf8'))
     await db.exec(await readFile(new URL('../supabase/migrations/20261018092206_repair_restaurant_contact_fields.sql', import.meta.url), 'utf8'))
 
+    await db.exec(await readFile(new URL('../supabase/migrations/20261018110550_add_restaurant_menu_slides.sql', import.meta.url), 'utf8'))
+
     await t.test('no cambia nombres, precios, planes, temas ni filas existentes', async () => {
       const after = await snapshot()
       // The new nullable logo field does not change existing values.
-      for (const row of after.restaurants) delete row.logo_url
+      for (const row of after.restaurants) { delete row.logo_url; delete row.menu_slides }
       assert.deepEqual(after, before)
     })
     await t.test('bloquea ahora las funciones administrativas para anónimos', async () => {
@@ -81,6 +83,18 @@ test('la migración es compatible con el esquema real y conserva sus filas', asy
       await asRole('authenticated', owner, async () => {
         await assert.rejects(db.query("update public.restaurants set plan='free' where id=$1", [restaurant]), /permission denied/)
       })
+    })
+    await t.test('el carrusel guarda imágenes del propietario y respeta el aislamiento y el límite', async () => {
+      const slides = JSON.stringify([{ id: 'promo', image_url: 'https://example.com/oferta.webp', title: 'Menú del día' }])
+      await asRole('authenticated', owner, async () => {
+        const result = await db.query('update public.restaurants set menu_slides=$1 where id=$2 returning menu_slides', [slides, restaurant])
+        assert.equal(result.rows[0].menu_slides[0].title, 'Menú del día')
+        const otherResult = await db.query('update public.restaurants set menu_slides=$1 where id=$2 returning id', [slides, another])
+        assert.equal(otherResult.rows.length, 0)
+      })
+      await asRole('anon', null, async () => { await assert.rejects(db.query('update public.restaurants set menu_slides=$1 where id=$2', [slides, restaurant]), /permission denied/) })
+      await asRole('authenticated', owner, async () => { await assert.rejects(db.query('update public.restaurants set menu_slides=$1 where id=$2', [JSON.stringify(Array(7).fill({ image_url: 'https://example.com/image.jpg' })), restaurant]), /constraint/) })
+      await asRole('authenticated', owner, async () => { await assert.rejects(db.query('update public.restaurants set menu_slides=$1 where id=$2', ['{}', restaurant]), /constraint|cannot get array length/) })
     })
     await t.test('acepta estadísticas válidas y solo el propietario puede leerlas', async () => {
       await db.exec('begin')

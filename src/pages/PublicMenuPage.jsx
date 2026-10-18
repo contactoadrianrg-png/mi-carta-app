@@ -3,6 +3,9 @@ import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import DishDetailSheet from '../components/menu/DishDetailSheet'
 import RestaurantHeader from '../components/menu/RestaurantHeader'
+import MenuHighlights from '../components/menu/MenuHighlights'
+import './PublicMenuPage.css'
+import { normalizeMenuSlides } from '../lib/menuSlides'
 import CategoryTabs from '../components/menu/CategoryTabs'
 import DishGridCard from '../components/menu/DishGridCard'
 import { UtensilsCrossed } from 'lucide-react'
@@ -21,6 +24,7 @@ export default function PublicMenuPage() {
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [activeCategory, setActiveCategory] = useState(catId ?? null)
+  const [showFavorites, setShowFavorites] = useState(false)
   const [selectedDish, setSelectedDish] = useState(null)
   const [loadError, setLoadError] = useState(false)
   const [retry, setRetry] = useState(0)
@@ -47,6 +51,7 @@ export default function PublicMenuPage() {
     setCategories([])
     setDishes([])
     setSelectedDish(null)
+    setShowFavorites(false)
     setFavorites(readMenuFavorites(slug))
 
     async function refresh() {
@@ -121,13 +126,20 @@ export default function PublicMenuPage() {
   const topCats = useMemo(() => visibleMenuCategories(categories, planDishes), [categories, planDishes])
 
   const filtered = useMemo(() => {
-    return filterMenuDishes(planDishes, categories, activeCategory)
-  }, [planDishes, categories, activeCategory])
+    const matching = filterMenuDishes(planDishes, categories, activeCategory)
+    return showFavorites ? matching.filter(dish => favorites.includes(dish.id)) : matching
+  }, [planDishes, categories, activeCategory, showFavorites, favorites])
 
-  const specials = useMemo(() => filtered.filter(d => d.is_special), [filtered])
+  const slides = useMemo(() => {
+    const custom = !isFree ? normalizeMenuSlides(restaurant?.menu_slides) : []
+    return custom.length ? custom : normalizeMenuSlides(restaurant?.banner_url ? [{ id: 'restaurant-banner', image_url: restaurant.banner_url, title: restaurant.name }] : [])
+  }, [restaurant, isFree])
+  const featured = !showFavorites && !activeCategory ? filtered.filter(dish => dish.featured || (!isFree && dish.is_special)) : []
+  const featuredIds = new Set(featured.map(dish => dish.id))
+  const regularDishes = filtered.filter(dish => !featuredIds.has(dish.id))
   const activeTab = topCats.find(c => categoryFamilyIds(categories, c.id).has(activeCategory))?.id ?? activeCategory
 
-  const activeName = activeCategory
+  const activeName = showFavorites ? 'Tus favoritos' : activeCategory
     ? categories.find(c => c.id === activeCategory)?.name ?? 'Categoría'
     : 'Toda la carta'
 
@@ -176,55 +188,16 @@ export default function PublicMenuPage() {
   )
 
   return (
-    <div className="min-h-screen overflow-x-hidden" style={{ backgroundColor: theme.bg }}>
-
-      {/* ── CABECERA: banner + nombre ── */}
-      <RestaurantHeader restaurant={restaurant} theme={theme} />
-
-      {/* ── CATEGORÍAS: única navegación de categorías de la carta ── */}
-      <CategoryTabs
-        categories={topCats}
-        activeId={activeTab}
-        onChange={setActiveCategory}
-        theme={theme}
-      />
-
-      {/* ── SECCIÓN DE PLATOS ── */}
-      <main className="max-w-lg mx-auto px-4 pt-5 pb-10">
-        <div className="text-center mb-5">
-          <h2 className="font-bold text-xl" style={{ color: theme.accent }}>{activeName}</h2>
-          <p className="text-gray-400 text-sm mt-0.5">{filtered.length} {filtered.length === 1 ? 'plato' : 'platos'}</p>
-        </div>
-
-        {/* ── ESPECIALES DE HOY — solo Plan Pro / Premium ── */}
-        {!isFree && specials.length > 0 && (
-          <div className="mb-6">
-            <div
-              className="rounded-2xl p-4"
-              style={{ border: `1px solid ${theme.accent}`, backgroundColor: theme.bgTint + 'aa' }}
-            >
-              <h2 className="font-bold text-[18px] mb-3 flex items-center gap-1.5" style={{ color: theme.accent }}>
-                ⭐ Especial de hoy
-              </h2>
-              <div className="grid grid-cols-1 min-[380px]:grid-cols-2 gap-3">
-                {specials.map(dish => (
-                  <DishGridCard key={dish.id} dish={dish} onClick={() => handleDishClick(dish)} theme={theme} />
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {filtered.length === 0 ? (
-          <p className="text-center py-16 text-gray-400 text-sm">No hay platos disponibles.</p>
-        ) : (
-          <div className="grid grid-cols-1 min-[380px]:grid-cols-2 gap-3">
-            {filtered.map(dish => (
-              <DishGridCard key={dish.id} dish={dish} onClick={() => handleDishClick(dish)} theme={theme} />
-            ))}
-          </div>
-        )}
-
+    <div className="messa-public-menu min-h-screen" style={{ backgroundColor: theme.bg, '--menu-bg': theme.bg, '--menu-tint': theme.bgTint, '--menu-accent': theme.accent, '--menu-text': theme.text ?? '#252a21', '--menu-card': theme.text ? theme.bgTint : '#ffffff', '--menu-border': theme.cardBorder ?? 'rgba(35,40,30,.09)' }}>
+      <RestaurantHeader restaurant={restaurant} theme={theme} favoriteCount={planDishes.filter(dish => favorites.includes(dish.id)).length} showFavorites={showFavorites} onToggleFavorites={() => { setActiveCategory(null); setShowFavorites(value => !value) }} />
+      {!showFavorites && <MenuHighlights slides={slides} />}
+      <div className="messa-menu-categories"><CategoryTabs categories={topCats} activeId={activeTab} onChange={setActiveCategory} theme={theme} /></div>
+      <main className="messa-menu-main">
+        {featured.length > 0 && <section className="messa-featured-section" aria-labelledby="featured-heading"><div className="messa-menu-section-heading"><div><p>LOS IMPRESCINDIBLES</p><h2 id="featured-heading">Platos destacados</h2></div></div><div className="messa-dishes-grid">{featured.map(dish => <DishGridCard key={dish.id} dish={dish} onClick={() => handleDishClick(dish)} theme={theme} isFavorite={favorites.includes(dish.id)} />)}</div></section>}
+        {(regularDishes.length > 0 || filtered.length === 0) && <section aria-labelledby="menu-list-heading">
+          <div className="messa-menu-section-heading"><div><p>ELIGE LO QUE TE APETECE</p><h2 id="menu-list-heading">{activeName}</h2></div><span className="messa-menu-count">{filtered.length} {filtered.length === 1 ? 'plato' : 'platos'}</span></div>
+          {filtered.length === 0 ? <p className="messa-menu-empty">{showFavorites ? 'Aún no tienes favoritos en esta selección. Abre un plato y toca el corazón para guardarlo.' : 'No hay platos disponibles.'}</p> : regularDishes.length > 0 ? <div className="messa-dishes-grid">{regularDishes.map(dish => <DishGridCard key={dish.id} dish={dish} onClick={() => handleDishClick(dish)} theme={theme} isFavorite={favorites.includes(dish.id)} />)}</div> : <p className="messa-menu-empty">Todos los platos de esta carta están en destacados.</p>}
+        </section>}
         {isFree && dishes.length > FREE_DISH_LIMIT && (
           <p className="text-center text-xs text-gray-400 mt-6">
             Mostrando {FREE_DISH_LIMIT} de {dishes.length} platos · Plan Free

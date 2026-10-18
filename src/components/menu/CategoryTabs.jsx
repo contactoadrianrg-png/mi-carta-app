@@ -6,7 +6,6 @@ const FALLBACK = { accent: '#FF6B35', bg: '#FFF8F2', bgTint: '#FFF8F2' }
 
 export default function CategoryTabs({ categories = [], activeId = null, onChange, theme }) {
   const t = { ...FALLBACK, ...(theme || {}) }
-  if (!categories.length) return null
 
   const tabs = [{ id: null, name: 'Todos' }, ...categories]
 

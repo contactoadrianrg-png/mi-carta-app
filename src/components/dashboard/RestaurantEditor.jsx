@@ -10,6 +10,7 @@ import {
   Check, Pencil, MessageCircle, Building2,
 } from 'lucide-react'
 import { SOCIALS } from '../../lib/socials'
+import MenuSlidesEditor from './MenuSlidesEditor'
 
 function slugify(text) {
   return text
@@ -547,6 +548,9 @@ export default function RestaurantEditor({ restaurant, onUpdate }) {
             <div style={cardStyle}>
               <span style={sectionLabelStyle}>Imágenes de la carta</span>
 
+              {/* Carrusel de imágenes independiente de los platos */}
+              <Row icon={<Image size={18} color="#9CA3AF" />} label="Carrusel de imágenes y ofertas" sublabel="Sube, ordena y cambia tus promociones" onClick={() => !isFree && toggle('slides')} rightEl={isFree ? <Lock size={15} color="#9CA3AF" /> : <ChevronRight size={15} color="#9CA3AF" />} />
+              {expanded === 'slides' && !isFree && restaurant && <MenuSlidesEditor restaurant={restaurant} userId={user?.id} onUpdate={onUpdate} />}
               {/* Banner */}
               <Row
                 icon={<Image size={18} color="#9CA3AF" />}
