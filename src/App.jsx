@@ -6,6 +6,7 @@ import DashboardPage from './pages/DashboardPage'
 import PublicMenuPage from './pages/PublicMenuPage'
 import CategoryPage from './pages/CategoryPage'
 import WelcomePage from './pages/WelcomePage'
+import LandingPage from './pages/LandingPage'
 import AdminPage from './pages/AdminPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 
@@ -45,7 +46,7 @@ function AdminRoute({ children }) {
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<GuestRoute><AuthPage /></GuestRoute>} />
       <Route path="/register" element={<GuestRoute><AuthPage /></GuestRoute>} />
       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
@@ -54,7 +55,7 @@ function AppRoutes() {
       <Route path="/carta/:slug/:catId" element={<CategoryPage />} />
       <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }

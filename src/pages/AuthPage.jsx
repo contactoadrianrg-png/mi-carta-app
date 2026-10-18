@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
+import { requestPasswordReset } from '../lib/authActions'
 import toast from 'react-hot-toast'
 import { Eye, EyeOff, ArrowRight, Mail, Lock, User, ArrowLeft, UtensilsCrossed } from 'lucide-react'
 
@@ -109,12 +110,6 @@ function PhoneMockupSVG({ className = '' }) {
   )
 }
 
-const BENEFITS = [
-  { emoji: '⚡', title: 'Listo en 2 minutos', desc: 'Sin instalaciones ni conocimientos técnicos' },
-  { emoji: '📱', title: 'Comparte por QR', desc: 'Tus clientes lo ven al instante en su móvil' },
-  { emoji: '🔄', title: 'Actualiza en vivo', desc: 'Cambia precios y platos en tiempo real' },
-]
-
 /* ── Página principal ───────────────────────────────────────── */
 export default function AuthPage() {
   const location = useLocation()
@@ -128,6 +123,14 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [forgotSent, setForgotSent] = useState(false)
+
+  // La pestaña sigue a la ruta: /register abre registro y /login abre acceso.
+  // Solo reacciona al cambio de pathname, así que no interfiere con el modo
+  // "olvidé mi contraseña", que no navega.
+  useEffect(() => {
+    setMode(location.pathname === '/register' ? 'register' : 'login')
+    setForgotSent(false)
+  }, [location.pathname])
 
   const switchMode = (m) => {
     setMode(m)
@@ -151,9 +154,7 @@ export default function AuthPage() {
         }
         toast.success('¡Bienvenido a Messa!')
       } else if (mode === 'forgot') {
-        await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/reset-password`,
-        })
+        await requestPasswordReset(supabase.auth, email, window.location.origin)
         setForgotSent(true)
       }
     } catch (err) {
@@ -175,45 +176,71 @@ export default function AuthPage() {
         <div className="lg:grid lg:grid-cols-2 lg:gap-20 lg:items-center mb-10 lg:mb-14">
 
           {/* ── Columna izquierda ── */}
-          <div>
+          <div className="relative -mx-5 lg:mx-0 overflow-hidden lg:overflow-visible">
+
+            {/* Fondo fotográfico — solo móvil.
+                Banda inferior de 85vw: a ancho completo la foto cae justo por los cuencos,
+                que ocupan el 43 % inferior del original (941×1672). */}
+            <img
+              src="/hero-mobile.webp"
+              alt=""
+              aria-hidden="true"
+              className="lg:hidden pointer-events-none absolute inset-x-0 bottom-0 w-full h-[85vw] object-cover object-[center_bottom]"
+            />
+
+            {/* Fundido crema sobre el borde superior de la foto, para que no se vea el corte */}
+            <div
+              className="lg:hidden pointer-events-none absolute inset-x-0 bottom-0 h-[85vw]"
+              style={{ background: 'linear-gradient(to bottom, #FFF8F2 0%, rgba(255,248,242,0) 24%)' }}
+              aria-hidden="true"
+            />
+
+            <div className="relative px-5 pt-2 pb-[calc(85vw+28px)] text-center lg:px-0 lg:pt-0 lg:pb-0 lg:text-left">
             {/* Logo */}
-            <div className="flex items-center gap-2.5 mb-6">
+            <div className="flex items-center justify-center lg:justify-start gap-2.5 mb-7">
               <div className="w-10 h-10 bg-[#FF6B35] rounded-xl flex items-center justify-center shadow-md shadow-[#FF6B35]/30">
                 <UtensilsCrossed size={20} className="text-white" />
               </div>
               <span className="font-bold text-[#1A1A1A] text-xl tracking-tight">Messa</span>
             </div>
 
-            {/* Badge */}
-            <div className="inline-flex items-center gap-1.5 bg-orange-100 text-[#FF6B35] text-xs font-semibold px-3 py-1.5 rounded-full mb-5">
-              ⚡ Tu carta digital en segundos
-            </div>
-
             {/* Título */}
-            <h1 className="text-[34px] lg:text-[48px] font-bold text-[#1A1A1A] leading-[1.15] mb-4">
-              Crea el menú digital<br />
-              de tu restaurante<br />
-              <span className="text-[#FF6B35]">en 2 minutos</span>
+            <h1 className="text-[32px] sm:text-[36px] lg:text-[48px] font-bold text-[#1A1A1A] leading-[1.15] tracking-tight mb-4">
+              Tu carta digital,<br />
+              <span className="text-[#FF6B35]">siempre al día.</span>
             </h1>
 
             {/* Subtítulo */}
-            <p className="text-gray-500 text-[16px] lg:text-[18px] leading-relaxed mb-8 max-w-md">
-              Comparte por QR, actualiza en tiempo real y recibe más pedidos sin complicaciones.
+            <p className="text-gray-500 text-[16px] lg:text-[18px] leading-relaxed mb-8 max-w-md mx-auto lg:mx-0">
+              Muestra tus platos, actualiza precios y comparte la carta con un QR.
+              Tus clientes la consultan desde su móvil, sin descargar aplicaciones.
             </p>
 
-            {/* Beneficios */}
-            <div className="flex flex-col sm:flex-row gap-4 lg:gap-6">
-              {BENEFITS.map(({ emoji, title, desc }) => (
-                <div key={title} className="flex items-start gap-3">
-                  <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-lg shrink-0">
-                    {emoji}
-                  </div>
-                  <div>
-                    <p className="font-semibold text-sm text-[#1A1A1A] leading-tight">{title}</p>
-                    <p className="text-xs text-gray-400 mt-0.5 leading-snug">{desc}</p>
-                  </div>
-                </div>
-              ))}
+            {/* CTAs */}
+            <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center justify-center lg:justify-start gap-3">
+              <a
+                href="#demo"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl text-[15px] font-semibold text-[#1A1A1A] bg-white border border-gray-200 hover:border-[#FF6B35]/40 hover:text-[#FF6B35] shadow-sm transition-colors"
+              >
+                Ver carta de ejemplo
+              </a>
+              <button
+                type="button"
+                onClick={() => {
+                  switchMode('register')
+                  document.getElementById('registro')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }}
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl text-[15px] font-semibold text-white bg-[#FF6B35] hover:bg-[#F25C25] shadow-lg shadow-[#FF6B35]/30 transition-colors"
+              >
+                Crear mi carta
+                <ArrowRight size={17} />
+              </button>
+            </div>
+
+            {/* Pie */}
+            <p className="text-xs text-gray-500 mt-5">
+              Sin instalar nada · Actualiza cuando quieras · Comparte por QR
+            </p>
             </div>
           </div>
 
@@ -240,6 +267,9 @@ export default function AuthPage() {
             </div>
           </div>
         </div>
+
+        {/* Ancla de scroll del CTA "Crear mi carta" */}
+        <div id="registro" className="scroll-mt-6" />
 
         {/* ══ FORMULARIO — debajo de las 2 columnas ══ */}
         <div className="max-w-md mx-auto bg-white rounded-3xl shadow-xl shadow-black/8 p-6 mb-6">

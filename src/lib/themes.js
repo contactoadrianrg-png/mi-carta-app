@@ -62,3 +62,16 @@ export function applyTheme(themeId) {
   const root = document.documentElement
   Object.entries(vars).forEach(([key, value]) => root.style.setProperty(key, value))
 }
+
+// Convierte un tema visual al shape que usa el JSX de PublicMenuPage (accent, bg, bgTint, primary)
+export function getVisualTheme(themeId) {
+  const vt = VISUAL_THEMES[themeId] ?? VISUAL_THEMES.default
+  return {
+    accent:     vt['--color-accent'],
+    bg:         vt['--color-bg'],
+    bgTint:     vt['--color-card-bg'],
+    primary:    vt['--color-bg'],
+    text:       vt['--color-text'],
+    cardBorder: vt['--color-card-border'],
+  }
+}

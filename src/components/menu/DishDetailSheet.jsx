@@ -1,16 +1,38 @@
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ArrowLeft, Heart } from 'lucide-react'
 
 const DEFAULT_THEME = { accent: '#FF6B35', bgTint: '#FFF8F2' }
 
-export default function DishDetailSheet({ dish, onClose, theme }) {
+export default function DishDetailSheet({ dish, onClose, theme, isFavorite = false, onToggleFavorite }) {
   const { accent, bgTint } = theme ?? DEFAULT_THEME
+  const dialogRef = useRef(null)
+  const [failedImage, setFailedImage] = useState(null)
 
   useEffect(() => {
     const prev = document.body.style.overflow
+    const previousFocus = document.activeElement
     document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = prev }
-  }, [])
+    dialogRef.current?.focus()
+    const handleKey = (event) => {
+      if (event.key === 'Escape') { event.preventDefault(); onClose(); return }
+      if (event.key !== 'Tab') return
+      const buttons = [...(dialogRef.current?.querySelectorAll('button:not([disabled]), a[href], [tabindex="0"]') ?? [])]
+      const first = buttons[0]
+      const last = buttons[buttons.length - 1]
+      if (!first) { event.preventDefault(); return }
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === dialogRef.current)) {
+        event.preventDefault(); last.focus()
+      } else if (!event.shiftKey && (document.activeElement === last || document.activeElement === dialogRef.current)) {
+        event.preventDefault(); first.focus()
+      }
+    }
+    document.addEventListener('keydown', handleKey)
+    return () => {
+      document.body.style.overflow = prev
+      document.removeEventListener('keydown', handleKey)
+      if (previousFocus?.isConnected) previousFocus.focus()
+    }
+  }, [onClose])
 
   const allergens = Array.isArray(dish.allergens) ? dish.allergens : []
 
@@ -18,12 +40,13 @@ export default function DishDetailSheet({ dish, onClose, theme }) {
     <>
       <div className="fixed inset-0 z-50 bg-black/50" onClick={onClose} />
 
-      <div className="fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-3xl overflow-hidden shadow-2xl animate-slide-up" style={{ height: '92vh' }}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="dish-detail-title" tabIndex={-1}
+        className="fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-3xl overflow-hidden shadow-2xl animate-slide-up outline-none" style={{ height: '92vh' }}>
 
         {/* Foto — 45% altura */}
         <div className="relative bg-gray-100" style={{ height: '45%', flexShrink: 0 }}>
-          {dish.image_url ? (
-            <img src={dish.image_url} alt={dish.name} className="w-full h-full object-cover" />
+          {dish.image_url && dish.image_url !== failedImage ? (
+            <img src={dish.image_url} alt={dish.name} className="w-full h-full object-cover" onError={() => setFailedImage(dish.image_url)} />
           ) : (
             <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: bgTint }}>
               <span className="text-7xl opacity-20">🍽️</span>
@@ -41,7 +64,7 @@ export default function DishDetailSheet({ dish, onClose, theme }) {
 
         {/* Contenido */}
         <div className="flex-1 overflow-y-auto bg-white rounded-t-3xl -mt-5 relative z-10 px-5 pt-6 pb-28">
-          <h2 className="font-bold text-[#1A1A1A]" style={{ fontSize: 26 }}>{dish.name}</h2>
+          <h2 id="dish-detail-title" className="font-bold text-[#1A1A1A]" style={{ fontSize: 26 }}>{dish.name}</h2>
 
           {dish.description && (
             <p className="text-gray-500 mt-2 leading-relaxed" style={{ fontSize: 15 }}>{dish.description}</p>
@@ -51,7 +74,7 @@ export default function DishDetailSheet({ dish, onClose, theme }) {
             <p className="font-bold" style={{ fontSize: 24, color: accent }}>
               {Number(dish.price).toFixed(2)}€
             </p>
-            {dish.original_price && (
+            {Number(dish.original_price) > Number(dish.price) && (
               <p className="text-gray-400 line-through text-base">
                 {Number(dish.original_price).toFixed(2)}€
               </p>
@@ -103,13 +126,16 @@ export default function DishDetailSheet({ dish, onClose, theme }) {
             <p className="text-xs text-gray-400 leading-none mb-1">Precio</p>
             <p className="font-bold text-xl leading-none" style={{ color: accent }}>{Number(dish.price).toFixed(2)}€</p>
           </div>
-          <button
+          {onToggleFavorite && <button
+            type="button"
+            onClick={onToggleFavorite}
+            aria-pressed={isFavorite}
             className="flex items-center gap-2 text-white px-5 py-3.5 rounded-2xl font-semibold text-sm active:scale-95 transition-transform shadow-md"
             style={{ backgroundColor: accent, boxShadow: `0 4px 14px ${accent}50` }}
           >
-            <Heart size={18} />
-            Añadir a favoritos
-          </button>
+            <Heart size={18} fill={isFavorite ? 'currentColor' : 'none'} />
+            {isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'}
+          </button>}
         </div>
       </div>
     </>

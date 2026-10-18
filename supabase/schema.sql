@@ -1,6 +1,7 @@
 -- =====================================================
--- MenuApp — Schema para Supabase
--- Ejecuta este SQL en: Supabase Dashboard > SQL Editor
+-- Messa — esquema de referencia para una instalación NUEVA de Supabase.
+-- No ejecutar completo sobre producción: primero comparar el esquema real
+-- y preparar una migración que preserve sus funciones, políticas y datos.
 -- =====================================================
 
 -- Tabla: restaurantes
@@ -47,7 +48,7 @@ create index if not exists idx_dishes_category    on public.dishes(category_id);
 
 -- Trigger: updated_at automático
 create or replace function public.set_updated_at()
-returns trigger language plpgsql as $$
+returns trigger language plpgsql set search_path = public as $$
 begin
   new.updated_at = now();
   return new;
@@ -154,7 +155,19 @@ create policy "dish_images_owner_delete"
 -- =====================================================
 
 alter table public.categories
-  add column if not exists parent_id uuid references public.categories(id) on delete cascade;
+  add column if not exists parent_id uuid;
+
+create unique index if not exists categories_restaurant_id_id_key
+  on public.categories(restaurant_id, id);
+
+do $$
+begin
+  if not exists (select 1 from pg_constraint where conrelid = 'public.categories'::regclass and conname = 'categories_parent_same_restaurant') then
+    alter table public.categories add constraint categories_parent_same_restaurant
+      foreign key (restaurant_id, parent_id) references public.categories(restaurant_id, id) on delete cascade;
+  end if;
+end;
+$$;
 
 create index if not exists idx_categories_parent on public.categories(parent_id);
 
@@ -186,6 +199,8 @@ alter publication supabase_realtime add table public.dishes;
 alter table public.dishes
   add column if not exists featured      boolean not null default false,
   add column if not exists best_seller   boolean not null default false,
+  add column if not exists is_special    boolean not null default false,
+  add column if not exists allergens     text[] not null default '{}',
   add column if not exists original_price numeric(10, 2);
 
 -- =====================================================
@@ -210,42 +225,6 @@ alter table public.restaurants
 -- cualquier restaurante sin restricciones de RLS.
 -- =====================================================
 
-create or replace function admin_get_all_restaurants()
-returns table(
-  id          uuid,
-  name        text,
-  slug        text,
-  description text,
-  active      boolean,
-  created_at  timestamptz,
-  owner_id    uuid,
-  owner_email text
-)
-language plpgsql
-security definer
-set search_path = public
-as $$
-begin
-  if (select email from auth.users where id = auth.uid()) != 'infocreativeadrian@gmail.com' then
-    raise exception 'Unauthorized';
-  end if;
-
-  return query
-  select
-    r.id,
-    r.name,
-    r.slug,
-    r.description,
-    r.active,
-    r.created_at,
-    r.owner_id,
-    u.email::text as owner_email
-  from public.restaurants r
-  join auth.users u on u.id = r.owner_id
-  order by r.created_at desc;
-end;
-$$;
-
 create or replace function admin_set_restaurant_active(p_restaurant_id uuid, p_active boolean)
 returns void
 language plpgsql
@@ -253,7 +232,7 @@ security definer
 set search_path = public
 as $$
 begin
-  if (select email from auth.users where id = auth.uid()) != 'infocreativeadrian@gmail.com' then
+  if (select lower(admin_user.email) from auth.users admin_user where admin_user.id = auth.uid()) is distinct from 'infocreativeadrian@gmail.com' then
     raise exception 'Unauthorized';
   end if;
 
@@ -269,7 +248,25 @@ alter table public.restaurants
   add column if not exists plan text not null default 'free'
     check (plan in ('free', 'pro', 'premium'));
 
--- Actualizar admin_get_all_restaurants para devolver plan
+-- Campos visuales utilizados por la carta y el panel de administración.
+alter table public.restaurants
+  add column if not exists color_theme text not null default 'orange',
+  add column if not exists theme text not null default 'default',
+  add column if not exists logo_url text,
+  add column if not exists address text;
+
+-- Las políticas por fila no restringen las columnas: un propietario no debe
+-- poder subir su plan o cambiar campos reservados al administrador por API.
+revoke insert, update, truncate, references, trigger on public.restaurants from public, anon, authenticated;
+grant insert (owner_id, name, slug, description)
+  on public.restaurants to authenticated;
+grant update (
+  name, slug, description, banner_url, welcome_image_url, logo_url,
+  reservation_url, color_theme, address, social_whatsapp, social_instagram,
+  social_facebook, social_tiktok, social_phone, social_web
+) on public.restaurants to authenticated;
+
+-- Una sola definición: CREATE OR REPLACE no permite cambiar el tipo de retorno.
 create or replace function admin_get_all_restaurants()
 returns table(
   id          uuid,
@@ -278,6 +275,7 @@ returns table(
   description text,
   active      boolean,
   plan        text,
+  theme       text,
   created_at  timestamptz,
   owner_id    uuid,
   owner_email text
@@ -287,7 +285,7 @@ security definer
 set search_path = public
 as $$
 begin
-  if (select email from auth.users where id = auth.uid()) != 'infocreativeadrian@gmail.com' then
+  if (select lower(admin_user.email) from auth.users admin_user where admin_user.id = auth.uid()) is distinct from 'infocreativeadrian@gmail.com' then
     raise exception 'Unauthorized';
   end if;
 
@@ -299,6 +297,7 @@ begin
     r.description,
     r.active,
     r.plan,
+    r.theme,
     r.created_at,
     r.owner_id,
     u.email::text as owner_email
@@ -316,14 +315,44 @@ security definer
 set search_path = public
 as $$
 begin
-  if (select email from auth.users where id = auth.uid()) != 'infocreativeadrian@gmail.com' then
+  if (select lower(admin_user.email) from auth.users admin_user where admin_user.id = auth.uid()) is distinct from 'infocreativeadrian@gmail.com' then
     raise exception 'Unauthorized';
   end if;
 
-  if p_plan not in ('free', 'pro', 'premium') then
+  if p_plan is null or p_plan not in ('free', 'pro', 'premium') then
     raise exception 'Plan inválido';
   end if;
 
   update public.restaurants set plan = p_plan where id = p_restaurant_id;
 end;
 $$;
+
+-- La interfaz ya llama a esta función; faltaba en el esquema de referencia.
+create or replace function admin_set_restaurant_theme(p_restaurant_id uuid, p_theme text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if (select lower(admin_user.email) from auth.users admin_user where admin_user.id = auth.uid()) is distinct from 'infocreativeadrian@gmail.com' then
+    raise exception 'Unauthorized';
+  end if;
+
+  if p_theme is null or p_theme not in ('default', 'jungle', 'maibacht') then
+    raise exception 'Tema inválido';
+  end if;
+
+  update public.restaurants set theme = p_theme where id = p_restaurant_id;
+end;
+$$;
+
+-- Evitar ejecución anónima; cada función comprueba además la identidad admin.
+revoke execute on function public.admin_get_all_restaurants() from public, anon;
+revoke execute on function public.admin_set_restaurant_active(uuid, boolean) from public, anon;
+revoke execute on function public.admin_set_restaurant_plan(uuid, text) from public, anon;
+revoke execute on function public.admin_set_restaurant_theme(uuid, text) from public, anon;
+grant execute on function public.admin_get_all_restaurants() to authenticated;
+grant execute on function public.admin_set_restaurant_active(uuid, boolean) to authenticated;
+grant execute on function public.admin_set_restaurant_plan(uuid, text) to authenticated;
+grant execute on function public.admin_set_restaurant_theme(uuid, text) to authenticated;

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
+import { restaurantProfileUpdates } from '../lib/restaurantProfile'
 import RestaurantEditor from '../components/dashboard/RestaurantEditor'
 import CategoryManager from '../components/dashboard/CategoryManager'
 import DishManager from '../components/dashboard/DishManager'
@@ -80,7 +81,7 @@ function QRModal({ url, onClose }) {
 function CustomizeModal({ restaurant, user, onClose, onUpdate }) {
   const [name,        setName]        = useState(restaurant?.name        || '')
   const [description, setDescription] = useState(restaurant?.description || '')
-  const [phone,       setPhone]       = useState(restaurant?.phone       || '')
+  const [phone,       setPhone]       = useState(restaurant?.social_phone || '')
   const [address,     setAddress]     = useState(restaurant?.address     || '')
 
   const [logoFile,      setLogoFile]      = useState(null)
@@ -123,9 +124,7 @@ function CustomizeModal({ restaurant, user, onClose, onUpdate }) {
     if (!name.trim()) { toast.error('El nombre no puede estar vacío'); return }
     setSaving(true)
     try {
-      const updates = { name: name.trim(), description: description.trim() }
-      if (phone.trim())   updates.phone   = phone.trim()
-      if (address.trim()) updates.address = address.trim()
+      const updates = restaurantProfileUpdates({ name, description, phone, address })
       if (logoFile)   updates.logo_url   = await uploadImg(logoFile,   'logo')
       if (bannerFile) updates.banner_url = await uploadImg(bannerFile, 'banner')
 
