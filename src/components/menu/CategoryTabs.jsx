@@ -1,3 +1,4 @@
+import { textOnAccent } from '../../lib/menuContrast'
 /* Fila horizontal deslizable con las categorías reales del restaurante.
    Es el único menú de categorías de la carta: no se repite en otra parte.
    El scroll horizontal vive aquí dentro, la página no se mueve. */
@@ -27,8 +28,8 @@ export default function CategoryTabs({ categories = [], activeId = null, onChang
                 className="whitespace-nowrap rounded-full px-4 py-2 text-[13px] font-semibold transition-colors"
                 style={
                   active
-                    ? { backgroundColor: t.accent, color: '#FFFFFF' }
-                    : { backgroundColor: t.bgTint, color: '#1A1A1A', border: '1px solid rgba(26,26,26,0.10)' }
+                    ? { backgroundColor: t.accent, color: textOnAccent(t.accent) }
+                    : { backgroundColor: t.bgTint, color: t.text ?? '#1A1A1A', border: '1px solid rgba(26,26,26,0.10)' }
                 }
               >
                 {cat.name}

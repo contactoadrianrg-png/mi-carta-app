@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { ArrowLeft, Heart } from 'lucide-react'
+import { textOnAccent, accentOnWhite } from '../../lib/menuContrast'
 
 const DEFAULT_THEME = { accent: '#FF6B35', bgTint: '#FFF8F2' }
 
@@ -68,7 +69,7 @@ export default function DishDetailSheet({ dish, onClose, theme, isFavorite = fal
           <h2 id="dish-detail-title" className="font-bold text-[#1A1A1A]" style={{ fontSize: 26 }}>{dish.name}</h2>
 
           <div className="mt-4 flex items-baseline gap-3">
-            <p className="font-bold" style={{ fontSize: 24, color: accent }}>
+            <p className="font-bold" style={{ fontSize: 24, color: accentOnWhite(accent) }}>
               {Number(dish.price).toFixed(2)}€
             </p>
             {Number(dish.original_price) > Number(dish.price) && (
@@ -125,14 +126,14 @@ export default function DishDetailSheet({ dish, onClose, theme, isFavorite = fal
         <div className="messa-dish-detail-footer absolute bottom-0 inset-x-0 bg-white border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] px-5 py-4 flex flex-wrap gap-3 items-center justify-between z-20">
           <div>
             <p className="text-xs text-gray-400 leading-none mb-1">Precio</p>
-            <p className="font-bold text-xl leading-none" style={{ color: accent }}>{Number(dish.price).toFixed(2)}€</p>
+            <p className="font-bold text-xl leading-none" style={{ color: accentOnWhite(accent) }}>{Number(dish.price).toFixed(2)}€</p>
           </div>
           {onToggleFavorite && <button
             type="button"
             onClick={onToggleFavorite}
             aria-pressed={isFavorite}
             className="flex items-center gap-2 text-white px-5 py-3.5 rounded-2xl font-semibold text-sm active:scale-95 transition-transform shadow-md"
-            style={{ backgroundColor: accent, boxShadow: `0 4px 14px ${accent}50`, maxWidth: '100%' }}
+            style={{ backgroundColor: accent, color: textOnAccent(accent), boxShadow: `0 4px 14px ${accent}50`, maxWidth: '100%' }}
           >
             <Heart size={18} fill={isFavorite ? 'currentColor' : 'none'} />
             {isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'}
