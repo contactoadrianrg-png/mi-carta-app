@@ -56,7 +56,7 @@ test('la migración es compatible con el esquema real y conserva sus filas', asy
 
     await db.exec(await readFixtureSQL('../supabase/migrations/20261018110550_add_restaurant_menu_slides.sql'))
     await db.exec(await readFixtureSQL('../supabase/migrations/20261018120855_add_restaurant_dish_reordering.sql'))
-    await db.exec(await readFixtureSQL('../supabase/migrations/20261018145838_add_restaurant_daily_menu.sql'))
+    await db.exec(await readFixtureSQL('../supabase/migrations/20261018154744_add_restaurant_daily_menu.sql'))
 
     await t.test('no cambia nombres, precios, planes, temas ni filas existentes', async () => {
       const after = await snapshot()
