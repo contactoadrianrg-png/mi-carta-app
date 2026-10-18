@@ -27,8 +27,7 @@ export default function RestaurantWelcome({ restaurant }) {
           {restaurant.description && <p>{restaurant.description}</p>}
         </div>
       </section>
-      <section className="restaurant-entry-content" aria-labelledby="restaurant-entry-heading">
-        <div className="restaurant-entry-intro"><h2 id="restaurant-entry-heading">Tu mesa te espera.</h2><p>Descubre nuestra carta o reserva tu próxima visita.</p></div>
+      <section className="restaurant-entry-content" aria-label="Acceso al restaurante">
         <nav className="restaurant-entry-actions" aria-label="Carta y reservas">
           <Link to={`/carta/${restaurant.slug}/menu`} className="restaurant-entry-action primary"><span className="restaurant-entry-action-icon"><UtensilsCrossed size={25} /></span><span><strong>Ver la carta</strong><small>Platos, sabores y favoritos</small></span><ArrowUpRight size={22} /></Link>
           {reservation ? <a href={reservation} target="_blank" rel="noopener noreferrer" className="restaurant-entry-action secondary"><span className="restaurant-entry-action-icon"><CalendarDays size={25} /></span><span><strong>Reservar mesa</strong><small>Elige tu próximo momento</small></span><ArrowUpRight size={22} /></a> : <div className="restaurant-entry-action unavailable" aria-disabled="true"><span className="restaurant-entry-action-icon"><CalendarDays size={25} /></span><span><strong>Reservar mesa</strong><small>Reservas online no disponibles</small></span></div>}
