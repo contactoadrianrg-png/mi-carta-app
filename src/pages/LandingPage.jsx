@@ -41,17 +41,17 @@ export default function LandingPage() {
           <div className="messa-hero-copy">
             <p className="messa-eyebrow"><span />TU RESTAURANTE, BIEN PRESENTADO</p>
             <h1 id="messa-heading">La carta de tu restaurante,<br /><em>en el móvil.</em></h1>
-            <p className="messa-hero-description">Que el primer vistazo abra el apetito. Tus platos, tus fotos y tus precios en una carta digital que invita a descubrir más.</p>
+            <p className="messa-hero-description">Tus platos, tus fotos y tus precios. Una carta digital que entra por los ojos y abre el apetito.</p>
             <div className="messa-hero-actions"><a href={EXAMPLE} target="_blank" rel="noopener noreferrer" className="messa-button messa-button-primary">Ver carta de ejemplo <ArrowUpRight size={19} /></a><Link to="/register" className="messa-button messa-button-secondary">Crear mi carta <ArrowRight size={18} /></Link></div>
             <p className="messa-no-app"><Check size={15} />Tus clientes escanean. La carta se abre. Sin descargar apps.</p>
             <p className="messa-login">¿Ya formas parte de Messa? <Link to="/login">Entra a tu cuenta <ArrowUpRight size={13} /></Link></p>
           </div>
           <div className="messa-showcase" role="img" aria-label="Dos maquetas frontales de iPhone 17 Pro Max con una carta digital de restaurante y el detalle de un plato">
-            <div className="messa-orbit messa-orbit-one" /><div className="messa-orbit messa-orbit-two" />
+            <div className="messa-showcase-art"><div className="messa-orbit messa-orbit-one" /><div className="messa-orbit messa-orbit-two" />
             <span className="messa-showcase-label">ASÍ DE BIEN PUEDE VERSE TU CARTA</span>
             <div className="messa-phones" aria-hidden="true"><MenuPhone /><MenuPhone detail /></div>
             <div className="messa-qr-note"><span><QrCode size={23} /></span><div>De tu mesa a su móvil.<small>Un QR. Toda tu carta.</small></div></div>
-            <span className="messa-demo-caption">Diseño ilustrativo · Descubre una carta real en la demo</span>
+            </div><span className="messa-demo-caption">Diseño ilustrativo · Descubre una carta real en la demo</span>
           </div>
         </section>
         <section className="messa-benefits" aria-label="Tu carta con Messa">

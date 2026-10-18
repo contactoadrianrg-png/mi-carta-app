@@ -1,9 +1,860 @@
-.messa-landing{--ink:#292d25;--orange:#ee602e;--paper:#fcf8f1;min-height:100vh;background:var(--paper);color:var(--ink);font-family:'Plus Jakarta Sans',sans-serif;overflow:hidden}
-.messa-landing *{box-sizing:border-box}.messa-landing a:focus-visible{outline:3px solid #5b684d;outline-offset:5px}.messa-header{max-width:1240px;margin:auto;padding:27px 36px;display:flex;align-items:center;justify-content:space-between;gap:20px;border-bottom:1px solid #e8e1d5}.messa-wordmark{display:inline-flex;align-items:center;font-size:29px;letter-spacing:-1.6px;font-weight:800}.messa-brand-dot{color:var(--orange)}.messa-brand-symbol{display:block;width:29px;height:31px;overflow:hidden;margin-right:10px}.messa-brand-symbol img{width:43px;max-width:none;transform:translate(-7px,-6px);mix-blend-mode:multiply}.messa-header-note{font-size:11px;color:#797b6f;letter-spacing:.1px}.messa-header-tag{font-size:9px;font-weight:700;letter-spacing:1.7px;color:#737965}.messa-hero{max-width:1240px;margin:auto;padding:60px 36px 53px;display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:26px;min-height:680px}.messa-hero-copy{position:relative;z-index:2;padding-bottom:14px}.messa-eyebrow{font-size:10px;font-weight:800;letter-spacing:1.6px;display:flex;align-items:center;gap:9px;color:#727b61;margin:0 0 25px}.messa-eyebrow>span{width:6px;height:6px;background:#7b8769;border-radius:50%}.messa-hero h1{font-size:clamp(42px,4.5vw,64px);font-weight:750;letter-spacing:-3px;line-height:1.09;max-width:570px;margin:0}.messa-hero h1 em{font-family:'Playfair Display',Georgia,serif;font-weight:500;color:var(--orange);letter-spacing:-2.3px;line-height:1.16}.messa-hero-description{font-size:15px;line-height:1.85;color:#74766b;max-width:423px;margin:25px 0 28px}.messa-hero-actions{display:flex;gap:11px;flex-wrap:wrap}.messa-button{min-height:53px;display:inline-flex;align-items:center;justify-content:center;gap:14px;border-radius:12px;padding:0 20px;font-size:12px;font-weight:750;transition:background .2s,transform .2s}.messa-button:hover{transform:translateY(-2px)}.messa-button-primary{background:var(--orange);color:#fff;box-shadow:0 8px 20px #ee602e20}.messa-button-primary:hover{background:#d64d1e}.messa-button-secondary{border:1px solid #ddd9cc;background:#fffaf3;color:#424939}.messa-button-secondary:hover{background:#f0ebdf}.messa-no-app{font-size:10px;color:#777d6a;display:flex;align-items:center;gap:6px;margin:18px 0 0;line-height:1.6}.messa-no-app svg{color:#73825d;flex-shrink:0}.messa-login{font-size:10px;color:#7b7b71;margin:31px 0 0}.messa-login a{font-weight:700;color:#424939;display:inline-flex;gap:3px;align-items:center;border-bottom:1px solid #c8c9b9;margin-left:4px;padding-bottom:2px}
-.messa-showcase{position:relative;height:553px;min-width:0;isolation:isolate}.messa-showcase:before{content:'';position:absolute;width:465px;height:465px;left:50%;top:43%;transform:translate(-50%,-50%);background:#f2e4d0;border-radius:50%;z-index:-2}.messa-orbit{position:absolute;border:1px solid #ddceb5;border-radius:50%;z-index:-1;pointer-events:none}.messa-orbit-one{width:520px;height:520px;top:-9px;left:50%;transform:translateX(-50%)}.messa-orbit-two{width:562px;height:562px;top:-30px;left:50%;transform:translateX(-50%);border-style:dashed;border-color:#e8ddc9}.messa-showcase-label{position:absolute;top:-26px;right:18px;font-size:8px;color:#9b927f;letter-spacing:1.8px;font-weight:700}.messa-phones{position:relative;width:490px;height:530px;left:50%;transform:translateX(-50%)}.messa-device{position:absolute;width:232px;height:497px;padding:6px;border-radius:39px;background:linear-gradient(120deg,#f8f8f6,#8b8b88 23%,#d5d4d0 45%,#f6f5f2 62%,#8a8a88);box-shadow:0 0 0 1px #b4b2ac,3px 6px 0 #c5c1b8,13px 25px 36px #63513a25;transform-origin:center}.messa-device:before{content:'';position:absolute;right:-3px;top:126px;height:38px;width:3px;background:#a7a29a;border-radius:2px}.messa-device:after{content:'';position:absolute;left:-3px;top:99px;height:53px;width:3px;background:#a7a29a;border-radius:2px}.messa-device-back{left:15px;top:3px;transform:rotate(-9deg);z-index:1}.messa-device-front{right:8px;top:43px;transform:rotate(9deg);z-index:2}.messa-device-screen{height:100%;border:4px solid #141513;border-radius:33px;overflow:hidden;background:#fbf9f4;position:relative;color:#2a3028}.messa-status{height:35px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-size:8px;font-weight:750;background:#fbf9f4;position:relative;z-index:1}.messa-island{position:absolute;background:#10110f;width:64px;height:18px;top:5px;left:50%;transform:translateX(-50%);border-radius:18px}.messa-status-icons{display:flex;gap:2px;align-items:center}.messa-status-icons svg{width:10px;height:10px}.messa-status-icons svg:last-child{width:13px}.messa-menu-top{display:flex;justify-content:space-between;align-items:center;padding:9px 15px 8px;border-bottom:1px solid #ece8dd}.messa-menu-top>span{font-family:Georgia,serif;font-size:20px;font-weight:bold;font-style:italic}.messa-menu-title{padding:20px 14px 14px}.messa-phone-kicker{font-size:6px;letter-spacing:1.5px;color:#8c7051;font-weight:800}.messa-menu-title h3{font-family:Georgia,serif;font-size:25px;letter-spacing:-.5px;margin:6px 0}.messa-menu-title p{font-size:7px;color:#838275}.messa-menu-tabs{display:flex;gap:6px;padding:0 13px 13px;font-size:6px}.messa-menu-tabs span{padding:6px 8px;border:1px solid #e9e5da;border-radius:12px;white-space:nowrap}.messa-menu-tabs span:first-child{background:#3f503a;color:white;border-color:#3f503a}.messa-menu-cards{padding:0 13px}.messa-dish-photo{height:119px;border-radius:10px;background-image:url('/hero-mobile.webp');background-size:100% auto;background-position:center 75%;position:relative}.messa-dish-photo>span{position:absolute;left:7px;top:7px;padding:4px 6px;background:#fffdf3e8;border-radius:5px;font-size:6px;font-weight:700}.messa-dish-name{display:flex;justify-content:space-between;align-items:center;padding-top:10px}.messa-menu-cards h4{font-size:10px;font-weight:750;margin:0}.messa-menu-cards p{font-size:7px;color:#8a887d;margin-top:5px}.messa-small-dish{display:flex;align-items:center;gap:9px;border-top:1px solid #e6e2d7;margin-top:13px;padding-top:12px}.messa-small-photo{width:48px;height:48px;border-radius:8px;background:url('/hero-mobile.webp') 12% 72%/200% auto}.messa-small-dish h4{font-size:8px}.messa-small-dish p{font-size:6px}.messa-phone-footer{position:absolute;bottom:18px;left:0;right:0;text-align:center;font-size:6px;color:#8f8d81}.messa-home-indicator{position:absolute;bottom:5px;left:50%;transform:translateX(-50%);width:70px;height:3px;border-radius:5px;background:#2a3028}.messa-detail-photo{height:224px;background:url('/hero-mobile.webp') 82% 72%/190% auto;display:flex;align-items:flex-start;justify-content:space-between;padding:12px}.messa-photo-control{width:23px;height:23px;border-radius:50%;background:#fffaf0e0;display:flex;align-items:center;justify-content:center}.messa-photo-control svg{width:12px;height:12px}.messa-detail-copy{padding:15px}.messa-detail-copy h3{font-family:Georgia,serif;font-size:23px;margin:7px 0 9px}.messa-detail-copy>p{font-size:8px;line-height:1.75;color:#807e73;margin:0}.messa-ingredients{display:flex;gap:5px;margin-top:12px}.messa-ingredients span{background:#eceee2;color:#697254;font-size:6px;padding:5px 7px;border-radius:5px}.messa-detail-rule{border-top:1px solid #e7e2d5;margin:13px 0 10px}.messa-detail-copy .messa-detail-note{font-family:Georgia,serif;font-style:italic;font-size:10px;line-height:1.5;color:#6d745e}.messa-qr-note{position:absolute;left:3px;bottom:8px;z-index:3;background:#fffdf8;border:1px solid #e8dfcd;border-radius:13px;box-shadow:0 10px 28px #6b5c3c12;padding:11px 16px 11px 11px;display:flex;align-items:center;gap:11px;transform:rotate(-3deg);font-size:10px;font-weight:750}.messa-qr-note>span{background:#ecefdf;color:#596c43;width:39px;height:39px;display:flex;justify-content:center;align-items:center;border-radius:8px}.messa-qr-note small{display:block;font-size:8px;font-weight:400;color:#8a8b7a;margin-top:5px}.messa-demo-caption{position:absolute;font-size:7px;color:#969180;right:0;bottom:-18px;letter-spacing:.1px}
-.messa-benefits{max-width:1168px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;padding:29px 0 32px;border-top:1px solid #e4dfd1;border-bottom:1px solid #e4dfd1;gap:25px}.messa-benefits>div{display:flex;align-items:center;gap:14px;padding:0 22px;border-right:1px solid #e4dfd1}.messa-benefits>div:first-child{padding-left:0}.messa-benefits>div:last-child{border:0}.messa-benefit-icon{color:#798365;display:flex}.messa-benefit-icon svg{width:23px;height:23px;stroke-width:1.4}.messa-benefits p{margin:0}.messa-benefits strong{font-size:12px;font-weight:750;display:block}.messa-benefits p>span{font-size:10px;color:#89887b;display:block;line-height:1.7;margin-top:5px}.messa-landing-footer{max-width:1240px;margin:auto;padding:23px 36px;display:flex;justify-content:space-between;gap:20px;font-size:9px;color:#959284}
-@media(min-width:1440px){.messa-hero{padding-top:80px;padding-bottom:70px;min-height:730px}}
-@media(max-width:1050px){.messa-hero{grid-template-columns:.95fr 1.05fr;gap:10px;padding-top:45px}.messa-hero h1{font-size:48px;letter-spacing:-2px}.messa-showcase{transform:scale(.86);transform-origin:center}.messa-hero-description{font-size:13px}.messa-button{font-size:11px;padding:0 15px}.messa-benefits{margin:0 36px}.messa-header-note{display:none}}
-@media(max-width:760px){.messa-header{padding:20px 24px}.messa-wordmark{font-size:26px}.messa-header-tag{font-size:8px;letter-spacing:1.2px}.messa-hero{display:flex;flex-direction:column;gap:0;padding:36px 24px 32px;min-height:0}.messa-hero-copy{text-align:center;padding:0;width:100%}.messa-eyebrow{justify-content:center;font-size:8px;letter-spacing:1.3px;margin-bottom:20px}.messa-hero h1{font-size:clamp(36px,7.3vw,53px);line-height:1.13;max-width:540px;margin:auto;letter-spacing:-1.9px}.messa-hero h1 em{letter-spacing:-1.3px}.messa-hero-description{font-size:12px;line-height:1.8;max-width:350px;margin:20px auto 23px}.messa-hero-actions{justify-content:center;gap:9px}.messa-button{min-height:49px;padding:0 15px;font-size:10px;gap:8px;border-radius:10px}.messa-no-app{justify-content:center;font-size:8px;margin-top:14px}.messa-no-app svg{width:12px}.messa-login{font-size:9px;margin-top:19px}.messa-showcase{margin:70px 0 -13px;width:100%;height:553px;transform:scale(.88);transform-origin:top center}.messa-showcase-label{top:-26px;right:50%;transform:translateX(50%);white-space:nowrap}.messa-qr-note{left:calc(50% - 215px);bottom:6px}.messa-demo-caption{right:50%;transform:translateX(50%);white-space:nowrap;bottom:-18px}.messa-benefits{grid-template-columns:1fr;margin:0 24px;gap:20px;padding:25px 0}.messa-benefits>div{border:0;padding:0;gap:15px}.messa-benefits strong{font-size:11px}.messa-benefits p>span{font-size:10px;margin-top:3px}.messa-landing-footer{padding:22px 24px;font-size:8px;flex-direction:column;gap:8px}}
-@media(max-width:420px){.messa-showcase{transform:scale(.70);height:490px;margin-top:57px;margin-bottom:-100px}.messa-hero h1{font-size:37px}.messa-hero-description{font-size:11px}.messa-hero{padding-left:20px;padding-right:20px}.messa-showcase:before{width:455px;height:455px}.messa-hero-actions{gap:8px}.messa-button{padding:0 12px;font-size:9px;gap:6px}}
-@media(prefers-reduced-motion:no-preference){@keyframes messa-enter{from{opacity:0;translate:0 14px}to{opacity:1;translate:0 0}}.messa-hero-copy{animation:messa-enter .65s ease-out both}.messa-showcase{animation:messa-enter .85s .1s ease-out both}}
+.messa-landing {
+  --ink:#292d25;
+  --orange:#ee602e;
+  --paper:#fcf8f1;
+  min-height:100vh;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'Plus Jakarta Sans',sans-serif;
+  overflow:hidden;
+}
+.messa-landing * {
+  box-sizing:border-box;
+}
+.messa-landing a:focus-visible {
+  outline:3px solid #5b684d;
+  outline-offset:5px;
+}
+.messa-header {
+  max-width:1240px;
+  margin:auto;
+  padding:27px 36px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+  border-bottom:1px solid #e8e1d5;
+}
+.messa-wordmark {
+  display:inline-flex;
+  align-items:center;
+  font-size:29px;
+  letter-spacing:-1.6px;
+  font-weight:800;
+}
+.messa-brand-dot {
+  color:var(--orange);
+}
+.messa-brand-symbol {
+  display:block;
+  width:29px;
+  height:31px;
+  overflow:hidden;
+  margin-right:10px;
+}
+.messa-brand-symbol img {
+  width:43px;
+  max-width:none;
+  transform:translate(-7px,-6px);
+  mix-blend-mode:multiply;
+}
+.messa-header-note {
+  font-size:11px;
+  color:#797b6f;
+  letter-spacing:.1px;
+}
+.messa-header-tag {
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:1.7px;
+  color:#737965;
+}
+.messa-hero {
+  max-width:1240px;
+  margin:auto;
+  padding:60px 36px 53px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  align-items:center;
+  gap:26px;
+  min-height:680px;
+}
+.messa-hero-copy {
+  position:relative;
+  z-index:2;
+  padding-bottom:14px;
+}
+.messa-eyebrow {
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:1.6px;
+  display:flex;
+  align-items:center;
+  gap:9px;
+  color:#727b61;
+  margin:0 0 25px;
+}
+.messa-eyebrow>span {
+  width:6px;
+  height:6px;
+  background:#7b8769;
+  border-radius:50%;
+}
+.messa-hero h1 {
+  font-size:clamp(42px,4.5vw,64px);
+  font-weight:750;
+  letter-spacing:-3px;
+  line-height:1.09;
+  max-width:570px;
+  margin:0;
+}
+.messa-hero h1 em {
+  font-family:'Playfair Display',Georgia,serif;
+  font-weight:500;
+  color:var(--orange);
+  letter-spacing:-2.3px;
+  line-height:1.16;
+}
+.messa-hero-description {
+  font-size:15px;
+  line-height:1.85;
+  color:#74766b;
+  max-width:423px;
+  margin:25px 0 28px;
+}
+.messa-hero-actions {
+  display:flex;
+  gap:11px;
+  flex-wrap:wrap;
+}
+.messa-button {
+  min-height:53px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  border-radius:12px;
+  padding:0 20px;
+  font-size:12px;
+  font-weight:750;
+  transition:background .2s,transform .2s;
+}
+.messa-button:hover {
+  transform:translateY(-2px);
+}
+.messa-button-primary {
+  background:var(--orange);
+  color:#fff;
+  box-shadow:0 8px 20px #ee602e20;
+}
+.messa-button-primary:hover {
+  background:#d64d1e;
+}
+.messa-button-secondary {
+  border:1px solid #ddd9cc;
+  background:#fffaf3;
+  color:#424939;
+}
+.messa-button-secondary:hover {
+  background:#f0ebdf;
+}
+.messa-no-app {
+  font-size:10px;
+  color:#777d6a;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin:18px 0 0;
+  line-height:1.6;
+}
+.messa-no-app svg {
+  color:#73825d;
+  flex-shrink:0;
+}
+.messa-login {
+  font-size:10px;
+  color:#7b7b71;
+  margin:31px 0 0;
+}
+.messa-login a {
+  font-weight:700;
+  color:#424939;
+  display:inline-flex;
+  gap:3px;
+  align-items:center;
+  border-bottom:1px solid #c8c9b9;
+  margin-left:4px;
+  padding-bottom:2px;
+}
+.messa-showcase-art {
+  position:relative;
+  width:100%;
+  height:553px;
+}
+.messa-showcase {
+  position:relative;
+  height:553px;
+  min-width:0;
+  isolation:isolate;
+}
+.messa-showcase-art:before {
+  content:'';
+  position:absolute;
+  width:465px;
+  height:465px;
+  left:50%;
+  top:43%;
+  transform:translate(-50%,-50%);
+  background:#f2e4d0;
+  border-radius:50%;
+  z-index:-2;
+}
+.messa-orbit {
+  position:absolute;
+  border:1px solid #ddceb5;
+  border-radius:50%;
+  z-index:-1;
+  pointer-events:none;
+}
+.messa-orbit-one {
+  width:520px;
+  height:520px;
+  top:-9px;
+  left:50%;
+  transform:translateX(-50%);
+}
+.messa-orbit-two {
+  width:562px;
+  height:562px;
+  top:-30px;
+  left:50%;
+  transform:translateX(-50%);
+  border-style:dashed;
+  border-color:#e8ddc9;
+}
+.messa-showcase-label {
+  position:absolute;
+  top:-26px;
+  right:18px;
+  font-size:8px;
+  color:#9b927f;
+  letter-spacing:1.8px;
+  font-weight:700;
+}
+.messa-phones {
+  position:relative;
+  width:490px;
+  height:530px;
+  left:50%;
+  transform:translateX(-50%);
+}
+.messa-device {
+  position:absolute;
+  width:232px;
+  height:497px;
+  padding:6px;
+  border-radius:39px;
+  background:linear-gradient(120deg,#f8f8f6,#8b8b88 23%,#d5d4d0 45%,#f6f5f2 62%,#8a8a88);
+  box-shadow:0 0 0 1px #b4b2ac,3px 6px 0 #c5c1b8,13px 25px 36px #63513a25;
+  transform-origin:center;
+}
+.messa-device:before {
+  content:'';
+  position:absolute;
+  right:-3px;
+  top:126px;
+  height:38px;
+  width:3px;
+  background:#a7a29a;
+  border-radius:2px;
+}
+.messa-device:after {
+  content:'';
+  position:absolute;
+  left:-3px;
+  top:99px;
+  height:53px;
+  width:3px;
+  background:#a7a29a;
+  border-radius:2px;
+}
+.messa-device-back {
+  left:15px;
+  top:3px;
+  transform:rotate(-9deg);
+  z-index:1;
+}
+.messa-device-front {
+  right:8px;
+  top:43px;
+  transform:rotate(9deg);
+  z-index:2;
+}
+.messa-device-screen {
+  height:100%;
+  border:4px solid #141513;
+  border-radius:33px;
+  overflow:hidden;
+  background:#fbf9f4;
+  position:relative;
+  color:#2a3028;
+}
+.messa-status {
+  height:35px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 14px;
+  font-size:8px;
+  font-weight:750;
+  background:#fbf9f4;
+  position:relative;
+  z-index:1;
+}
+.messa-island {
+  position:absolute;
+  background:#10110f;
+  width:64px;
+  height:18px;
+  top:5px;
+  left:50%;
+  transform:translateX(-50%);
+  border-radius:18px;
+}
+.messa-status-icons {
+  display:flex;
+  gap:2px;
+  align-items:center;
+}
+.messa-status-icons svg {
+  width:10px;
+  height:10px;
+}
+.messa-status-icons svg:last-child {
+  width:13px;
+}
+.messa-menu-top {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:9px 15px 8px;
+  border-bottom:1px solid #ece8dd;
+}
+.messa-menu-top>span {
+  font-family:Georgia,serif;
+  font-size:20px;
+  font-weight:bold;
+  font-style:italic;
+}
+.messa-menu-title {
+  padding:20px 14px 14px;
+}
+.messa-phone-kicker {
+  font-size:6px;
+  letter-spacing:1.5px;
+  color:#8c7051;
+  font-weight:800;
+}
+.messa-menu-title h3 {
+  font-family:Georgia,serif;
+  font-size:25px;
+  letter-spacing:-.5px;
+  margin:6px 0;
+}
+.messa-menu-title p {
+  font-size:7px;
+  color:#838275;
+}
+.messa-menu-tabs {
+  display:flex;
+  gap:6px;
+  padding:0 13px 13px;
+  font-size:6px;
+}
+.messa-menu-tabs span {
+  padding:6px 8px;
+  border:1px solid #e9e5da;
+  border-radius:12px;
+  white-space:nowrap;
+}
+.messa-menu-tabs span:first-child {
+  background:#3f503a;
+  color:white;
+  border-color:#3f503a;
+}
+.messa-menu-cards {
+  padding:0 13px;
+}
+.messa-dish-photo {
+  height:119px;
+  border-radius:10px;
+  background-image:url('/hero-mobile.webp');
+  background-size:100% auto;
+  background-position:center 75%;
+  position:relative;
+}
+.messa-dish-photo>span {
+  position:absolute;
+  left:7px;
+  top:7px;
+  padding:4px 6px;
+  background:#fffdf3e8;
+  border-radius:5px;
+  font-size:6px;
+  font-weight:700;
+}
+.messa-dish-name {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding-top:10px;
+}
+.messa-menu-cards h4 {
+  font-size:10px;
+  font-weight:750;
+  margin:0;
+}
+.messa-menu-cards p {
+  font-size:7px;
+  color:#8a887d;
+  margin-top:5px;
+}
+.messa-small-dish {
+  display:flex;
+  align-items:center;
+  gap:9px;
+  border-top:1px solid #e6e2d7;
+  margin-top:13px;
+  padding-top:12px;
+}
+.messa-small-photo {
+  width:48px;
+  height:48px;
+  border-radius:8px;
+  background:url('/hero-mobile.webp') 12% 72%/200% auto;
+}
+.messa-small-dish h4 {
+  font-size:8px;
+}
+.messa-small-dish p {
+  font-size:6px;
+}
+.messa-phone-footer {
+  position:absolute;
+  bottom:18px;
+  left:0;
+  right:0;
+  text-align:center;
+  font-size:6px;
+  color:#8f8d81;
+}
+.messa-home-indicator {
+  position:absolute;
+  bottom:5px;
+  left:50%;
+  transform:translateX(-50%);
+  width:70px;
+  height:3px;
+  border-radius:5px;
+  background:#2a3028;
+}
+.messa-detail-photo {
+  height:224px;
+  background:url('/hero-mobile.webp') 82% 72%/190% auto;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  padding:12px;
+}
+.messa-photo-control {
+  width:23px;
+  height:23px;
+  border-radius:50%;
+  background:#fffaf0e0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.messa-photo-control svg {
+  width:12px;
+  height:12px;
+}
+.messa-detail-copy {
+  padding:15px;
+}
+.messa-detail-copy h3 {
+  font-family:Georgia,serif;
+  font-size:23px;
+  margin:7px 0 9px;
+}
+.messa-detail-copy>p {
+  font-size:8px;
+  line-height:1.75;
+  color:#807e73;
+  margin:0;
+}
+.messa-ingredients {
+  display:flex;
+  gap:5px;
+  margin-top:12px;
+}
+.messa-ingredients span {
+  background:#eceee2;
+  color:#697254;
+  font-size:6px;
+  padding:5px 7px;
+  border-radius:5px;
+}
+.messa-detail-rule {
+  border-top:1px solid #e7e2d5;
+  margin:13px 0 10px;
+}
+.messa-detail-copy .messa-detail-note {
+  font-family:Georgia,serif;
+  font-style:italic;
+  font-size:10px;
+  line-height:1.5;
+  color:#6d745e;
+}
+.messa-qr-note {
+  position:absolute;
+  left:3px;
+  bottom:8px;
+  z-index:3;
+  background:#fffdf8;
+  border:1px solid #e8dfcd;
+  border-radius:13px;
+  box-shadow:0 10px 28px #6b5c3c12;
+  padding:11px 16px 11px 11px;
+  display:flex;
+  align-items:center;
+  gap:11px;
+  transform:rotate(-3deg);
+  font-size:10px;
+  font-weight:750;
+}
+.messa-qr-note>span {
+  background:#ecefdf;
+  color:#596c43;
+  width:39px;
+  height:39px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  border-radius:8px;
+}
+.messa-qr-note small {
+  display:block;
+  font-size:8px;
+  font-weight:400;
+  color:#8a8b7a;
+  margin-top:5px;
+}
+.messa-demo-caption {
+  position:absolute;
+  font-size:7px;
+  color:#969180;
+  right:0;
+  bottom:-18px;
+  letter-spacing:.1px;
+}
+.messa-benefits {
+  max-width:1168px;
+  margin:0 auto;
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  padding:29px 0 32px;
+  border-top:1px solid #e4dfd1;
+  border-bottom:1px solid #e4dfd1;
+  gap:25px;
+}
+.messa-benefits>div {
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:0 22px;
+  border-right:1px solid #e4dfd1;
+}
+.messa-benefits>div:first-child {
+  padding-left:0;
+}
+.messa-benefits>div:last-child {
+  border:0;
+}
+.messa-benefit-icon {
+  color:#798365;
+  display:flex;
+}
+.messa-benefit-icon svg {
+  width:23px;
+  height:23px;
+  stroke-width:1.4;
+}
+.messa-benefits p {
+  margin:0;
+}
+.messa-benefits strong {
+  font-size:12px;
+  font-weight:750;
+  display:block;
+}
+.messa-benefits p>span {
+  font-size:10px;
+  color:#89887b;
+  display:block;
+  line-height:1.7;
+  margin-top:5px;
+}
+.messa-landing-footer {
+  max-width:1240px;
+  margin:auto;
+  padding:23px 36px;
+  display:flex;
+  justify-content:space-between;
+  gap:20px;
+  font-size:9px;
+  color:#959284;
+}
+@media(min-width:1440px) {
+  .messa-hero {
+    padding-top:80px;
+    padding-bottom:70px;
+    min-height:730px;
+  }
+}
+@media(max-width:1050px) {
+  .messa-hero {
+    grid-template-columns:.95fr 1.05fr;
+    gap:10px;
+    padding-top:45px;
+  }
+  .messa-hero h1 {
+    font-size:48px;
+    letter-spacing:-2px;
+  }
+  .messa-showcase {
+    transform:scale(.86);
+    transform-origin:center;
+  }
+  .messa-hero-description {
+    font-size:13px;
+  }
+  .messa-button {
+    font-size:11px;
+    padding:0 15px;
+  }
+  .messa-benefits {
+    margin:0 36px;
+  }
+  .messa-header-note {
+    display:none;
+  }
+}
+@media(max-width:900px) {
+  .messa-header {
+    padding:18px 22px;
+  }
+  .messa-wordmark {
+    font-size:26px;
+  }
+  .messa-header-tag {
+    font-size:8px;
+    letter-spacing:1.2px;
+  }
+  .messa-hero {
+    display:flex;
+    flex-direction:column;
+    gap:0;
+    padding:28px 22px 30px;
+    min-height:0;
+  }
+  .messa-hero-copy {
+    display:contents;
+    text-align:center;
+    animation:none;
+  }
+  .messa-eyebrow {
+    order:1;
+    justify-content:center;
+    font-size:9px;
+    letter-spacing:1px;
+    margin:0 0 15px;
+  }
+  .messa-hero h1 {
+    order:2;
+    text-align:center;
+    font-size:clamp(34px,7.5vw,49px);
+    line-height:1.1;
+    max-width:540px;
+    margin:0 auto;
+    letter-spacing:-1.6px;
+  }
+  .messa-hero h1 em {
+    letter-spacing:-1.3px;
+  }
+  .messa-hero-description {
+    order:3;
+    text-align:center;
+    font-size:14px;
+    line-height:1.7;
+    max-width:360px;
+    margin:16px auto 0;
+    color:#686c60;
+  }
+  .messa-showcase {
+    order:4;
+    margin:38px 0 18px;
+    width:100%;
+    height:420px;
+    transform:none;
+  }
+  .messa-showcase-art {
+    width:490px;
+    position:absolute;
+    left:50%;
+    transform:translateX(-50%) scale(.72);
+    transform-origin:top center;
+  }
+  .messa-showcase-label {
+    top:-26px;
+    right:50%;
+    transform:translateX(50%);
+    white-space:nowrap;
+  }
+  .messa-qr-note {
+    left:3px;
+    bottom:6px;
+  }
+  .messa-demo-caption {
+    right:50%;
+    transform:translateX(50%);
+    white-space:normal;
+    bottom:0;
+    text-align:center;
+    width:100%;
+    font-size:9px;
+    line-height:1.5;
+    color:#77786a;
+  }
+  .messa-hero-actions {
+    order:5;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    width:100%;
+    max-width:420px;
+    gap:9px;
+  }
+  .messa-button {
+    min-height:52px;
+    padding:10px 12px;
+    font-size:12px;
+    gap:7px;
+    border-radius:11px;
+    text-align:center;
+  }
+  .messa-button svg {
+    flex-shrink:0;
+    width:16px;
+  }
+  .messa-no-app {
+    order:6;
+    justify-content:center;
+    text-align:center;
+    font-size:11px;
+    margin-top:15px;
+    max-width:340px;
+    color:#69715f;
+  }
+  .messa-no-app svg {
+    width:14px;
+  }
+  .messa-login {
+    order:7;
+    font-size:12px;
+    margin:12px 0 0;
+    text-align:center;
+    line-height:1.8;
+  }
+  .messa-login a {
+    min-height:44px;
+    align-items:center;
+    margin-left:4px;
+  }
+  .messa-benefits {
+    grid-template-columns:1fr;
+    margin:0 22px;
+    gap:23px;
+    padding:28px 0;
+  }
+  .messa-benefits>div {
+    border:0;
+    padding:0;
+    gap:15px;
+  }
+  .messa-benefits strong {
+    font-size:14px;
+  }
+  .messa-benefits p>span {
+    font-size:12px;
+    margin-top:4px;
+    color:#717466;
+  }
+  .messa-landing-footer {
+    padding:22px;
+    font-size:10px;
+    flex-direction:column;
+    gap:8px;
+    line-height:1.8;
+  }
+}
+@media(max-width:420px) {
+  .messa-showcase-art {
+    transform:translateX(-50%) scale(.64);
+  }
+  .messa-showcase {
+    height:375px;
+  }
+  .messa-hero h1 {
+    font-size:36px;
+  }
+  .messa-hero {
+    padding-left:20px;
+    padding-right:20px;
+  }
+  .messa-hero-description {
+    font-size:13px;
+  }
+  .messa-button {
+    font-size:11px;
+    padding:10px 8px;
+  }
+}
+@media(max-width:360px) {
+  .messa-showcase-art {
+    transform:translateX(-50%) scale(.56);
+  }
+  .messa-showcase {
+    height:330px;
+  }
+  .messa-hero h1 {
+    font-size:32px;
+  }
+  .messa-header-tag {
+    font-size:7px;
+    letter-spacing:.8px;
+  }
+  .messa-hero-actions {
+    grid-template-columns:1fr;
+  }
+  .messa-button {
+    font-size:13px;
+  }
+}
+@media(prefers-reduced-motion:no-preference) {
+  @keyframes messa-enter {
+    from {
+      opacity:0;
+      translate:0 14px;
+    }
+    to {
+      opacity:1;
+      translate:0 0;
+    }
+  }
+  .messa-hero-copy {
+    animation:messa-enter .65s ease-out both;
+  }
+  .messa-showcase {
+    animation:messa-enter .85s .1s ease-out both;
+  }
+}
