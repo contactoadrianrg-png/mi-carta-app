@@ -206,7 +206,7 @@ function SettingsModal({ user, onClose, onSignOut, theme, onThemeChange }) {
               <div style={{ width: 32, height: 32, borderRadius: 10, background: `${theme.accent}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Settings size={14} style={{ color: theme.accent }} />
               </div>
-              <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, fontWeight: 700, color: CHARCOAL, margin: 0 }}>Configuración</h2>
+              <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 18, fontWeight: 800, color: CHARCOAL, margin: 0 }}>Configuración</h2>
             </div>
             <button
               onClick={onClose}
@@ -367,6 +367,7 @@ export default function AdminPage() {
   const [changingTheme, setChangingTheme] = useState(null)
   const [planFilter, setPlanFilter]     = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [activeNav, setActiveNav]       = useState('dashboard')
   const [notesOpen, setNotesOpen]       = useState(null)
   const [noteDraft, setNoteDraft]       = useState('')
   const [savingNotes, setSavingNotes]   = useState(null)
@@ -434,6 +435,19 @@ export default function AdminPage() {
 
   const handleSignOut = async () => { await signOut(); navigate('/login') }
 
+  const handleNavigation = (section) => {
+    setActiveNav(section)
+    const target = section === 'dashboard' ? 'dashboard-top' : section === 'stats' ? 'statistics-section' : 'restaurants-section'
+    requestAnimationFrame(() => document.getElementById(target)?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+  }
+
+  const showPendingAccounts = (filter = 'needs_setup') => {
+    setPlanFilter('all')
+    setStatusFilter(filter)
+    setActiveNav('restaurants')
+    requestAnimationFrame(() => document.getElementById('restaurants-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+  }
+
   // ── Derived stats ────────────────────────────────────────────────────────────
   const freeCount    = restaurants.filter(r => (r.plan || 'free') === 'free').length
   const proCount     = restaurants.filter(r => r.plan === 'pro').length
@@ -460,6 +474,9 @@ export default function AdminPage() {
       if (statusFilter === 'inactive') return !r.active
       if (statusFilter === 'ready') return complete
       if (statusFilter === 'needs_setup') return !complete
+      if (statusFilter === 'missing_logo') return !r.has_logo
+      if (statusFilter === 'missing_dishes') return Number(r.dish_count) === 0
+      if (statusFilter === 'missing_reservations') return !r.has_reservations
       return true
     })
     .filter(r =>
@@ -505,9 +522,9 @@ export default function AdminPage() {
   ]
 
   const pendingItems = [
-    { label: 'Sin logo', count: restaurants.filter(r => !r.has_logo).length, hint: 'Completa la identidad visual', filter: 'needs_setup' },
-    { label: 'Sin platos', count: restaurants.filter(r => Number(r.dish_count) === 0).length, hint: 'La carta todavía no está lista', filter: 'needs_setup' },
-    { label: 'Sin reservas', count: restaurants.filter(r => !r.has_reservations).length, hint: 'Activa WhatsApp o enlace de reserva', filter: 'needs_setup' },
+    { label: 'Sin logo', count: restaurants.filter(r => !r.has_logo).length, hint: 'Completa la identidad visual', filter: 'missing_logo' },
+    { label: 'Sin platos', count: restaurants.filter(r => Number(r.dish_count) === 0).length, hint: 'La carta todavía no está lista', filter: 'missing_dishes' },
+    { label: 'Sin reservas', count: restaurants.filter(r => !r.has_reservations).length, hint: 'Activa WhatsApp o enlace de reserva', filter: 'missing_reservations' },
   ]
 
   // ── Shared style helpers ─────────────────────────────────────────────────────
@@ -527,8 +544,8 @@ export default function AdminPage() {
   }
 
   const headingSerif = {
-    fontFamily: "'Playfair Display', serif",
-    fontWeight: 700,
+    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    fontWeight: 800,
     color: CHARCOAL,
   }
 
@@ -559,14 +576,18 @@ export default function AdminPage() {
         {/* Nav */}
         <nav style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 5, flex: 1 }}>
           {[
-            { Icon: LayoutDashboard, tip: 'Panel de control', active: true },
-            { Icon: Store,           tip: 'Restaurantes' },
-            { Icon: Users,           tip: 'Usuarios' },
-            { Icon: BarChart2,       tip: 'Estadísticas' },
-          ].map(({ Icon, tip, active }) => (
+            { Icon: LayoutDashboard, tip: 'Panel de control', id: 'dashboard' },
+            { Icon: Store,           tip: 'Restaurantes', id: 'restaurants' },
+            { Icon: Users,           tip: 'Usuarios', id: 'users' },
+            { Icon: BarChart2,       tip: 'Estadísticas', id: 'stats' },
+          ].map(({ Icon, tip, id }) => {
+            const active = activeNav === id
+            return (
             <button
               key={tip}
               title={tip}
+              aria-current={active ? 'page' : undefined}
+              onClick={() => handleNavigation(id)}
               style={{
                 width: '100%', height: 42, padding: '0 12px', borderRadius: 11, border: 'none', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 12,
@@ -579,7 +600,7 @@ export default function AdminPage() {
             >
               <Icon size={17} /><span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 13, fontWeight: active ? 700 : 600 }}>{tip}</span>
             </button>
-          ))}
+          )})}
         </nav>
 
         {/* Bottom */}
@@ -668,7 +689,7 @@ export default function AdminPage() {
         <main style={{ padding: '28px 32px', display: 'flex', flexDirection: 'column', gap: 24 }}>
 
           {/* ── WELCOME BANNER ── */}
-          <section>
+          <section id="dashboard-top">
             <h2 style={{ ...headingSerif, fontSize: 28, margin: 0 }}>Panel de Control</h2>
             <p style={{ color: CHARCOAL_L, fontSize: 14, marginTop: 4, marginBottom: 0 }}>
               Bienvenido de nuevo. Aquí tienes el resumen de la plataforma.
@@ -686,7 +707,7 @@ export default function AdminPage() {
                   <ArrowUpRight size={14} style={{ color: CHARCOAL_L, marginTop: 4 }} />
                 </div>
                 <p style={{ ...labelStyle, marginBottom: 4 }}>{label}</p>
-                <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 30, fontWeight: 700, color: CHARCOAL, margin: 0, lineHeight: 1 }}>{value}</p>
+                <p style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 30, fontWeight: 800, letterSpacing: '-0.04em', color: CHARCOAL, margin: 0, lineHeight: 1 }}>{value}</p>
                 <p style={{ fontSize: 11, color: CHARCOAL_L, marginTop: 6, marginBottom: 0 }}>{sub}</p>
               </div>
             ))}
@@ -698,15 +719,15 @@ export default function AdminPage() {
                 <h2 style={{ ...headingSerif, fontSize: 19, margin: 0 }}>Acciones pendientes</h2>
                 <p style={{ fontSize: 12, color: CHARCOAL_L, margin: '3px 0 0' }}>Completa la configuración de tus restaurantes.</p>
               </div>
-              <button type="button" onClick={() => setStatusFilter('needs_setup')} style={{ border: `1px solid ${theme.accent}`, background: 'transparent', color: theme.accent, borderRadius: 9, padding: '8px 11px', fontSize: 11, fontWeight: 800, cursor: 'pointer' }}>Ver pendientes</button>
+              <button type="button" onClick={() => showPendingAccounts()} style={{ border: `1px solid ${theme.accent}`, background: 'transparent', color: theme.accent, borderRadius: 9, padding: '8px 11px', fontSize: 11, fontWeight: 800, cursor: 'pointer' }}>Ver pendientes</button>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10 }}>
-              {pendingItems.map(item => <button type="button" key={item.label} onClick={() => setStatusFilter(item.filter)} style={{ textAlign: 'left', border: `1px solid ${CREAM_DARK}`, background: CREAM, borderRadius: 12, padding: '12px 14px', cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif" }}><span style={{ display: 'block', fontSize: 18, fontWeight: 800, color: item.count ? CHARCOAL : '#15803d' }}>{item.count} {item.label.toLowerCase()}</span><span style={{ display: 'block', fontSize: 11, color: CHARCOAL_L, marginTop: 3 }}>{item.count ? item.hint : 'Todo correcto'}</span></button>)}
+              {pendingItems.map(item => <button type="button" key={item.label} onClick={() => showPendingAccounts(item.filter)} style={{ textAlign: 'left', border: `1px solid ${CREAM_DARK}`, background: CREAM, borderRadius: 12, padding: '12px 14px', cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif" }}><span style={{ display: 'block', fontSize: 18, fontWeight: 800, color: item.count ? CHARCOAL : '#15803d' }}>{item.count} {item.label.toLowerCase()}</span><span style={{ display: 'block', fontSize: 11, color: CHARCOAL_L, marginTop: 3 }}>{item.count ? item.hint : 'Todo correcto'}</span></button>)}
             </div>
           </section>
 
           {/* ── CHARTS ROW ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16 }}
+          <div id="statistics-section" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16 }}
             className="lg:grid-cols-3"
           >
             {/* Area chart */}
@@ -799,7 +820,7 @@ export default function AdminPage() {
 
                 <div style={{ paddingTop: 12, marginTop: 4, borderTop: `1px solid ${CREAM_DARK}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: 11, color: CHARCOAL_L }}>Ingreso estimado</span>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: theme.accent, fontFamily: "'Playfair Display', serif" }}>
+                  <span style={{ fontSize: 14, fontWeight: 800, color: theme.accent, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                     {proCount * 19}€/mes
                   </span>
                 </div>
@@ -808,7 +829,7 @@ export default function AdminPage() {
           </div>
 
           {/* ── TABLE ── */}
-          <div style={{ ...card, overflow: 'hidden' }}>
+          <div id="restaurants-section" style={{ ...card, overflow: 'hidden' }}>
             {/* Toolbar */}
             <div style={{ padding: '18px 24px', borderBottom: `1px solid ${CREAM_DARK}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
               <div>
@@ -838,6 +859,9 @@ export default function AdminPage() {
                 <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} aria-label="Filtrar estado de la cuenta" style={{ padding: '5px 10px', borderRadius: 10, border: `1px solid ${CREAM_DARK}`, background: CREAM_LIGHT, color: CHARCOAL, fontSize: 11, fontWeight: 700, outline: 'none', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                   <option value="all">Todos los estados</option>
                   <option value="needs_setup">Falta configurar</option>
+                  <option value="missing_logo">Sin logo</option>
+                  <option value="missing_dishes">Sin platos</option>
+                  <option value="missing_reservations">Sin reservas</option>
                   <option value="ready">Configuración completa</option>
                   <option value="active">Carta activa</option>
                   <option value="inactive">Carta pausada</option>
@@ -904,7 +928,7 @@ export default function AdminPage() {
                                   background: `${theme.accent}14`,
                                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                                   color: theme.accent, fontSize: 12, fontWeight: 700, flexShrink: 0,
-                                  fontFamily: "'Playfair Display', serif",
+                                  fontFamily: "'Plus Jakarta Sans', sans-serif",
                                 }}
                               >
                                 {(r.name || '?')[0].toUpperCase()}
