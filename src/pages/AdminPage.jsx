@@ -5,8 +5,8 @@ import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import {
   LayoutDashboard, Store, Users, BarChart2, Settings, LogOut,
-  X, Mail, Eye, EyeOff, Check, Crown, Activity, Search,
-  TrendingUp, ArrowUpRight, UtensilsCrossed,
+  X, Mail, Eye, EyeOff, Check, Crown, Search,
+  TrendingUp, ArrowUpRight,
 } from 'lucide-react'
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -440,9 +440,6 @@ export default function AdminPage() {
   const activeCount  = restaurants.filter(r => r.active).length
   const paidCount    = proCount
   const today        = new Date()
-  const newToday     = restaurants.filter(r =>
-    new Date(r.created_at).toDateString() === today.toDateString()
-  ).length
   const thisMonthCount = restaurants.filter(r => {
     const d = new Date(r.created_at)
     return d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear()
@@ -474,37 +471,43 @@ export default function AdminPage() {
 
   const statCards = [
     {
-      label: 'Total restaurantes',
-      value: restaurants.length,
-      sub: `+${thisMonthCount} este mes`,
+      label: 'Restaurantes activos',
+      value: activeCount,
+      sub: `${restaurants.length} registrados`,
       icon: Store,
       iconBg: `${theme.accent}14`,
       iconColor: theme.accent,
     },
     {
-      label: 'Usuarios registrados',
-      value: restaurants.length,
-      sub: `${activeCount} activos`,
+      label: 'Nuevos este mes',
+      value: thisMonthCount,
+      sub: thisMonthCount ? 'Nuevos registros' : 'Sin cambios',
       icon: Users,
       iconBg: '#dbeafe',
       iconColor: '#1d4ed8',
     },
     {
-      label: 'Registros hoy',
-      value: newToday,
-      sub: `${activeCount} activos en total`,
-      icon: Activity,
-      iconBg: '#fce7f3',
-      iconColor: '#be185d',
-    },
-    {
-      label: 'Planes de pago',
+      label: 'Planes Pro',
       value: paidCount,
-      sub: `${proCount} Pro`,
+      sub: paidCount ? 'Suscripciones activas' : 'Sin suscripciones',
       icon: Crown,
       iconBg: '#fff7ed',
       iconColor: '#c2410c',
     },
+    {
+      label: 'Ingreso mensual',
+      value: `${proCount * 19} €`,
+      sub: `${proCount} cuentas Pro · 19 €/mes`,
+      icon: TrendingUp,
+      iconBg: '#dcfce7',
+      iconColor: '#15803d',
+    },
+  ]
+
+  const pendingItems = [
+    { label: 'Sin logo', count: restaurants.filter(r => !r.has_logo).length, hint: 'Completa la identidad visual', filter: 'needs_setup' },
+    { label: 'Sin platos', count: restaurants.filter(r => Number(r.dish_count) === 0).length, hint: 'La carta todavía no está lista', filter: 'needs_setup' },
+    { label: 'Sin reservas', count: restaurants.filter(r => !r.has_reservations).length, hint: 'Activa WhatsApp o enlace de reserva', filter: 'needs_setup' },
   ]
 
   // ── Shared style helpers ─────────────────────────────────────────────────────
@@ -672,55 +675,34 @@ export default function AdminPage() {
           </section>
 
           {/* ── STAT CARDS ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}
-            className="lg:grid-cols-4"
-          >
-            {/* Hero card */}
-            <div
-              style={{
-                ...card,
-                gridColumn: 'span 2',
-                padding: 24,
-                position: 'relative',
-                overflow: 'hidden',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                minHeight: 140,
-              }}
-            >
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: theme.accent, animation: 'pulse 2s infinite', display: 'inline-block' }} />
-                  <span style={{ ...labelStyle, color: theme.accent }}>PLATAFORMA ACTIVA</span>
-                </div>
-                <p style={{ ...labelStyle, marginBottom: 0 }}>{activeCount} restaurantes publicados</p>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginTop: 16 }}>
-                <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 48, fontWeight: 700, color: CHARCOAL, lineHeight: 1 }}>
-                  {restaurants.length}
-                </span>
-                <span style={{ ...labelStyle }}>RESTAURANTES TOTALES</span>
-              </div>
-              <div style={{ position: 'absolute', right: -20, bottom: -20, opacity: 0.04, color: CHARCOAL, pointerEvents: 'none' }}>
-                <UtensilsCrossed size={160} />
-              </div>
-            </div>
-
-            {statCards.slice(1).map(({ label, value, sub, icon: Icon, iconBg, iconColor }) => (
-              <div key={label} style={{ ...card, padding: 20 }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 16 }}>
+            {statCards.map(({ label, value, sub, icon: Icon, iconBg, iconColor }) => (
+              <div key={label} style={{ ...card, padding: 18, minHeight: 128 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
                   <div style={{ padding: 8, borderRadius: 10, background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Icon size={17} style={{ color: iconColor }} />
                   </div>
-                  <TrendingUp size={13} style={{ color: CHARCOAL_L, marginTop: 4 }} />
+                  <ArrowUpRight size={14} style={{ color: CHARCOAL_L, marginTop: 4 }} />
                 </div>
                 <p style={{ ...labelStyle, marginBottom: 4 }}>{label}</p>
-                <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 32, fontWeight: 700, color: CHARCOAL, margin: 0, lineHeight: 1 }}>{value}</p>
+                <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 30, fontWeight: 700, color: CHARCOAL, margin: 0, lineHeight: 1 }}>{value}</p>
                 <p style={{ fontSize: 11, color: CHARCOAL_L, marginTop: 6, marginBottom: 0 }}>{sub}</p>
               </div>
             ))}
           </div>
+
+          <section style={{ ...card, padding: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14, flexWrap: 'wrap' }}>
+              <div>
+                <h2 style={{ ...headingSerif, fontSize: 19, margin: 0 }}>Acciones pendientes</h2>
+                <p style={{ fontSize: 12, color: CHARCOAL_L, margin: '3px 0 0' }}>Completa la configuración de tus restaurantes.</p>
+              </div>
+              <button type="button" onClick={() => setStatusFilter('needs_setup')} style={{ border: `1px solid ${theme.accent}`, background: 'transparent', color: theme.accent, borderRadius: 9, padding: '8px 11px', fontSize: 11, fontWeight: 800, cursor: 'pointer' }}>Ver pendientes</button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10 }}>
+              {pendingItems.map(item => <button type="button" key={item.label} onClick={() => setStatusFilter(item.filter)} style={{ textAlign: 'left', border: `1px solid ${CREAM_DARK}`, background: CREAM, borderRadius: 12, padding: '12px 14px', cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif" }}><span style={{ display: 'block', fontSize: 18, fontWeight: 800, color: item.count ? CHARCOAL : '#15803d' }}>{item.count} {item.label.toLowerCase()}</span><span style={{ display: 'block', fontSize: 11, color: CHARCOAL_L, marginTop: 3 }}>{item.count ? item.hint : 'Todo correcto'}</span></button>)}
+            </div>
+          </section>
 
           {/* ── CHARTS ROW ── */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16 }}
@@ -829,7 +811,7 @@ export default function AdminPage() {
             {/* Toolbar */}
             <div style={{ padding: '18px 24px', borderBottom: `1px solid ${CREAM_DARK}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
               <div>
-                <h2 style={{ ...headingSerif, fontSize: 19, margin: 0 }}>Restaurantes</h2>
+                <h2 style={{ ...headingSerif, fontSize: 19, margin: 0 }}>Últimos restaurantes</h2>
                 <p style={{ fontSize: 11, color: CHARCOAL_L, marginTop: 2, marginBottom: 0 }}>
                   {filtered.length} {filtered.length === 1 ? 'resultado' : 'resultados'}
                 </p>
