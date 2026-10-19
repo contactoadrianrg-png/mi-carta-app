@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { Fragment, useState, useEffect, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
@@ -63,6 +63,23 @@ const PLAN_BADGE = {
   free:    { bg: CREAM_DARK,  color: CHARCOAL_L },
   pro:     { bg: '#dbeafe',   color: '#1d4ed8' },
   premium: { bg: '#fff7ed',   color: '#c2410c' },
+}
+
+const setupItems = (restaurant) => [
+  { label: 'Logo', ready: restaurant.has_logo },
+  { label: 'Platos', ready: Number(restaurant.dish_count) > 0 },
+  { label: 'Destacado', ready: restaurant.has_highlight },
+  { label: 'Reservas', ready: restaurant.has_reservations },
+]
+
+function SetupStatus({ restaurant, accent }) {
+  const items = setupItems(restaurant)
+  const ready = items.filter(item => item.ready).length
+  return (
+    <div aria-label={`${ready} de ${items.length} elementos configurados`} style={{ display: 'flex', flexWrap: 'wrap', gap: 5, minWidth: 170 }}>
+      {items.map(item => <span key={item.label} title={item.ready ? `${item.label}: configurado` : `${item.label}: pendiente`} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 6px', borderRadius: 7, fontSize: 10, fontWeight: 700, color: item.ready ? accent : CHARCOAL_L, background: item.ready ? `${accent}12` : CREAM, border: `1px solid ${item.ready ? `${accent}28` : CREAM_DARK}` }}><Check size={11} strokeWidth={item.ready ? 3 : 2} />{item.label}</span>)}
+    </div>
+  )
 }
 
 // ─── Chart data builder ────────────────────────────────────────────────────────
@@ -350,6 +367,10 @@ export default function AdminPage() {
   const [changingPlan, setChangingPlan]   = useState(null)
   const [changingTheme, setChangingTheme] = useState(null)
   const [planFilter, setPlanFilter]     = useState('all')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [notesOpen, setNotesOpen]       = useState(null)
+  const [noteDraft, setNoteDraft]       = useState('')
+  const [savingNotes, setSavingNotes]   = useState(null)
   const [period, setPeriod]             = useState('MENSUAL')
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [theme, setTheme]               = useState(loadTheme)
@@ -397,6 +418,21 @@ export default function AdminPage() {
     setChangingPlan(null)
   }
 
+  const openNotes = (restaurant) => {
+    setNotesOpen(current => current === restaurant.id ? null : restaurant.id)
+    setNoteDraft(restaurant.admin_notes || '')
+  }
+
+  const saveNotes = async (restaurant) => {
+    setSavingNotes(restaurant.id)
+    const { error } = await supabase.rpc('admin_set_restaurant_notes', { p_restaurant_id: restaurant.id, p_notes: noteDraft })
+    if (error) { toast.error(error.message); setSavingNotes(null); return }
+    setRestaurants(prev => prev.map(item => item.id === restaurant.id ? { ...item, admin_notes: noteDraft.trim() } : item))
+    setNotesOpen(null)
+    setSavingNotes(null)
+    toast.success('Nota privada guardada')
+  }
+
   const handleSignOut = async () => { await signOut(); navigate('/login') }
 
   // ── Derived stats ────────────────────────────────────────────────────────────
@@ -424,10 +460,18 @@ export default function AdminPage() {
 
   const filtered = useMemo(() => restaurants
     .filter(r => planFilter === 'all' || (r.plan || 'free') === planFilter)
+    .filter(r => {
+      const complete = setupItems(r).every(item => item.ready)
+      if (statusFilter === 'active') return r.active
+      if (statusFilter === 'inactive') return !r.active
+      if (statusFilter === 'ready') return complete
+      if (statusFilter === 'needs_setup') return !complete
+      return true
+    })
     .filter(r =>
       r.name?.toLowerCase().includes(search.toLowerCase()) ||
       r.owner_email?.toLowerCase().includes(search.toLowerCase())
-    ), [restaurants, planFilter, search])
+    ), [restaurants, planFilter, statusFilter, search])
 
   const initial = (user?.email || 'A')[0].toUpperCase()
 
@@ -794,22 +838,31 @@ export default function AdminPage() {
                   {filtered.length} {filtered.length === 1 ? 'resultado' : 'resultados'}
                 </p>
               </div>
-              <div style={{ display: 'flex', gap: 4, background: CREAM_DARK, borderRadius: 12, padding: 4 }}>
-                {['all', 'free', 'pro', 'premium'].map(f => (
-                  <button
-                    key={f}
-                    onClick={() => setPlanFilter(f)}
-                    style={{
-                      padding: '5px 12px', borderRadius: 8, fontSize: 11, fontWeight: 700, textTransform: 'capitalize',
-                      border: 'none', cursor: 'pointer', transition: 'all 0.15s', fontFamily: "'Plus Jakarta Sans', sans-serif",
-                      background: planFilter === f ? CREAM_LIGHT : 'transparent',
-                      color: planFilter === f ? theme.accent : CHARCOAL_L,
-                      boxShadow: planFilter === f ? '0 1px 4px rgba(27,28,28,0.08)' : 'none',
-                    }}
-                  >
-                    {f === 'all' ? 'Todos' : PLAN_LABEL[f]}
-                  </button>
-                ))}
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: 4, background: CREAM_DARK, borderRadius: 12, padding: 4 }}>
+                  {['all', 'free', 'pro', 'premium'].map(f => (
+                    <button
+                      key={f}
+                      onClick={() => setPlanFilter(f)}
+                      style={{
+                        padding: '5px 12px', borderRadius: 8, fontSize: 11, fontWeight: 700, textTransform: 'capitalize',
+                        border: 'none', cursor: 'pointer', transition: 'all 0.15s', fontFamily: "'Plus Jakarta Sans', sans-serif",
+                        background: planFilter === f ? CREAM_LIGHT : 'transparent',
+                        color: planFilter === f ? theme.accent : CHARCOAL_L,
+                        boxShadow: planFilter === f ? '0 1px 4px rgba(27,28,28,0.08)' : 'none',
+                      }}
+                    >
+                      {f === 'all' ? 'Todos' : PLAN_LABEL[f]}
+                    </button>
+                  ))}
+                </div>
+                <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} aria-label="Filtrar estado de la cuenta" style={{ padding: '5px 10px', borderRadius: 10, border: `1px solid ${CREAM_DARK}`, background: CREAM_LIGHT, color: CHARCOAL, fontSize: 11, fontWeight: 700, outline: 'none', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  <option value="all">Todos los estados</option>
+                  <option value="needs_setup">Falta configurar</option>
+                  <option value="ready">Configuración completa</option>
+                  <option value="active">Carta activa</option>
+                  <option value="inactive">Carta pausada</option>
+                </select>
               </div>
             </div>
 
@@ -835,7 +888,7 @@ export default function AdminPage() {
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr style={{ background: CREAM }}>
-                      {['Nombre', 'Email', 'Plan', 'Tema', 'Estado', 'Fecha alta', 'Acciones'].map(h => (
+                      {['Nombre', 'Email', 'Plan', 'Tema', 'Configuración', 'Estado', 'Fecha alta', 'Acciones'].map(h => (
                         <th
                           key={h}
                           style={{
@@ -853,6 +906,7 @@ export default function AdminPage() {
                       const rPlan = r.plan || 'free'
                       const badge = PLAN_BADGE[rPlan]
                       return (
+                        <Fragment key={r.id}>
                         <tr
                           key={r.id}
                           style={{
@@ -924,6 +978,9 @@ export default function AdminPage() {
                           </td>
 
                           {/* Estado */}
+                          <td style={{ padding: '14px 20px' }}><SetupStatus restaurant={r} accent={theme.accent} /></td>
+
+                          {/* Estado */}
                           <td style={{ padding: '14px 20px' }}>
                             <span
                               style={{
@@ -944,31 +1001,24 @@ export default function AdminPage() {
                             {new Date(r.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
                           </td>
 
-                          {/* Toggle */}
+                          {/* Acciones */}
                           <td style={{ padding: '14px 20px' }}>
-                            <button
-                              onClick={() => handleToggle(r.id, r.active)}
-                              disabled={toggling === r.id}
-                              aria-label={r.active ? 'Desactivar' : 'Activar'}
-                              style={{
-                                position: 'relative', width: 44, height: 24, borderRadius: 12,
-                                border: 'none', cursor: 'pointer', transition: 'background 0.2s',
-                                background: r.active ? theme.accent : CREAM_DARK,
-                                opacity: toggling === r.id ? 0.5 : 1,
-                              }}
-                            >
-                              <span
-                                style={{
-                                  position: 'absolute', top: 4, width: 16, height: 16,
-                                  borderRadius: '50%', background: '#fff',
-                                  boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
-                                  transform: r.active ? 'translateX(24px)' : 'translateX(4px)',
-                                  transition: 'transform 0.2s',
-                                }}
-                              />
-                            </button>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                              <a href={`/carta/${r.slug}`} target="_blank" rel="noopener noreferrer" title="Abrir carta" style={{ width: 30, height: 30, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8, color: theme.accent, background: `${theme.accent}12` }}><ArrowUpRight size={15} /></a>
+                              <button type="button" title="Copiar enlace" onClick={async () => { try { await navigator.clipboard.writeText(`${window.location.origin}/carta/${r.slug}`); toast.success('Enlace copiado') } catch { toast.error('No se ha podido copiar el enlace') } }} style={{ padding: '7px 8px', borderRadius: 8, border: `1px solid ${CREAM_DARK}`, background: CREAM_LIGHT, color: CHARCOAL, fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>Copiar</button>
+                              <button type="button" aria-expanded={notesOpen === r.id} onClick={() => openNotes(r)} style={{ padding: '7px 8px', borderRadius: 8, border: `1px solid ${notesOpen === r.id ? theme.accent : CREAM_DARK}`, background: notesOpen === r.id ? `${theme.accent}12` : CREAM_LIGHT, color: notesOpen === r.id ? theme.accent : CHARCOAL, fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>Notas</button>
+                              <button
+                                onClick={() => handleToggle(r.id, r.active)}
+                                disabled={toggling === r.id}
+                                aria-label={r.active ? 'Pausar carta' : 'Activar carta'}
+                                title={r.active ? 'Pausar carta' : 'Activar carta'}
+                                style={{ position: 'relative', width: 38, height: 22, borderRadius: 12, border: 'none', cursor: 'pointer', transition: 'background 0.2s', background: r.active ? theme.accent : CREAM_DARK, opacity: toggling === r.id ? 0.5 : 1 }}
+                              ><span style={{ position: 'absolute', top: 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.15)', transform: r.active ? 'translateX(19px)' : 'translateX(3px)', transition: 'transform 0.2s' }} /></button>
+                            </div>
                           </td>
                         </tr>
+                        {notesOpen === r.id && <tr style={{ background: CREAM }}><td colSpan={8} style={{ padding: '16px 20px 20px' }}><label htmlFor={`notes-${r.id}`} style={{ ...labelStyle, display: 'block', marginBottom: 8 }}>Notas privadas · solo para administrador</label><textarea id={`notes-${r.id}`} value={noteDraft} maxLength={2000} onChange={e => setNoteDraft(e.target.value)} placeholder="Ej.: Pendiente de enviar propuesta, llamar el lunes…" style={{ width: '100%', minHeight: 82, resize: 'vertical', boxSizing: 'border-box', borderRadius: 10, border: `1px solid ${CREAM_DARK}`, padding: 12, color: CHARCOAL, font: '13px Plus Jakarta Sans, sans-serif', outline: 'none' }} /><div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 10 }}><span style={{ fontSize: 11, color: CHARCOAL_L }}>{noteDraft.length}/2000</span><div style={{ display: 'flex', gap: 8 }}><button type="button" onClick={() => setNotesOpen(null)} style={{ border: `1px solid ${CREAM_DARK}`, background: CREAM_LIGHT, color: CHARCOAL, borderRadius: 8, padding: '8px 12px', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>Cancelar</button><button type="button" disabled={savingNotes === r.id} onClick={() => saveNotes(r)} style={{ border: 'none', background: theme.accent, color: '#fff', borderRadius: 8, padding: '8px 12px', fontSize: 11, fontWeight: 700, cursor: 'pointer', opacity: savingNotes === r.id ? .6 : 1 }}>{savingNotes === r.id ? 'Guardando…' : 'Guardar nota'}</button></div></div></td></tr>}
+                        </Fragment>
                       )
                     })}
                   </tbody>

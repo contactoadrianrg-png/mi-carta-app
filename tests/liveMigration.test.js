@@ -57,11 +57,12 @@ test('la migración es compatible con el esquema real y conserva sus filas', asy
     await db.exec(await readFixtureSQL('../supabase/migrations/20261018110550_add_restaurant_menu_slides.sql'))
     await db.exec(await readFixtureSQL('../supabase/migrations/20261018120855_add_restaurant_dish_reordering.sql'))
     await db.exec(await readFixtureSQL('../supabase/migrations/20261018154744_add_restaurant_daily_menu.sql'))
+    await db.exec(await readFixtureSQL('../supabase/migrations/20261019083615_add_admin_restaurant_workspace.sql'))
 
     await t.test('no cambia nombres, precios, planes, temas ni filas existentes', async () => {
       const after = await snapshot()
       // The new nullable logo field does not change existing values.
-      for (const row of after.restaurants) { delete row.logo_url; delete row.menu_slides }
+      for (const row of after.restaurants) { delete row.logo_url; delete row.menu_slides; delete row.admin_notes }
       assert.deepEqual(after, before)
     })
     await t.test('bloquea ahora las funciones administrativas para anónimos', async () => {
@@ -69,6 +70,7 @@ test('la migración es compatible con el esquema real y conserva sus filas', asy
         'select public.admin_set_restaurant_active($1,false)',
         "select public.admin_set_restaurant_plan($1,'free')",
         "select public.admin_set_restaurant_theme($1,'default')",
+        "select public.admin_set_restaurant_notes($1,'Nota')",
       ]) await asRole('anon', null, async () => { await assert.rejects(db.query(sql, [restaurant]), /permission denied/) })
       await asRole('anon', null, async () => { await assert.rejects(db.query('select * from public.admin_get_all_restaurants()'), /permission denied/) })
     })
@@ -77,7 +79,13 @@ test('la migración es compatible con el esquema real y conserva sus filas', asy
         const result = await db.query('select * from public.admin_get_all_restaurants()')
         assert.equal(result.rows.length, 2)
         assert.ok('theme' in result.rows[0])
+        assert.equal(result.rows[0].dish_count, 1)
+        assert.equal(result.rows[0].category_count, 1)
+        assert.equal(result.rows[0].has_logo, false)
+        assert.equal(result.rows[0].admin_notes, '')
         await db.query("select public.admin_set_restaurant_theme($1,'maibacht')", [restaurant])
+        await db.query("select public.admin_set_restaurant_notes($1,'Pendiente de logo')", [restaurant])
+        assert.equal((await db.query('select admin_notes from public.restaurants where id=$1', [restaurant])).rows[0].admin_notes, 'Pendiente de logo')
       })
     })
     await t.test('permite editar el nombre al propietario y le impide cambiar el plan', async () => {

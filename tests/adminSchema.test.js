@@ -55,13 +55,14 @@ test('el esquema se instala y las funciones de administración rechazan accesos 
       ['select public.admin_set_restaurant_active($1, false)', [restaurant]],
       ["select public.admin_set_restaurant_plan($1, 'premium')", [restaurant]],
       ["select public.admin_set_restaurant_theme($1, 'jungle')", [restaurant]],
+      ["select public.admin_set_restaurant_notes($1, 'Cliente interesado')", [restaurant]],
     ]
     for (const [label, role, id, message] of [
       ['anónimo', 'anon', null, /permission denied/],
       ['sin identidad JWT', 'authenticated', null, /Unauthorized/],
       ['propietario sin rol de administrador', 'authenticated', owner, /Unauthorized/],
     ]) {
-      await t.test(`bloquea las cuatro funciones para ${label}`, async () => {
+      await t.test(`bloquea las cinco funciones para ${label}`, async () => {
         for (const [sql, args] of calls) {
           await withRole(role, id, async () => {
             await assert.rejects(db.query(sql, args), message)
@@ -70,16 +71,19 @@ test('el esquema se instala y las funciones de administración rechazan accesos 
       })
     }
 
-    await t.test('permite al administrador consultar, activar y cambiar plan y tema', async () => {
+    await t.test('permite al administrador consultar, activar y cambiar plan, tema y notas', async () => {
       await withRole('authenticated', admin, async () => {
         const { rows } = await db.query('select * from public.admin_get_all_restaurants()')
         assert.equal(rows.length, 1)
         assert.equal(rows[0].theme, 'default')
+        assert.equal(rows[0].dish_count, 0)
+        assert.equal(rows[0].admin_notes, '')
         for (const [sql, args] of calls.slice(1)) await db.query(sql, args)
         const { rows: updated } = await db.query('select * from public.admin_get_all_restaurants()')
         assert.equal(updated[0].active, false)
         assert.equal(updated[0].plan, 'premium')
         assert.equal(updated[0].theme, 'jungle')
+        assert.equal(updated[0].admin_notes, 'Cliente interesado')
       })
     })
 
@@ -94,6 +98,9 @@ test('el esquema se instala y las funciones de administración rechazan accesos 
           })
         }
       }
+      await withRole('authenticated', admin, async () => {
+        await assert.rejects(db.query("select public.admin_set_restaurant_notes($1, repeat('x', 2001))", [restaurant]), /notas/)
+      })
     })
 
     await t.test('el propietario puede editar su restaurante y crear otro con plan Free', async () => {
