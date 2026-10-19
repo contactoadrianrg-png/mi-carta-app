@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ArrowUpRight, ChevronRight, UtensilsCrossed, LayoutGrid, Brush, Tags, Share2, QrCode, Lock } from 'lucide-react'
 
-const PLAN_LABELS = { free: 'Plan Gratuito', pro: 'Plan Pro', premium: 'Plan Premium' }
+const PLAN_LABELS = { free: 'Plan Gratuito', pro: 'Plan Pro' }
 export default function DashboardHome({ restaurant, dishCount, categoryCount, plan, onNavigate, onShowQR, onShowCustomize, menuUrl }) {
   const [failedBanner, setFailedBanner] = useState(null)
   if (!restaurant) return <section className="md-empty"><span className="md-action-icon"><UtensilsCrossed size={28} /></span><h2>Tu restaurante empieza aquí</h2><p>Añade su nombre y crea una carta con tu propia identidad.</p><button type="button" className="md-primary" onClick={() => onNavigate('restaurant')}>Crear mi restaurante <ArrowUpRight size={17} /></button></section>

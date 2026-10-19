@@ -45,7 +45,7 @@ export default function DishManager({ restaurantId, plan = 'free' }) {
 
   const toggleSpecial = async (dish) => {
     if (isFree) {
-      toast.error('Los Especiales del día están disponibles en Plan Pro o Premium')
+      toast.error('Los Especiales del día están disponibles en Plan Pro')
       return
     }
     if (!dish.is_special) {
@@ -115,7 +115,7 @@ export default function DishManager({ restaurantId, plan = 'free' }) {
 
   const handleImportClick = () => {
     if (isFree) {
-      toast.error('La importación con IA está disponible en Plan Pro o Premium')
+      toast.error('La importación con IA está disponible en Plan Pro')
       return
     }
     setShowImport(true)
@@ -149,7 +149,7 @@ export default function DishManager({ restaurantId, plan = 'free' }) {
           {/* Importar carta con IA */}
           <button
             onClick={handleImportClick}
-            title={isFree ? 'Disponible en Plan Pro o Premium' : 'Importar carta con IA'}
+            title={isFree ? 'Disponible en Plan Pro' : 'Importar carta con IA'}
             className={`flex items-center gap-2 font-semibold px-4 py-2.5 rounded-xl transition-colors text-sm ${
               isFree
                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
@@ -300,7 +300,7 @@ export default function DishManager({ restaurantId, plan = 'free' }) {
 
                   <button
                     onClick={() => toggleSpecial(dish)}
-                    title={isFree ? 'Disponible en Plan Pro o Premium' : (dish.is_special ? 'Quitar especial' : 'Marcar como especial')}
+                    title={isFree ? 'Disponible en Plan Pro' : (dish.is_special ? 'Quitar especial' : 'Marcar como especial')}
                     className={`flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg transition-colors ${
                       isFree
                         ? 'bg-gray-50 text-gray-300 cursor-not-allowed'

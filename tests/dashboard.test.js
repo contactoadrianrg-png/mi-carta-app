@@ -20,7 +20,7 @@ await build({ entryPoints: [join(root, 'src/pages/DashboardPage.jsx')], outfile:
 } }] })
 const { default: Dashboard } = await import(pathToFileURL(output).href)
 after(async () => { await rm(temp, { recursive: true, force: true }) })
-function setup(plan = 'premium', restaurantExists = true) {
+function setup(plan = 'pro', restaurantExists = true) {
   const restaurant = { id: 'rest', name: 'Mi restaurante', slug: 'demo', active: true, plan, menu_slides: [], reservation_url: '' }
   const counts = [], updates = []
   globalThis.__dashboardUser = { id: 'owner' }

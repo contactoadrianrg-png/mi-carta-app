@@ -53,7 +53,7 @@ test('el esquema se instala y las funciones de administración rechazan accesos 
     const calls = [
       ['select * from public.admin_get_all_restaurants()', []],
       ['select public.admin_set_restaurant_active($1, false)', [restaurant]],
-      ["select public.admin_set_restaurant_plan($1, 'premium')", [restaurant]],
+      ["select public.admin_set_restaurant_plan($1, 'pro')", [restaurant]],
       ["select public.admin_set_restaurant_theme($1, 'jungle')", [restaurant]],
       ["select public.admin_set_restaurant_notes($1, 'Cliente interesado')", [restaurant]],
     ]
@@ -81,7 +81,7 @@ test('el esquema se instala y las funciones de administración rechazan accesos 
         for (const [sql, args] of calls.slice(1)) await db.query(sql, args)
         const { rows: updated } = await db.query('select * from public.admin_get_all_restaurants()')
         assert.equal(updated[0].active, false)
-        assert.equal(updated[0].plan, 'premium')
+        assert.equal(updated[0].plan, 'pro')
         assert.equal(updated[0].theme, 'jungle')
         assert.equal(updated[0].admin_notes, 'Cliente interesado')
       })
@@ -92,7 +92,7 @@ test('el esquema se instala y las funciones de administración rechazan accesos 
         ['admin_set_restaurant_plan', /Plan inválido/],
         ['admin_set_restaurant_theme', /Tema inválido/],
       ]) {
-        for (const value of [null, 'desconocido']) {
+        for (const value of [null, 'premium', 'desconocido']) {
           await withRole('authenticated', admin, async () => {
             await assert.rejects(db.query(`select public.${functionName}($1, $2)`, [restaurant, value]), message)
           })
@@ -118,14 +118,14 @@ test('el esquema se instala y las funciones de administración rechazan accesos 
 
     await t.test('el propietario no puede cambiar plan, estado, tema admin ni titular por API', async () => {
       for (const [column, value] of [
-        ['plan', 'premium'], ['active', false], ['theme', 'jungle'], ['owner_id', admin],
+        ['plan', 'pro'], ['active', false], ['theme', 'jungle'], ['owner_id', admin],
       ]) {
         await withRole('authenticated', owner, async () => {
           await assert.rejects(db.query(`update public.restaurants set ${column} = $1 where id = $2`, [value, restaurant]), /permission denied/)
         })
       }
       await withRole('authenticated', owner, async () => {
-        await assert.rejects(db.query("insert into public.restaurants (owner_id, name, slug, plan) values ($1, 'No permitido', 'no-permitido', 'premium')", [owner]), /permission denied/)
+        await assert.rejects(db.query("insert into public.restaurants (owner_id, name, slug, plan) values ($1, 'No permitido', 'no-permitido', 'pro')", [owner]), /permission denied/)
       })
     })
 

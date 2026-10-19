@@ -214,7 +214,7 @@ export default function PublicMenuPage() {
         )}
       </main>
 
-      {/* ── FOOTER REDES SOCIALES — solo Plan Pro / Premium ── */}
+      {/* ── FOOTER REDES SOCIALES — solo Plan Pro ── */}
       {socialLinks.length > 0 && (
         <div className="pb-6 px-4 text-center">
           <div className="h-px bg-black/5 mb-6 max-w-lg mx-auto" />

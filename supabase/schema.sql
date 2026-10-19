@@ -241,12 +241,12 @@ end;
 $$;
 
 -- =====================================================
--- Migración: sistema de planes (Free / Pro / Premium)
+-- Migración: sistema de planes (Free / Pro)
 -- =====================================================
 
 alter table public.restaurants
   add column if not exists plan text not null default 'free'
-    check (plan in ('free', 'pro', 'premium'));
+    check (plan in ('free', 'pro'));
 
 -- Campos visuales utilizados por la carta y el panel de administración.
 alter table public.restaurants
@@ -321,7 +321,7 @@ begin
     raise exception 'Unauthorized';
   end if;
 
-  if p_plan is null or p_plan not in ('free', 'pro', 'premium') then
+  if p_plan is null or p_plan not in ('free', 'pro') then
     raise exception 'Plan inválido';
   end if;
 

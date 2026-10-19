@@ -28,7 +28,6 @@ const RED = '#EF4444'
 const PLAN_INFO = {
   free:    { bg: '#F3F4F6', text: '#6B7280', label: 'Plan Gratuito' },
   pro:     { bg: '#DBEAFE', text: '#1D4ED8', label: 'Plan Pro' },
-  premium: { bg: '#FEF3C7', text: '#B45309', label: 'Plan Premium' },
 }
 
 const cardStyle = {

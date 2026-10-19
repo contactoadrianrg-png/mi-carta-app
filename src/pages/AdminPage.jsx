@@ -58,11 +58,10 @@ function persistTheme(id) {
 }
 
 // ─── Plan helpers ──────────────────────────────────────────────────────────────
-const PLAN_LABEL = { free: 'Free', pro: 'Pro', premium: 'Premium' }
+const PLAN_LABEL = { free: 'Free', pro: 'Pro' }
 const PLAN_BADGE = {
   free:    { bg: CREAM_DARK,  color: CHARCOAL_L },
   pro:     { bg: '#dbeafe',   color: '#1d4ed8' },
-  premium: { bg: '#fff7ed',   color: '#c2410c' },
 }
 
 const setupItems = (restaurant) => [
@@ -438,9 +437,8 @@ export default function AdminPage() {
   // ── Derived stats ────────────────────────────────────────────────────────────
   const freeCount    = restaurants.filter(r => (r.plan || 'free') === 'free').length
   const proCount     = restaurants.filter(r => r.plan === 'pro').length
-  const premiumCount = restaurants.filter(r => r.plan === 'premium').length
   const activeCount  = restaurants.filter(r => r.active).length
-  const paidCount    = proCount + premiumCount
+  const paidCount    = proCount
   const today        = new Date()
   const newToday     = restaurants.filter(r =>
     new Date(r.created_at).toDateString() === today.toDateString()
@@ -455,8 +453,7 @@ export default function AdminPage() {
   const donutData = useMemo(() => [
     { name: 'Free',    value: freeCount,    color: CREAM_DARK },
     { name: 'Pro',     value: proCount,     color: '#3b82f6' },
-    { name: 'Premium', value: premiumCount, color: theme.accent },
-  ].filter(d => d.value > 0), [freeCount, proCount, premiumCount, theme.accent])
+  ].filter(d => d.value > 0), [freeCount, proCount])
 
   const filtered = useMemo(() => restaurants
     .filter(r => planFilter === 'all' || (r.plan || 'free') === planFilter)
@@ -503,7 +500,7 @@ export default function AdminPage() {
     {
       label: 'Planes de pago',
       value: paidCount,
-      sub: `${proCount} Pro · ${premiumCount} Premium`,
+      sub: `${proCount} Pro`,
       icon: Crown,
       iconBg: '#fff7ed',
       iconColor: '#c2410c',
@@ -802,7 +799,6 @@ export default function AdminPage() {
                 {[
                   { label: 'Free',    count: freeCount,    color: '#9ca3af' },
                   { label: 'Pro',     count: proCount,     color: '#3b82f6' },
-                  { label: 'Premium', count: premiumCount, color: theme.accent },
                 ].map(item => (
                   <div key={item.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -821,7 +817,7 @@ export default function AdminPage() {
                 <div style={{ paddingTop: 12, marginTop: 4, borderTop: `1px solid ${CREAM_DARK}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: 11, color: CHARCOAL_L }}>Ingreso estimado</span>
                   <span style={{ fontSize: 14, fontWeight: 700, color: theme.accent, fontFamily: "'Playfair Display', serif" }}>
-                    {proCount * 29 + premiumCount * 49}€/mes
+                    {proCount * 19}€/mes
                   </span>
                 </div>
               </div>
@@ -840,7 +836,7 @@ export default function AdminPage() {
               </div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 <div style={{ display: 'flex', gap: 4, background: CREAM_DARK, borderRadius: 12, padding: 4 }}>
-                  {['all', 'free', 'pro', 'premium'].map(f => (
+                  {['all', 'free', 'pro'].map(f => (
                     <button
                       key={f}
                       onClick={() => setPlanFilter(f)}
@@ -953,7 +949,6 @@ export default function AdminPage() {
                             >
                               <option value="free">Free</option>
                               <option value="pro">Pro</option>
-                              <option value="premium">Premium</option>
                             </select>
                           </td>
 
