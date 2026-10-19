@@ -537,83 +537,84 @@ export default function AdminPage() {
 
       {/* ── SIDEBAR ─────────────────────────────────────────────────────────── */}
       <aside
+        className="admin-sidebar"
         style={{
-          position: 'fixed', left: 0, top: 0, bottom: 0, width: 64,
-          display: 'flex', flexDirection: 'column', alignItems: 'center',
-          padding: '20px 0', zIndex: 20, background: theme.sidebarBg,
+          position: 'fixed', left: 0, top: 0, bottom: 0, width: 250,
+          display: 'flex', flexDirection: 'column', alignItems: 'stretch',
+          padding: '24px 14px', zIndex: 20, background: theme.sidebarBg,
         }}
       >
         {/* Logo */}
         <div
           style={{
-            width: 36, height: 36, borderRadius: 12, marginBottom: 28,
-            background: theme.accent, display: 'flex', alignItems: 'center',
-            justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 15,
-            fontFamily: "'Playfair Display', serif", flexShrink: 0,
+            width: '100%', marginBottom: 30, background: 'transparent', display: 'flex', alignItems: 'center',
+            justifyContent: 'flex-start', color: '#fff', fontWeight: 800, fontSize: 30,
+            fontFamily: "'Playfair Display', serif", flexShrink: 0, letterSpacing: '-0.04em', padding: '0 12px', position: 'relative',
           }}
         >
-          M
+          MESSA
+          <span style={{ position: 'absolute', top: 35, fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 9, color: theme.accentLight, letterSpacing: '0.16em', fontWeight: 700 }}>CARTAS QUE CONECTAN</span>
         </div>
 
         {/* Nav */}
-        <nav style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flex: 1 }}>
+        <nav style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 5, flex: 1 }}>
           {[
-            { Icon: LayoutDashboard, tip: 'Dashboard', active: true },
+            { Icon: LayoutDashboard, tip: 'Panel de control', active: true },
             { Icon: Store,           tip: 'Restaurantes' },
             { Icon: Users,           tip: 'Usuarios' },
-            { Icon: BarChart2,       tip: 'Analítica' },
+            { Icon: BarChart2,       tip: 'Estadísticas' },
           ].map(({ Icon, tip, active }) => (
             <button
               key={tip}
               title={tip}
               style={{
-                width: 40, height: 40, borderRadius: 12, border: 'none', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: active ? `${theme.accent}28` : 'transparent',
-                color: active ? theme.accent : 'rgba(255,255,255,0.32)',
+                width: '100%', height: 42, padding: '0 12px', borderRadius: 11, border: 'none', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 12,
+                background: active ? theme.accent : 'transparent',
+                color: active ? '#fff' : 'rgba(255,255,255,0.68)',
                 transition: 'background 0.15s, color 0.15s',
               }}
               onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'rgba(255,255,255,0.07)' }}
               onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}
             >
-              <Icon size={17} />
+              <Icon size={17} /><span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 13, fontWeight: active ? 700 : 600 }}>{tip}</span>
             </button>
           ))}
         </nav>
 
         {/* Bottom */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 8, flexShrink: 0, borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 14 }}>
           <button
             title="Ajustes"
             onClick={() => setSettingsOpen(true)}
             style={{
-              width: 40, height: 40, borderRadius: 12, border: 'none', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: '100%', height: 40, padding: '0 12px', borderRadius: 10, border: 'none', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 12,
               background: 'transparent', color: 'rgba(255,255,255,0.4)',
               transition: 'background 0.15s',
             }}
             onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.07)'}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
           >
-            <Settings size={17} />
+            <Settings size={17} /><span style={{ fontSize: 13, fontWeight: 600 }}>Configuración</span>
           </button>
           <button
             title="Mi perfil"
             onClick={() => setSettingsOpen(true)}
             style={{
-              width: 36, height: 36, borderRadius: 10, border: `2px solid ${theme.accent}60`,
+              width: '100%', height: 42, padding: '0 8px', borderRadius: 10, border: `1px solid ${theme.accent}60`,
               cursor: 'pointer', background: theme.accent,
               color: '#fff', fontWeight: 800, fontSize: 14, display: 'flex',
-              alignItems: 'center', justifyContent: 'center', fontFamily: "'Plus Jakarta Sans', sans-serif",
+              alignItems: 'center', justifyContent: 'flex-start', gap: 10, fontFamily: "'Plus Jakarta Sans', sans-serif",
             }}
           >
-            {initial}
+            <span style={{ width: 26, height: 26, borderRadius: 8, background: 'rgba(255,255,255,0.18)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{initial}</span><span style={{ fontSize: 12 }}>Administrador</span>
           </button>
         </div>
       </aside>
 
       {/* ── MAIN CONTENT ─────────────────────────────────────────────────────── */}
-      <div style={{ marginLeft: 64, flex: 1, minHeight: '100vh', background: CREAM }}>
+      <div className="admin-main" style={{ marginLeft: 250, flex: 1, minHeight: '100vh', background: CREAM }}>
 
         {/* Header */}
         <header
@@ -1029,6 +1030,17 @@ export default function AdminPage() {
         @media (min-width: 1024px) {
           .lg\\:grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
           .lg\\:grid-cols-3 { grid-template-columns: 2fr 1fr; }
+        }
+        @media (max-width: 780px) {
+          .admin-sidebar { width: 64px !important; padding: 20px 0 !important; align-items: center !important; }
+          .admin-sidebar > div:first-child { width: 40px !important; padding: 0 !important; font-size: 0 !important; background: var(--menu-accent, #a03b13) !important; border-radius: 12px; justify-content: center !important; }
+          .admin-sidebar > div:first-child::before { content: 'M'; font-size: 15px; }
+          .admin-sidebar > div:first-child span, .admin-sidebar button span { display: none !important; }
+          .admin-sidebar nav { align-items: center !important; }
+          .admin-sidebar nav button { width: 40px !important; padding: 0 !important; justify-content: center !important; }
+          .admin-sidebar > div:last-child { align-items: center !important; }
+          .admin-sidebar > div:last-child button { width: 40px !important; padding: 0 !important; justify-content: center !important; }
+          .admin-main { margin-left: 64px !important; }
         }
       `}</style>
     </div>
