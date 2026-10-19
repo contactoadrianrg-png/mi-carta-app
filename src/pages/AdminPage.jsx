@@ -778,6 +778,9 @@ export default function AdminPage() {
               </ResponsiveContainer>
             </div>
 
+          </div>
+
+          <div className="admin-bottom-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(250px, 0.8fr) minmax(0, 2.4fr)', gap: 16, alignItems: 'start' }}>
             {/* Donut + distribution */}
             <div style={{ ...card, padding: 24 }}>
               <h2 style={{ ...headingSerif, fontSize: 19, margin: 0 }}>Distribución</h2>
@@ -826,7 +829,6 @@ export default function AdminPage() {
                 </div>
               </div>
             </div>
-          </div>
 
           {/* ── TABLE ── */}
           <div id="restaurants-section" style={{ ...card, overflow: 'hidden' }}>
@@ -1029,6 +1031,8 @@ export default function AdminPage() {
             )}
           </div>
 
+          </div>
+
         </main>
       </div>
 
@@ -1056,6 +1060,7 @@ export default function AdminPage() {
           .lg\\:grid-cols-3 { grid-template-columns: 2fr 1fr; }
         }
         @media (max-width: 780px) {
+          .admin-bottom-grid { grid-template-columns: 1fr !important; }
           .admin-sidebar { width: 64px !important; padding: 20px 0 !important; align-items: center !important; }
           .admin-sidebar > div:first-child { width: 40px !important; padding: 0 !important; font-size: 0 !important; background: var(--menu-accent, #a03b13) !important; border-radius: 12px; justify-content: center !important; }
           .admin-sidebar > div:first-child::before { content: 'M'; font-size: 15px; }
