@@ -691,48 +691,56 @@
     margin-bottom:10px;
   }
   .md-section-heading h2 {
-    font-size:16px;
-    line-height:1.4;
-    letter-spacing:-.4px;
+    font-size:20px;
+    line-height:1.25;
+    letter-spacing:-.55px;
   }
   .md-section-heading>button {
-    font-size:9px;
-    max-width:80px;
+    font-size:11px;
+    max-width:96px;
     justify-content:flex-end;
-    line-height:1.5;
+    line-height:1.35;
   }
   .md-actions-grid {
-    gap:10px;
+    grid-template-columns:1fr;
+    gap:11px;
   }
   .md-action-card {
-    min-height:110px;
-    padding:13px;
-    border-radius:13px;
+    min-height:96px;
+    padding:16px 50px 16px 70px;
+    border-radius:15px;
+    justify-content:center;
   }
   .md-action-icon {
-    width:33px;
-    height:33px;
-    border-radius:10px;
+    position:absolute;
+    left:16px;
+    top:50%;
+    width:40px;
+    height:40px;
+    border-radius:12px;
+    transform:translateY(-50%);
   }
   .md-action-icon>svg {
-    width:21px;
-    height:21px;
+    width:23px;
+    height:23px;
   }
   .md-action-arrow {
-    top:24px;
-    right:11px;
-    width:13px;
+    top:50%;
+    right:17px;
+    width:18px;
+    transform:translateY(-50%);
   }
   .md-action-card>strong {
-    font-size:12px;
-    line-height:1.35;
-    margin-top:11px;
-    letter-spacing:-.2px;
+    font-size:16px;
+    line-height:1.2;
+    margin-top:0;
+    letter-spacing:-.35px;
   }
   .md-action-detail {
-    font-size:10px;
-    line-height:1.5;
-    margin-top:4px;
+    font-size:13px;
+    line-height:1.35;
+    margin-top:5px;
+    color:#706a7f;
   }
   .md-footer {
     padding:12px 19px 18px;
@@ -817,13 +825,23 @@
     padding-inline:15px;
   }
   .md-action-card {
-    padding:13px 10px;
+    min-height:92px;
+    padding:14px 43px 14px 62px;
   }
   .md-action-card>strong {
-    font-size:11px;
+    font-size:15px;
   }
   .md-action-detail {
-    font-size:9px;
+    font-size:12px;
+  }
+  .md-action-icon {
+    left:13px;
+    width:36px;
+    height:36px;
+  }
+  .md-action-arrow {
+    right:13px;
+    width:16px;
   }
   .md-welcome {
     padding:18px;
