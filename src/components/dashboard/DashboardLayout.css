@@ -783,12 +783,12 @@
     align-items:center;
     padding:14px;
     gap:10px;
-    min-height:80px;
+    min-height:96px;
     border-radius:13px;
   }
   .md-metrics>button>svg:first-child {
-    width:21px;
-    height:21px;
+    width:27px;
+    height:27px;
   }
   .md-metrics>button>svg:last-child {
     position:absolute;
@@ -798,10 +798,10 @@
     opacity:.5;
   }
   .md-metrics strong {
-    font-size:25px;
+    font-size:31px;
   }
   .md-metrics span {
-    font-size:11px;
+    font-size:13px;
     margin-top:3px;
   }
   .md-section-heading {
@@ -809,12 +809,12 @@
     margin-bottom:10px;
   }
   .md-section-heading h2 {
-    font-size:20px;
+    font-size:23px;
     line-height:1.25;
     letter-spacing:-.55px;
   }
   .md-section-heading>button {
-    font-size:11px;
+    font-size:12px;
     max-width:96px;
     justify-content:flex-end;
     line-height:1.35;
@@ -824,38 +824,38 @@
     gap:11px;
   }
   .md-action-card {
-    min-height:96px;
-    padding:16px 50px 16px 70px;
-    border-radius:15px;
+    min-height:116px;
+    padding:18px 56px 18px 82px;
+    border-radius:18px;
     justify-content:center;
   }
   .md-action-icon {
     position:absolute;
-    left:16px;
+    left:18px;
     top:50%;
-    width:40px;
-    height:40px;
+    width:48px;
+    height:48px;
     border-radius:12px;
     transform:translateY(-50%);
   }
   .md-action-icon>svg {
-    width:23px;
-    height:23px;
+    width:28px;
+    height:28px;
   }
   .md-action-arrow {
     top:50%;
-    right:17px;
-    width:18px;
+    right:19px;
+    width:21px;
     transform:translateY(-50%);
   }
   .md-action-card>strong {
-    font-size:16px;
+    font-size:19px;
     line-height:1.2;
     margin-top:0;
     letter-spacing:-.35px;
   }
   .md-action-detail {
-    font-size:13px;
+    font-size:15px;
     line-height:1.35;
     margin-top:5px;
     color:#706a7f;
@@ -863,7 +863,7 @@
   .md-footer {
     padding:12px 19px 18px;
     justify-content:center;
-    font-size:10px;
+    font-size:12px;
   }
   .md-bottom-nav {
     display:grid;
@@ -888,8 +888,12 @@
     align-items:center;
     justify-content:center;
     gap:5px;
-    font-size:10px;
+    font-size:12px;
     color:#8a829d;
+  }
+  .md-bottom-nav>button>svg {
+    width:24px;
+    height:24px;
   }
   .md-bottom-nav>button.is-active {
     color:var(--md-orange);
@@ -950,19 +954,19 @@
     padding-inline:15px;
   }
   .md-action-card {
-    min-height:92px;
-    padding:14px 43px 14px 62px;
+    min-height:108px;
+    padding:16px 46px 16px 70px;
   }
   .md-action-card>strong {
-    font-size:15px;
+    font-size:17px;
   }
   .md-action-detail {
-    font-size:12px;
+    font-size:13px;
   }
   .md-action-icon {
-    left:13px;
-    width:36px;
-    height:36px;
+    left:14px;
+    width:42px;
+    height:42px;
   }
   .md-action-arrow {
     right:13px;
