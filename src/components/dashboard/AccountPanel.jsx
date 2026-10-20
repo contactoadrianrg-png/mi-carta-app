@@ -3,7 +3,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { Eye, EyeOff, LogOut, KeyRound, Mail, BadgeCheck } from 'lucide-react'
+import { Eye, EyeOff, LogOut, KeyRound, Mail, BadgeCheck, UserRound, ChevronRight } from 'lucide-react'
 
 export default function AccountPanel() {
   const { user, signOut } = useAuth()
@@ -48,110 +48,32 @@ export default function AccountPanel() {
   }
 
   return (
-    <div className="max-w-2xl space-y-4">
-      {/* Info de cuenta */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-        <h2 className="text-base font-semibold text-gray-900 mb-5">Mi cuenta</h2>
-        <div className="space-y-4">
-          <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
-            <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
-              <span className="text-amber-700 font-bold text-lg">
-                {(user?.email || '?')[0].toUpperCase()}
-              </span>
-            </div>
-            <div className="min-w-0">
-              <p className="font-semibold text-gray-900 truncate">{user?.email}</p>
-              <p className="text-xs text-gray-400 mt-0.5">Miembro desde {joinDate}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 px-4 py-3 bg-amber-50 rounded-xl">
-            <BadgeCheck size={18} className="text-amber-500 shrink-0" />
-            <div>
-              <p className="text-sm font-semibold text-amber-800">Plan Gratuito</p>
-              <p className="text-xs text-amber-600 mt-0.5">Acceso completo a todas las funcionalidades básicas</p>
-            </div>
-          </div>
-        </div>
+    <section className="md-account">
+      <header className="md-account-intro"><p>MI PERFIL</p><h2>Tu cuenta Messa</h2><span>Gestiona tus datos y la seguridad de tu acceso.</span></header>
+      <div className="md-account-card md-account-identity">
+        <span className="md-account-avatar">{(user?.email || '?')[0].toUpperCase()}</span>
+        <div><strong>{user?.email}</strong><span>Miembro desde {joinDate}</span></div>
+        <UserRound className="md-account-identity-icon" size={20} />
       </div>
+      <div className="md-account-plan"><BadgeCheck size={21} /><div><strong>Plan Gratuito</strong><span>Todo lo esencial para tener tu carta online.</span></div><ChevronRight size={20} /></div>
 
-      {/* Cambiar contraseña */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-        <div className="flex items-center gap-2.5 mb-5">
-          <KeyRound size={17} className="text-gray-400" />
-          <h2 className="text-base font-semibold text-gray-900">Cambiar contraseña</h2>
-        </div>
-        <form onSubmit={handleChangePassword} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Nueva contraseña</label>
-            <div className="relative">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                value={newPassword}
-                onChange={e => setNewPassword(e.target.value)}
-                placeholder="Mínimo 6 caracteres"
-                className="w-full px-4 py-3 pr-11 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                autoComplete="new-password"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(v => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                tabIndex={-1}
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-          </div>
-          <button
-            type="submit"
-            disabled={savingPassword || !newPassword}
-            className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold px-6 py-3 rounded-xl transition-colors disabled:opacity-50 shadow-md shadow-amber-100"
-          >
-            {savingPassword ? 'Guardando...' : 'Actualizar contraseña'}
-          </button>
+      <section className="md-account-card md-account-section">
+        <div className="md-account-heading"><span><KeyRound size={20} /></span><div><h3>Contraseña</h3><p>Protege el acceso a tu panel.</p></div></div>
+        <form onSubmit={handleChangePassword} className="md-account-form">
+          <label>Nueva contraseña<div className="md-account-input"><input type={showPassword ? 'text' : 'password'} value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Mínimo 6 caracteres" autoComplete="new-password" /><button type="button" onClick={() => setShowPassword(v => !v)} aria-label={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}>{showPassword ? <EyeOff size={19} /> : <Eye size={19} />}</button></div></label>
+          <button type="submit" disabled={savingPassword || !newPassword} className="md-account-submit">{savingPassword ? 'Guardando...' : 'Actualizar contraseña'}</button>
         </form>
-      </div>
+      </section>
 
-      {/* Cambiar email */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-        <div className="flex items-center gap-2.5 mb-1">
-          <Mail size={17} className="text-gray-400" />
-          <h2 className="text-base font-semibold text-gray-900">Cambiar email</h2>
-        </div>
-        <p className="text-xs text-gray-400 mb-5 ml-7">Recibirás un email de confirmación en la nueva dirección.</p>
-        <form onSubmit={handleChangeEmail} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Nuevo email</label>
-            <input
-              type="email"
-              value={newEmail}
-              onChange={e => setNewEmail(e.target.value)}
-              placeholder="nuevo@email.com"
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-              autoComplete="email"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={savingEmail || !newEmail.trim()}
-            className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold px-6 py-3 rounded-xl transition-colors disabled:opacity-50 shadow-md shadow-amber-100"
-          >
-            {savingEmail ? 'Enviando...' : 'Cambiar email'}
-          </button>
+      <section className="md-account-card md-account-section">
+        <div className="md-account-heading"><span><Mail size={20} /></span><div><h3>Email</h3><p>Te enviaremos un correo de confirmación.</p></div></div>
+        <form onSubmit={handleChangeEmail} className="md-account-form">
+          <label>Nuevo email<input value={newEmail} onChange={e => setNewEmail(e.target.value)} type="email" placeholder="nuevo@email.com" autoComplete="email" /></label>
+          <button type="submit" disabled={savingEmail || !newEmail.trim()} className="md-account-submit">{savingEmail ? 'Enviando...' : 'Cambiar email'}</button>
         </form>
-      </div>
+      </section>
 
-      {/* Cerrar sesión */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-        <button
-          onClick={handleSignOut}
-          className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white font-semibold px-6 py-3 rounded-xl transition-colors shadow-md shadow-red-100 w-full justify-center"
-        >
-          <LogOut size={16} />
-          Cerrar sesión
-        </button>
-      </div>
-    </div>
+      <button type="button" onClick={handleSignOut} className="md-account-logout"><LogOut size={18} />Cerrar sesión</button>
+    </section>
   )
 }
