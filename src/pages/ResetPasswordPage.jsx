@@ -17,11 +17,16 @@ export default function ResetPasswordPage() {
     if (password !== confirm) { toast.error('Las contraseñas no coinciden'); return }
     if (password.length < 6) { toast.error('Mínimo 6 caracteres'); return }
     setLoading(true)
-    const { error } = await supabase.auth.updateUser({ password })
-    setLoading(false)
-    if (error) { toast.error(error.message); return }
-    toast.success('Contraseña actualizada correctamente')
-    navigate('/dashboard')
+    try {
+      const { error } = await supabase.auth.updateUser({ password })
+      if (error) throw error
+      toast.success('Contraseña actualizada correctamente')
+      navigate('/dashboard')
+    } catch (error) {
+      toast.error(error.message || 'No se ha podido actualizar la contraseña. Inténtalo de nuevo.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (

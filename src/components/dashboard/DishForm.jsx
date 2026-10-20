@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import toast from 'react-hot-toast'
+import { nextDishSortOrder } from '../../lib/dishOrder'
 import { X, Upload, Loader2, Star, TrendingUp, Tag, Flame } from 'lucide-react'
 
 function Toggle({ checked, onChange, label, icon: Icon, color = 'orange' }) {
@@ -128,9 +129,10 @@ export default function DishForm({ restaurantId, categories, dish, onSuccess, on
         toast.success('Plato actualizado')
         onSuccess(data)
       } else {
+        const sortOrder = await nextDishSortOrder(supabase, restaurantId)
         const { data, error } = await supabase
           .from('dishes')
-          .insert({ ...payload, sort_order: 0 })
+          .insert({ ...payload, sort_order: sortOrder })
           .select('*, categories(name)')
           .single()
         if (error) throw error

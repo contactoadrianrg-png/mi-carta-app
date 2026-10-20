@@ -1,12 +1,12 @@
-import { useState, useEffect, useMemo } from 'react'
+import { Fragment, useState, useEffect, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import {
   LayoutDashboard, Store, Users, BarChart2, Settings, LogOut,
-  X, Mail, Eye, EyeOff, Check, Crown, Activity, Search,
-  TrendingUp, ArrowUpRight, UtensilsCrossed,
+  X, Mail, Eye, EyeOff, Check, Crown, Search,
+  TrendingUp, ArrowUpRight,
 } from 'lucide-react'
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -58,11 +58,27 @@ function persistTheme(id) {
 }
 
 // ─── Plan helpers ──────────────────────────────────────────────────────────────
-const PLAN_LABEL = { free: 'Free', pro: 'Pro', premium: 'Premium' }
+const PLAN_LABEL = { free: 'Free', pro: 'Pro' }
 const PLAN_BADGE = {
   free:    { bg: CREAM_DARK,  color: CHARCOAL_L },
   pro:     { bg: '#dbeafe',   color: '#1d4ed8' },
-  premium: { bg: '#fff7ed',   color: '#c2410c' },
+}
+
+const setupItems = (restaurant) => [
+  { label: 'Logo', ready: restaurant.has_logo },
+  { label: 'Platos', ready: Number(restaurant.dish_count) > 0 },
+  { label: 'Destacado', ready: restaurant.has_highlight },
+  { label: 'Reservas', ready: restaurant.has_reservations },
+]
+
+function SetupStatus({ restaurant, accent }) {
+  const items = setupItems(restaurant)
+  const ready = items.filter(item => item.ready).length
+  return (
+    <div aria-label={`${ready} de ${items.length} elementos configurados`} style={{ display: 'flex', flexWrap: 'wrap', gap: 5, minWidth: 170 }}>
+      {items.map(item => <span key={item.label} title={item.ready ? `${item.label}: configurado` : `${item.label}: pendiente`} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 6px', borderRadius: 7, fontSize: 10, fontWeight: 700, color: item.ready ? accent : CHARCOAL_L, background: item.ready ? `${accent}12` : CREAM, border: `1px solid ${item.ready ? `${accent}28` : CREAM_DARK}` }}><Check size={11} strokeWidth={item.ready ? 3 : 2} />{item.label}</span>)}
+    </div>
+  )
 }
 
 // ─── Chart data builder ────────────────────────────────────────────────────────
@@ -190,7 +206,7 @@ function SettingsModal({ user, onClose, onSignOut, theme, onThemeChange }) {
               <div style={{ width: 32, height: 32, borderRadius: 10, background: `${theme.accent}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Settings size={14} style={{ color: theme.accent }} />
               </div>
-              <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, fontWeight: 700, color: CHARCOAL, margin: 0 }}>Configuración</h2>
+              <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 18, fontWeight: 800, color: CHARCOAL, margin: 0 }}>Configuración</h2>
             </div>
             <button
               onClick={onClose}
@@ -350,6 +366,11 @@ export default function AdminPage() {
   const [changingPlan, setChangingPlan]   = useState(null)
   const [changingTheme, setChangingTheme] = useState(null)
   const [planFilter, setPlanFilter]     = useState('all')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [activeNav, setActiveNav]       = useState('dashboard')
+  const [notesOpen, setNotesOpen]       = useState(null)
+  const [noteDraft, setNoteDraft]       = useState('')
+  const [savingNotes, setSavingNotes]   = useState(null)
   const [period, setPeriod]             = useState('MENSUAL')
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [theme, setTheme]               = useState(loadTheme)
@@ -397,18 +418,42 @@ export default function AdminPage() {
     setChangingPlan(null)
   }
 
+  const openNotes = (restaurant) => {
+    setNotesOpen(current => current === restaurant.id ? null : restaurant.id)
+    setNoteDraft(restaurant.admin_notes || '')
+  }
+
+  const saveNotes = async (restaurant) => {
+    setSavingNotes(restaurant.id)
+    const { error } = await supabase.rpc('admin_set_restaurant_notes', { p_restaurant_id: restaurant.id, p_notes: noteDraft })
+    if (error) { toast.error(error.message); setSavingNotes(null); return }
+    setRestaurants(prev => prev.map(item => item.id === restaurant.id ? { ...item, admin_notes: noteDraft.trim() } : item))
+    setNotesOpen(null)
+    setSavingNotes(null)
+    toast.success('Nota privada guardada')
+  }
+
   const handleSignOut = async () => { await signOut(); navigate('/login') }
+
+  const handleNavigation = (section) => {
+    setActiveNav(section)
+    const target = section === 'dashboard' ? 'dashboard-top' : section === 'stats' ? 'statistics-section' : 'restaurants-section'
+    requestAnimationFrame(() => document.getElementById(target)?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+  }
+
+  const showPendingAccounts = (filter = 'needs_setup') => {
+    setPlanFilter('all')
+    setStatusFilter(filter)
+    setActiveNav('restaurants')
+    requestAnimationFrame(() => document.getElementById('restaurants-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+  }
 
   // ── Derived stats ────────────────────────────────────────────────────────────
   const freeCount    = restaurants.filter(r => (r.plan || 'free') === 'free').length
   const proCount     = restaurants.filter(r => r.plan === 'pro').length
-  const premiumCount = restaurants.filter(r => r.plan === 'premium').length
   const activeCount  = restaurants.filter(r => r.active).length
-  const paidCount    = proCount + premiumCount
+  const paidCount    = proCount
   const today        = new Date()
-  const newToday     = restaurants.filter(r =>
-    new Date(r.created_at).toDateString() === today.toDateString()
-  ).length
   const thisMonthCount = restaurants.filter(r => {
     const d = new Date(r.created_at)
     return d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear()
@@ -419,51 +464,67 @@ export default function AdminPage() {
   const donutData = useMemo(() => [
     { name: 'Free',    value: freeCount,    color: CREAM_DARK },
     { name: 'Pro',     value: proCount,     color: '#3b82f6' },
-    { name: 'Premium', value: premiumCount, color: theme.accent },
-  ].filter(d => d.value > 0), [freeCount, proCount, premiumCount, theme.accent])
+  ].filter(d => d.value > 0), [freeCount, proCount])
 
   const filtered = useMemo(() => restaurants
     .filter(r => planFilter === 'all' || (r.plan || 'free') === planFilter)
+    .filter(r => {
+      const complete = setupItems(r).every(item => item.ready)
+      if (statusFilter === 'active') return r.active
+      if (statusFilter === 'inactive') return !r.active
+      if (statusFilter === 'ready') return complete
+      if (statusFilter === 'needs_setup') return !complete
+      if (statusFilter === 'missing_logo') return !r.has_logo
+      if (statusFilter === 'missing_dishes') return Number(r.dish_count) === 0
+      if (statusFilter === 'missing_reservations') return !r.has_reservations
+      return true
+    })
     .filter(r =>
       r.name?.toLowerCase().includes(search.toLowerCase()) ||
       r.owner_email?.toLowerCase().includes(search.toLowerCase())
-    ), [restaurants, planFilter, search])
+    ), [restaurants, planFilter, statusFilter, search])
 
   const initial = (user?.email || 'A')[0].toUpperCase()
 
   const statCards = [
     {
-      label: 'Total restaurantes',
-      value: restaurants.length,
-      sub: `+${thisMonthCount} este mes`,
+      label: 'Restaurantes activos',
+      value: activeCount,
+      sub: `${restaurants.length} registrados`,
       icon: Store,
       iconBg: `${theme.accent}14`,
       iconColor: theme.accent,
     },
     {
-      label: 'Usuarios registrados',
-      value: restaurants.length,
-      sub: `${activeCount} activos`,
+      label: 'Nuevos este mes',
+      value: thisMonthCount,
+      sub: thisMonthCount ? 'Nuevos registros' : 'Sin cambios',
       icon: Users,
       iconBg: '#dbeafe',
       iconColor: '#1d4ed8',
     },
     {
-      label: 'Registros hoy',
-      value: newToday,
-      sub: `${activeCount} activos en total`,
-      icon: Activity,
-      iconBg: '#fce7f3',
-      iconColor: '#be185d',
-    },
-    {
-      label: 'Planes de pago',
+      label: 'Planes Pro',
       value: paidCount,
-      sub: `${proCount} Pro · ${premiumCount} Premium`,
+      sub: paidCount ? 'Suscripciones activas' : 'Sin suscripciones',
       icon: Crown,
       iconBg: '#fff7ed',
       iconColor: '#c2410c',
     },
+    {
+      label: 'Ingreso mensual',
+      value: `${proCount * 19} €`,
+      sub: `${proCount} cuentas Pro · 19 €/mes`,
+      icon: TrendingUp,
+      iconBg: '#dcfce7',
+      iconColor: '#15803d',
+    },
+  ]
+
+  const pendingItems = [
+    { label: 'Sin logo', count: restaurants.filter(r => !r.has_logo).length, hint: 'Completa la identidad visual', filter: 'missing_logo' },
+    { label: 'Sin platos', count: restaurants.filter(r => Number(r.dish_count) === 0).length, hint: 'La carta todavía no está lista', filter: 'missing_dishes' },
+    { label: 'Sin reservas', count: restaurants.filter(r => !r.has_reservations).length, hint: 'Activa WhatsApp o enlace de reserva', filter: 'missing_reservations' },
   ]
 
   // ── Shared style helpers ─────────────────────────────────────────────────────
@@ -483,8 +544,8 @@ export default function AdminPage() {
   }
 
   const headingSerif = {
-    fontFamily: "'Playfair Display', serif",
-    fontWeight: 700,
+    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    fontWeight: 800,
     color: CHARCOAL,
   }
 
@@ -493,83 +554,88 @@ export default function AdminPage() {
 
       {/* ── SIDEBAR ─────────────────────────────────────────────────────────── */}
       <aside
+        className="admin-sidebar"
         style={{
-          position: 'fixed', left: 0, top: 0, bottom: 0, width: 64,
-          display: 'flex', flexDirection: 'column', alignItems: 'center',
-          padding: '20px 0', zIndex: 20, background: theme.sidebarBg,
+          position: 'fixed', left: 0, top: 0, bottom: 0, width: 250,
+          display: 'flex', flexDirection: 'column', alignItems: 'stretch',
+          padding: '24px 14px', zIndex: 20, background: theme.sidebarBg,
         }}
       >
         {/* Logo */}
         <div
           style={{
-            width: 36, height: 36, borderRadius: 12, marginBottom: 28,
-            background: theme.accent, display: 'flex', alignItems: 'center',
-            justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 15,
-            fontFamily: "'Playfair Display', serif", flexShrink: 0,
+            width: '100%', marginBottom: 30, background: 'transparent', display: 'flex', alignItems: 'center',
+            justifyContent: 'flex-start', color: '#fff', fontWeight: 800, fontSize: 30,
+            fontFamily: "'Playfair Display', serif", flexShrink: 0, letterSpacing: '-0.04em', padding: '0 12px', position: 'relative',
           }}
         >
-          M
+          MESSA
+          <span style={{ position: 'absolute', top: 35, fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 9, color: theme.accentLight, letterSpacing: '0.16em', fontWeight: 700 }}>CARTAS QUE CONECTAN</span>
         </div>
 
         {/* Nav */}
-        <nav style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flex: 1 }}>
+        <nav style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 5, flex: 1 }}>
           {[
-            { Icon: LayoutDashboard, tip: 'Dashboard', active: true },
-            { Icon: Store,           tip: 'Restaurantes' },
-            { Icon: Users,           tip: 'Usuarios' },
-            { Icon: BarChart2,       tip: 'Analítica' },
-          ].map(({ Icon, tip, active }) => (
+            { Icon: LayoutDashboard, tip: 'Panel de control', id: 'dashboard' },
+            { Icon: Store,           tip: 'Restaurantes', id: 'restaurants' },
+            { Icon: Users,           tip: 'Usuarios', id: 'users' },
+            { Icon: BarChart2,       tip: 'Estadísticas', id: 'stats' },
+          ].map(({ Icon, tip, id }) => {
+            const active = activeNav === id
+            return (
             <button
               key={tip}
               title={tip}
+              aria-current={active ? 'page' : undefined}
+              onClick={() => handleNavigation(id)}
               style={{
-                width: 40, height: 40, borderRadius: 12, border: 'none', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: active ? `${theme.accent}28` : 'transparent',
-                color: active ? theme.accent : 'rgba(255,255,255,0.32)',
+                width: '100%', height: 42, padding: '0 12px', borderRadius: 11, border: 'none', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 12,
+                background: active ? theme.accent : 'transparent',
+                color: active ? '#fff' : 'rgba(255,255,255,0.68)',
                 transition: 'background 0.15s, color 0.15s',
               }}
               onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'rgba(255,255,255,0.07)' }}
               onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}
             >
-              <Icon size={17} />
+              <Icon size={17} /><span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 13, fontWeight: active ? 700 : 600 }}>{tip}</span>
             </button>
-          ))}
+          )})}
         </nav>
 
         {/* Bottom */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 8, flexShrink: 0, borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 14 }}>
           <button
             title="Ajustes"
             onClick={() => setSettingsOpen(true)}
             style={{
-              width: 40, height: 40, borderRadius: 12, border: 'none', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: '100%', height: 40, padding: '0 12px', borderRadius: 10, border: 'none', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 12,
               background: 'transparent', color: 'rgba(255,255,255,0.4)',
               transition: 'background 0.15s',
             }}
             onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.07)'}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
           >
-            <Settings size={17} />
+            <Settings size={17} /><span style={{ fontSize: 13, fontWeight: 600 }}>Configuración</span>
           </button>
           <button
             title="Mi perfil"
             onClick={() => setSettingsOpen(true)}
             style={{
-              width: 36, height: 36, borderRadius: 10, border: `2px solid ${theme.accent}60`,
+              width: '100%', height: 42, padding: '0 8px', borderRadius: 10, border: `1px solid ${theme.accent}60`,
               cursor: 'pointer', background: theme.accent,
               color: '#fff', fontWeight: 800, fontSize: 14, display: 'flex',
-              alignItems: 'center', justifyContent: 'center', fontFamily: "'Plus Jakarta Sans', sans-serif",
+              alignItems: 'center', justifyContent: 'flex-start', gap: 10, fontFamily: "'Plus Jakarta Sans', sans-serif",
             }}
           >
-            {initial}
+            <span style={{ width: 26, height: 26, borderRadius: 8, background: 'rgba(255,255,255,0.18)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{initial}</span><span style={{ fontSize: 12 }}>Administrador</span>
           </button>
         </div>
       </aside>
 
       {/* ── MAIN CONTENT ─────────────────────────────────────────────────────── */}
-      <div style={{ marginLeft: 64, flex: 1, minHeight: '100vh', background: CREAM }}>
+      <div className="admin-main" style={{ marginLeft: 250, flex: 1, minHeight: '100vh', background: CREAM }}>
 
         {/* Header */}
         <header
@@ -623,7 +689,7 @@ export default function AdminPage() {
         <main style={{ padding: '28px 32px', display: 'flex', flexDirection: 'column', gap: 24 }}>
 
           {/* ── WELCOME BANNER ── */}
-          <section>
+          <section id="dashboard-top">
             <h2 style={{ ...headingSerif, fontSize: 28, margin: 0 }}>Panel de Control</h2>
             <p style={{ color: CHARCOAL_L, fontSize: 14, marginTop: 4, marginBottom: 0 }}>
               Bienvenido de nuevo. Aquí tienes el resumen de la plataforma.
@@ -631,58 +697,37 @@ export default function AdminPage() {
           </section>
 
           {/* ── STAT CARDS ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}
-            className="lg:grid-cols-4"
-          >
-            {/* Hero card */}
-            <div
-              style={{
-                ...card,
-                gridColumn: 'span 2',
-                padding: 24,
-                position: 'relative',
-                overflow: 'hidden',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                minHeight: 140,
-              }}
-            >
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: theme.accent, animation: 'pulse 2s infinite', display: 'inline-block' }} />
-                  <span style={{ ...labelStyle, color: theme.accent }}>PLATAFORMA ACTIVA</span>
-                </div>
-                <p style={{ ...labelStyle, marginBottom: 0 }}>{activeCount} restaurantes publicados</p>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginTop: 16 }}>
-                <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 48, fontWeight: 700, color: CHARCOAL, lineHeight: 1 }}>
-                  {restaurants.length}
-                </span>
-                <span style={{ ...labelStyle }}>RESTAURANTES TOTALES</span>
-              </div>
-              <div style={{ position: 'absolute', right: -20, bottom: -20, opacity: 0.04, color: CHARCOAL, pointerEvents: 'none' }}>
-                <UtensilsCrossed size={160} />
-              </div>
-            </div>
-
-            {statCards.slice(1).map(({ label, value, sub, icon: Icon, iconBg, iconColor }) => (
-              <div key={label} style={{ ...card, padding: 20 }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 16 }}>
+            {statCards.map(({ label, value, sub, icon: Icon, iconBg, iconColor }) => (
+              <div key={label} style={{ ...card, padding: 18, minHeight: 128 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
                   <div style={{ padding: 8, borderRadius: 10, background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Icon size={17} style={{ color: iconColor }} />
                   </div>
-                  <TrendingUp size={13} style={{ color: CHARCOAL_L, marginTop: 4 }} />
+                  <ArrowUpRight size={14} style={{ color: CHARCOAL_L, marginTop: 4 }} />
                 </div>
                 <p style={{ ...labelStyle, marginBottom: 4 }}>{label}</p>
-                <p style={{ fontFamily: "'Playfair Display', serif", fontSize: 32, fontWeight: 700, color: CHARCOAL, margin: 0, lineHeight: 1 }}>{value}</p>
+                <p style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 30, fontWeight: 800, letterSpacing: '-0.04em', color: CHARCOAL, margin: 0, lineHeight: 1 }}>{value}</p>
                 <p style={{ fontSize: 11, color: CHARCOAL_L, marginTop: 6, marginBottom: 0 }}>{sub}</p>
               </div>
             ))}
           </div>
 
+          <section style={{ ...card, padding: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14, flexWrap: 'wrap' }}>
+              <div>
+                <h2 style={{ ...headingSerif, fontSize: 19, margin: 0 }}>Acciones pendientes</h2>
+                <p style={{ fontSize: 12, color: CHARCOAL_L, margin: '3px 0 0' }}>Completa la configuración de tus restaurantes.</p>
+              </div>
+              <button type="button" onClick={() => showPendingAccounts()} style={{ border: `1px solid ${theme.accent}`, background: 'transparent', color: theme.accent, borderRadius: 9, padding: '8px 11px', fontSize: 11, fontWeight: 800, cursor: 'pointer' }}>Ver pendientes</button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10 }}>
+              {pendingItems.map(item => <button type="button" key={item.label} onClick={() => showPendingAccounts(item.filter)} style={{ textAlign: 'left', border: `1px solid ${CREAM_DARK}`, background: CREAM, borderRadius: 12, padding: '12px 14px', cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif" }}><span style={{ display: 'block', fontSize: 18, fontWeight: 800, color: item.count ? CHARCOAL : '#15803d' }}>{item.count} {item.label.toLowerCase()}</span><span style={{ display: 'block', fontSize: 11, color: CHARCOAL_L, marginTop: 3 }}>{item.count ? item.hint : 'Todo correcto'}</span></button>)}
+            </div>
+          </section>
+
           {/* ── CHARTS ROW ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16 }}
+          <div id="statistics-section" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16 }}
             className="lg:grid-cols-3"
           >
             {/* Area chart */}
@@ -733,6 +778,9 @@ export default function AdminPage() {
               </ResponsiveContainer>
             </div>
 
+          </div>
+
+          <div className="admin-bottom-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(250px, 0.8fr) minmax(0, 2.4fr)', gap: 16, alignItems: 'start' }}>
             {/* Donut + distribution */}
             <div style={{ ...card, padding: 24 }}>
               <h2 style={{ ...headingSerif, fontSize: 19, margin: 0 }}>Distribución</h2>
@@ -758,7 +806,6 @@ export default function AdminPage() {
                 {[
                   { label: 'Free',    count: freeCount,    color: '#9ca3af' },
                   { label: 'Pro',     count: proCount,     color: '#3b82f6' },
-                  { label: 'Premium', count: premiumCount, color: theme.accent },
                 ].map(item => (
                   <div key={item.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -776,40 +823,51 @@ export default function AdminPage() {
 
                 <div style={{ paddingTop: 12, marginTop: 4, borderTop: `1px solid ${CREAM_DARK}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: 11, color: CHARCOAL_L }}>Ingreso estimado</span>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: theme.accent, fontFamily: "'Playfair Display', serif" }}>
-                    {proCount * 29 + premiumCount * 49}€/mes
+                  <span style={{ fontSize: 14, fontWeight: 800, color: theme.accent, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    {proCount * 19}€/mes
                   </span>
                 </div>
               </div>
             </div>
-          </div>
 
           {/* ── TABLE ── */}
-          <div style={{ ...card, overflow: 'hidden' }}>
+          <div id="restaurants-section" style={{ ...card, overflow: 'hidden' }}>
             {/* Toolbar */}
             <div style={{ padding: '18px 24px', borderBottom: `1px solid ${CREAM_DARK}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
               <div>
-                <h2 style={{ ...headingSerif, fontSize: 19, margin: 0 }}>Restaurantes</h2>
+                <h2 style={{ ...headingSerif, fontSize: 19, margin: 0 }}>Últimos restaurantes</h2>
                 <p style={{ fontSize: 11, color: CHARCOAL_L, marginTop: 2, marginBottom: 0 }}>
                   {filtered.length} {filtered.length === 1 ? 'resultado' : 'resultados'}
                 </p>
               </div>
-              <div style={{ display: 'flex', gap: 4, background: CREAM_DARK, borderRadius: 12, padding: 4 }}>
-                {['all', 'free', 'pro', 'premium'].map(f => (
-                  <button
-                    key={f}
-                    onClick={() => setPlanFilter(f)}
-                    style={{
-                      padding: '5px 12px', borderRadius: 8, fontSize: 11, fontWeight: 700, textTransform: 'capitalize',
-                      border: 'none', cursor: 'pointer', transition: 'all 0.15s', fontFamily: "'Plus Jakarta Sans', sans-serif",
-                      background: planFilter === f ? CREAM_LIGHT : 'transparent',
-                      color: planFilter === f ? theme.accent : CHARCOAL_L,
-                      boxShadow: planFilter === f ? '0 1px 4px rgba(27,28,28,0.08)' : 'none',
-                    }}
-                  >
-                    {f === 'all' ? 'Todos' : PLAN_LABEL[f]}
-                  </button>
-                ))}
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: 4, background: CREAM_DARK, borderRadius: 12, padding: 4 }}>
+                  {['all', 'free', 'pro'].map(f => (
+                    <button
+                      key={f}
+                      onClick={() => setPlanFilter(f)}
+                      style={{
+                        padding: '5px 12px', borderRadius: 8, fontSize: 11, fontWeight: 700, textTransform: 'capitalize',
+                        border: 'none', cursor: 'pointer', transition: 'all 0.15s', fontFamily: "'Plus Jakarta Sans', sans-serif",
+                        background: planFilter === f ? CREAM_LIGHT : 'transparent',
+                        color: planFilter === f ? theme.accent : CHARCOAL_L,
+                        boxShadow: planFilter === f ? '0 1px 4px rgba(27,28,28,0.08)' : 'none',
+                      }}
+                    >
+                      {f === 'all' ? 'Todos' : PLAN_LABEL[f]}
+                    </button>
+                  ))}
+                </div>
+                <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} aria-label="Filtrar estado de la cuenta" style={{ padding: '5px 10px', borderRadius: 10, border: `1px solid ${CREAM_DARK}`, background: CREAM_LIGHT, color: CHARCOAL, fontSize: 11, fontWeight: 700, outline: 'none', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  <option value="all">Todos los estados</option>
+                  <option value="needs_setup">Falta configurar</option>
+                  <option value="missing_logo">Sin logo</option>
+                  <option value="missing_dishes">Sin platos</option>
+                  <option value="missing_reservations">Sin reservas</option>
+                  <option value="ready">Configuración completa</option>
+                  <option value="active">Carta activa</option>
+                  <option value="inactive">Carta pausada</option>
+                </select>
               </div>
             </div>
 
@@ -835,7 +893,7 @@ export default function AdminPage() {
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr style={{ background: CREAM }}>
-                      {['Nombre', 'Email', 'Plan', 'Tema', 'Estado', 'Fecha alta', 'Acciones'].map(h => (
+                      {['Nombre', 'Email', 'Plan', 'Tema', 'Configuración', 'Estado', 'Fecha alta', 'Acciones'].map(h => (
                         <th
                           key={h}
                           style={{
@@ -853,6 +911,7 @@ export default function AdminPage() {
                       const rPlan = r.plan || 'free'
                       const badge = PLAN_BADGE[rPlan]
                       return (
+                        <Fragment key={r.id}>
                         <tr
                           key={r.id}
                           style={{
@@ -871,7 +930,7 @@ export default function AdminPage() {
                                   background: `${theme.accent}14`,
                                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                                   color: theme.accent, fontSize: 12, fontWeight: 700, flexShrink: 0,
-                                  fontFamily: "'Playfair Display', serif",
+                                  fontFamily: "'Plus Jakarta Sans', sans-serif",
                                 }}
                               >
                                 {(r.name || '?')[0].toUpperCase()}
@@ -899,7 +958,6 @@ export default function AdminPage() {
                             >
                               <option value="free">Free</option>
                               <option value="pro">Pro</option>
-                              <option value="premium">Premium</option>
                             </select>
                           </td>
 
@@ -924,6 +982,9 @@ export default function AdminPage() {
                           </td>
 
                           {/* Estado */}
+                          <td style={{ padding: '14px 20px' }}><SetupStatus restaurant={r} accent={theme.accent} /></td>
+
+                          {/* Estado */}
                           <td style={{ padding: '14px 20px' }}>
                             <span
                               style={{
@@ -944,37 +1005,32 @@ export default function AdminPage() {
                             {new Date(r.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
                           </td>
 
-                          {/* Toggle */}
+                          {/* Acciones */}
                           <td style={{ padding: '14px 20px' }}>
-                            <button
-                              onClick={() => handleToggle(r.id, r.active)}
-                              disabled={toggling === r.id}
-                              aria-label={r.active ? 'Desactivar' : 'Activar'}
-                              style={{
-                                position: 'relative', width: 44, height: 24, borderRadius: 12,
-                                border: 'none', cursor: 'pointer', transition: 'background 0.2s',
-                                background: r.active ? theme.accent : CREAM_DARK,
-                                opacity: toggling === r.id ? 0.5 : 1,
-                              }}
-                            >
-                              <span
-                                style={{
-                                  position: 'absolute', top: 4, width: 16, height: 16,
-                                  borderRadius: '50%', background: '#fff',
-                                  boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
-                                  transform: r.active ? 'translateX(24px)' : 'translateX(4px)',
-                                  transition: 'transform 0.2s',
-                                }}
-                              />
-                            </button>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                              <a href={`/carta/${r.slug}`} target="_blank" rel="noopener noreferrer" title={`Ver carta de ${r.name}`} style={{ minHeight: 30, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '0 9px', borderRadius: 8, color: theme.accent, background: `${theme.accent}12`, fontSize: 10, fontWeight: 800, textDecoration: 'none', whiteSpace: 'nowrap' }}><Eye size={14} />Ver carta</a>
+                              <button type="button" title="Copiar enlace" onClick={async () => { try { await navigator.clipboard.writeText(`${window.location.origin}/carta/${r.slug}`); toast.success('Enlace copiado') } catch { toast.error('No se ha podido copiar el enlace') } }} style={{ padding: '7px 8px', borderRadius: 8, border: `1px solid ${CREAM_DARK}`, background: CREAM_LIGHT, color: CHARCOAL, fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>Copiar</button>
+                              <button type="button" aria-expanded={notesOpen === r.id} onClick={() => openNotes(r)} style={{ padding: '7px 8px', borderRadius: 8, border: `1px solid ${notesOpen === r.id ? theme.accent : CREAM_DARK}`, background: notesOpen === r.id ? `${theme.accent}12` : CREAM_LIGHT, color: notesOpen === r.id ? theme.accent : CHARCOAL, fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>Notas</button>
+                              <button
+                                onClick={() => handleToggle(r.id, r.active)}
+                                disabled={toggling === r.id}
+                                aria-label={r.active ? 'Pausar carta' : 'Activar carta'}
+                                title={r.active ? 'Pausar carta' : 'Activar carta'}
+                                style={{ position: 'relative', width: 38, height: 22, borderRadius: 12, border: 'none', cursor: 'pointer', transition: 'background 0.2s', background: r.active ? theme.accent : CREAM_DARK, opacity: toggling === r.id ? 0.5 : 1 }}
+                              ><span style={{ position: 'absolute', top: 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.15)', transform: r.active ? 'translateX(19px)' : 'translateX(3px)', transition: 'transform 0.2s' }} /></button>
+                            </div>
                           </td>
                         </tr>
+                        {notesOpen === r.id && <tr style={{ background: CREAM }}><td colSpan={8} style={{ padding: '16px 20px 20px' }}><label htmlFor={`notes-${r.id}`} style={{ ...labelStyle, display: 'block', marginBottom: 8 }}>Notas privadas · solo para administrador</label><textarea id={`notes-${r.id}`} value={noteDraft} maxLength={2000} onChange={e => setNoteDraft(e.target.value)} placeholder="Ej.: Pendiente de enviar propuesta, llamar el lunes…" style={{ width: '100%', minHeight: 82, resize: 'vertical', boxSizing: 'border-box', borderRadius: 10, border: `1px solid ${CREAM_DARK}`, padding: 12, color: CHARCOAL, font: '13px Plus Jakarta Sans, sans-serif', outline: 'none' }} /><div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 10 }}><span style={{ fontSize: 11, color: CHARCOAL_L }}>{noteDraft.length}/2000</span><div style={{ display: 'flex', gap: 8 }}><button type="button" onClick={() => setNotesOpen(null)} style={{ border: `1px solid ${CREAM_DARK}`, background: CREAM_LIGHT, color: CHARCOAL, borderRadius: 8, padding: '8px 12px', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>Cancelar</button><button type="button" disabled={savingNotes === r.id} onClick={() => saveNotes(r)} style={{ border: 'none', background: theme.accent, color: '#fff', borderRadius: 8, padding: '8px 12px', fontSize: 11, fontWeight: 700, cursor: 'pointer', opacity: savingNotes === r.id ? .6 : 1 }}>{savingNotes === r.id ? 'Guardando…' : 'Guardar nota'}</button></div></div></td></tr>}
+                        </Fragment>
                       )
                     })}
                   </tbody>
                 </table>
               </div>
             )}
+          </div>
+
           </div>
 
         </main>
@@ -1002,6 +1058,18 @@ export default function AdminPage() {
         @media (min-width: 1024px) {
           .lg\\:grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
           .lg\\:grid-cols-3 { grid-template-columns: 2fr 1fr; }
+        }
+        @media (max-width: 780px) {
+          .admin-bottom-grid { grid-template-columns: 1fr !important; }
+          .admin-sidebar { width: 64px !important; padding: 20px 0 !important; align-items: center !important; }
+          .admin-sidebar > div:first-child { width: 40px !important; padding: 0 !important; font-size: 0 !important; background: var(--menu-accent, #a03b13) !important; border-radius: 12px; justify-content: center !important; }
+          .admin-sidebar > div:first-child::before { content: 'M'; font-size: 15px; }
+          .admin-sidebar > div:first-child span, .admin-sidebar button span { display: none !important; }
+          .admin-sidebar nav { align-items: center !important; }
+          .admin-sidebar nav button { width: 40px !important; padding: 0 !important; justify-content: center !important; }
+          .admin-sidebar > div:last-child { align-items: center !important; }
+          .admin-sidebar > div:last-child button { width: 40px !important; padding: 0 !important; justify-content: center !important; }
+          .admin-main { margin-left: 64px !important; }
         }
       `}</style>
     </div>

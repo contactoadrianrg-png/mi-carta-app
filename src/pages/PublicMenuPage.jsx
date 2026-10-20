@@ -1,57 +1,42 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
-import { useParams } from 'react-router-dom'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import DishCard from '../components/menu/DishCard'
 import DishDetailSheet from '../components/menu/DishDetailSheet'
-import { UtensilsCrossed, Menu, X } from 'lucide-react'
+import RestaurantHeader from '../components/menu/RestaurantHeader'
+import MenuHighlights from '../components/menu/MenuHighlights'
+import { DailyMenuSheet } from '../components/menu/DailyMenu'
+import { normalizeDailyMenu } from '../lib/dailyMenu'
+import './PublicMenuPage.css'
+import { normalizeMenuSlides } from '../lib/menuSlides'
+import CategoryTabs from '../components/menu/CategoryTabs'
+import DishGridCard from '../components/menu/DishGridCard'
+import { UtensilsCrossed } from 'lucide-react'
 import { SOCIALS, buildSocialUrl } from '../lib/socials'
-import { getTheme, applyTheme } from '../lib/themes'
+import { getTheme, applyTheme, getVisualTheme } from '../lib/themes'
+import { loadPublicMenu, filterMenuDishes, visibleMenuCategories, categoryFamilyIds } from '../lib/menuData'
+import { readMenuFavorites, saveMenuFavorites } from '../lib/menuFavorites'
 
 const FREE_DISH_LIMIT = 20
 
-const EMOJI_MAP = {
-  entrante: '🥗', entrantes: '🥗', ensalada: '🥗', ensaladas: '🥗',
-  sopa: '🍲', sopas: '🍲', pasta: '🍝',
-  pizza: '🍕', pizzas: '🍕',
-  carne: '🥩', carnes: '🥩', pollo: '🍗',
-  pescado: '🐟', pescados: '🐟', marisco: '🦐', mariscos: '🦐',
-  hamburguesa: '🍔', hamburguesas: '🍔',
-  sandwich: '🥪', bocadillo: '🥪', bocadillos: '🥪',
-  tapa: '🫙', tapas: '🫙', ración: '🍽️', raciones: '🍽️',
-  postre: '🍮', postres: '🍮',
-  bebida: '🥤', bebidas: '🥤', vino: '🍷', vinos: '🍷',
-  cerveza: '🍺', cervezas: '🍺',
-  cocktail: '🍹', cóctel: '🍹', cócteles: '🍹',
-  café: '☕', cafés: '☕', infusión: '🍵',
-  desayuno: '🥐', desayunos: '🥐', brunch: '🍳',
-  sushi: '🍣', asiático: '🥢', asiática: '🥢',
-  vegano: '🌱', vegana: '🌱', vegetariano: '🌿', vegetariana: '🌿',
-  especial: '⭐', especiales: '⭐',
-  niños: '🧒', infantil: '🧒',
-}
-
-function getEmoji(name) {
-  return EMOJI_MAP[name?.toLowerCase().trim()] || '🍽️'
-}
-
 export default function PublicMenuPage() {
-  const { slug } = useParams()
+  const { slug, catId } = useParams()
   const [restaurant, setRestaurant] = useState(null)
   const [categories, setCategories] = useState([])
   const [dishes, setDishes] = useState([])
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
-  const [activeCategory, setActiveCategory] = useState(null)
-  const [menuOpen, setMenuOpen] = useState(false)
+  const [activeCategory, setActiveCategory] = useState(catId ?? null)
+  const [showFavorites, setShowFavorites] = useState(false)
   const [selectedDish, setSelectedDish] = useState(null)
-  const channelRef    = useRef(null)
-  const cartaTracked  = useRef(false)
-
-  const trackCartaView = useCallback(async (restaurantId) => {
-    if (cartaTracked.current) return
-    cartaTracked.current = true
-    await supabase.from('carta_views').insert({ restaurant_id: restaurantId })
-  }, [])
+  const [showDailyMenu, setShowDailyMenu] = useState(false)
+  const [loadError, setLoadError] = useState(false)
+  const [retry, setRetry] = useState(0)
+  const [favorites, setFavorites] = useState(() => readMenuFavorites(slug))
+  const closeDish = useCallback(() => setSelectedDish(null), [])
+  const closeDailyMenu = useCallback(() => setShowDailyMenu(false), [])
+  const openDailyMenu = useCallback(() => { setSelectedDish(null); setShowDailyMenu(true) }, [])
+  const dailyMenu = useMemo(() => normalizeDailyMenu(restaurant?.daily_menu), [restaurant?.daily_menu])
+  useEffect(() => { if (!dailyMenu?.enabled) setShowDailyMenu(false) }, [dailyMenu?.enabled])
 
   const trackPlateView = useCallback(async (restaurantId, dish) => {
     await supabase.from('plate_views').insert({
@@ -61,43 +46,60 @@ export default function PublicMenuPage() {
     })
   }, [])
 
-  const fetchData = useCallback(async () => {
-    const { data: rest, error } = await supabase
-      .from('restaurants')
-      .select('*')
-      .eq('slug', slug)
-      .maybeSingle()
-
-    if (error || !rest) { setNotFound(true); setLoading(false); return null }
-    setRestaurant(rest)
-    trackCartaView(rest.id)
-
-    const [catsRes, dishesRes] = await Promise.all([
-      supabase.from('categories').select('*').eq('restaurant_id', rest.id).order('sort_order'),
-      supabase.from('dishes').select('*').eq('restaurant_id', rest.id).eq('available', true).order('sort_order'),
-    ])
-
-    setCategories(catsRes.data || [])
-    setDishes(dishesRes.data || [])
-    setLoading(false)
-    return rest.id
-  }, [slug])
-
   useEffect(() => {
     let alive = true
-    fetchData().then(id => {
-      if (!alive || !id) return
-      channelRef.current = supabase.channel(`pub-${id}`)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'dishes', filter: `restaurant_id=eq.${id}` }, () => { if (alive) fetchData() })
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'categories', filter: `restaurant_id=eq.${id}` }, () => { if (alive) fetchData() })
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'restaurants', filter: `id=eq.${id}` }, () => { if (alive) fetchData() })
-        .subscribe()
-    })
+    let requestVersion = 0
+    let channel = null
+    let tracked = false
+    setLoading(true)
+    setNotFound(false)
+    setLoadError(false)
+    setRestaurant(null)
+    setCategories([])
+    setDishes([])
+    setSelectedDish(null)
+    setShowDailyMenu(false)
+    setShowFavorites(false)
+    setFavorites(readMenuFavorites(slug))
+
+    async function refresh() {
+      const version = ++requestVersion
+      try {
+        const data = await loadPublicMenu(supabase, slug)
+        if (!alive || version !== requestVersion) return
+        setRestaurant(data.restaurant)
+        setCategories(data.categories)
+        setDishes(data.dishes)
+        setNotFound(!data.restaurant)
+        setLoadError(false)
+        if (data.restaurant && data.restaurant.active !== false) {
+          const id = data.restaurant.id
+          if (!tracked) {
+            tracked = true
+            Promise.resolve(supabase.from('carta_views').insert({ restaurant_id: id })).catch(() => {})
+          }
+          if (!channel) {
+            channel = supabase.channel(`pub-${id}`)
+              .on('postgres_changes', { event: '*', schema: 'public', table: 'dishes', filter: `restaurant_id=eq.${id}` }, refresh)
+              .on('postgres_changes', { event: '*', schema: 'public', table: 'categories', filter: `restaurant_id=eq.${id}` }, refresh)
+              .on('postgres_changes', { event: '*', schema: 'public', table: 'restaurants', filter: `id=eq.${id}` }, refresh)
+              .subscribe()
+          }
+        }
+      } catch {
+        if (alive && version === requestVersion) setLoadError(true)
+      } finally {
+        if (alive && version === requestVersion) setLoading(false)
+      }
+    }
+    refresh()
     return () => {
       alive = false
-      if (channelRef.current) { supabase.removeChannel(channelRef.current); channelRef.current = null }
+      if (channel) supabase.removeChannel(channel)
     }
-  }, [fetchData])
+  }, [slug, retry])
+
+  useEffect(() => { setActiveCategory(catId ?? null) }, [slug, catId])
 
   useEffect(() => {
     applyTheme(restaurant?.theme ?? 'default')
@@ -105,41 +107,49 @@ export default function PublicMenuPage() {
   }, [restaurant?.theme])
 
   const handleDishClick = useCallback((dish) => {
+    setShowDailyMenu(false)
     setSelectedDish(dish)
-    if (restaurant?.id) trackPlateView(restaurant.id, dish)
+    if (restaurant?.id) trackPlateView(restaurant.id, dish).catch(() => {})
   }, [restaurant, trackPlateView])
+
+  const toggleFavorite = () => {
+    if (!selectedDish) return
+    const next = favorites.includes(selectedDish.id)
+      ? favorites.filter(id => id !== selectedDish.id)
+      : [...favorites, selectedDish.id]
+    setFavorites(next)
+    saveMenuFavorites(slug, next)
+  }
 
   const plan = restaurant?.plan || 'free'
   const isFree = plan === 'free'
-  const theme = getTheme(restaurant?.color_theme)
+  const theme = (restaurant?.theme && restaurant.theme !== 'default')
+    ? getVisualTheme(restaurant.theme)
+    : getTheme(restaurant?.color_theme)
 
   const planDishes = useMemo(() => {
     if (!isFree) return dishes
     return dishes.slice(0, FREE_DISH_LIMIT)
   }, [dishes, isFree])
 
-  const specials = useMemo(() => planDishes.filter(d => d.is_special), [planDishes])
-
-  const topCats = useMemo(() => {
-    const top = categories.filter(c => !c.parent_id)
-    return top.filter(c => planDishes.some(d => d.category_id === c.id))
-  }, [categories, planDishes])
-
-  const catFirstImage = useMemo(() => {
-    const map = {}
-    planDishes.forEach(d => {
-      if (d.category_id && d.image_url && !map[d.category_id]) map[d.category_id] = d.image_url
-    })
-    return map
-  }, [planDishes])
+  const topCats = useMemo(() => visibleMenuCategories(categories, planDishes), [categories, planDishes])
 
   const filtered = useMemo(() => {
-    if (activeCategory === null) return planDishes
-    return planDishes.filter(d => d.category_id === activeCategory)
-  }, [planDishes, activeCategory])
+    const matching = filterMenuDishes(planDishes, categories, activeCategory)
+    return showFavorites ? matching.filter(dish => favorites.includes(dish.id)) : matching
+  }, [planDishes, categories, activeCategory, showFavorites, favorites])
 
-  const activeName = activeCategory
-    ? topCats.find(c => c.id === activeCategory)?.name ?? ''
+  const slides = useMemo(() => {
+    const custom = !isFree ? normalizeMenuSlides(restaurant?.menu_slides) : []
+    return custom.length ? custom : normalizeMenuSlides(restaurant?.banner_url ? [{ id: 'restaurant-banner', image_url: restaurant.banner_url, title: restaurant.name }] : [])
+  }, [restaurant, isFree])
+  const featured = !showFavorites && !activeCategory ? filtered.filter(dish => dish.featured || (!isFree && dish.is_special)) : []
+  const featuredIds = new Set(featured.map(dish => dish.id))
+  const regularDishes = filtered.filter(dish => !featuredIds.has(dish.id))
+  const activeTab = topCats.find(c => categoryFamilyIds(categories, c.id).has(activeCategory))?.id ?? activeCategory
+
+  const activeName = showFavorites ? 'Tus favoritos' : activeCategory
+    ? categories.find(c => c.id === activeCategory)?.name ?? 'Categoría'
     : 'Toda la carta'
 
   const socialLinks = useMemo(() => {
@@ -152,6 +162,14 @@ export default function PublicMenuPage() {
   if (loading) return (
     <div className="min-h-screen bg-white flex items-center justify-center">
       <div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#FF6B35 transparent transparent transparent' }} />
+    </div>
+  )
+
+  if (loadError) return (
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center text-center px-6" role="alert">
+      <h1 className="text-xl font-bold text-[#1A1A1A]">No se ha podido cargar la carta</h1>
+      <p className="text-gray-500 text-sm mt-2">Comprueba tu conexión e inténtalo de nuevo.</p>
+      <button type="button" onClick={() => setRetry(value => value + 1)} className="mt-5 rounded-xl px-5 py-3 bg-[#FF6B35] text-white font-semibold">Reintentar</button>
     </div>
   )
 
@@ -171,240 +189,24 @@ export default function PublicMenuPage() {
     </div>
   )
 
-  const initial = (restaurant.name || '?')[0].toUpperCase()
+  if (catId && !categories.some(category => category.id === catId)) return (
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center text-center px-6">
+      <h1 className="text-xl font-bold text-[#1A1A1A]">Categoría no encontrada</h1>
+      <Link to={`/carta/${slug}/menu`} className="mt-4 text-[#FF6B35] font-semibold">Volver a la carta</Link>
+    </div>
+  )
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: theme.bg }}>
-
-      {/* ── Hamburguesa fija ── */}
-      <button
-        onClick={() => setMenuOpen(true)}
-        aria-label="Abrir menú"
-        className="fixed top-4 right-4 z-40 w-11 h-11 text-white rounded-xl flex items-center justify-center shadow-md active:scale-95 transition-transform"
-        style={{ backgroundColor: theme.accent }}
-      >
-        <Menu size={20} />
-      </button>
-
-      {/* ── Overlay ── */}
-      {menuOpen && (
-        <div onClick={() => setMenuOpen(false)} className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm" />
-      )}
-
-      {/* ── Panel lateral ── */}
-      <aside className={`fixed top-0 right-0 z-50 h-full w-72 max-w-[85vw] bg-white flex flex-col shadow-2xl border-l border-gray-100 transition-transform duration-300 ${menuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: theme.accent }}>Carta</p>
-            <p className="font-bold text-[#1A1A1A] text-sm mt-0.5 truncate">{restaurant.name}</p>
-          </div>
-          <button onClick={() => setMenuOpen(false)} className="p-2 rounded-xl text-gray-400 hover:bg-gray-100">
-            <X size={18} />
-          </button>
-        </div>
-        <nav className="flex-1 overflow-y-auto py-2 px-2">
-          <button
-            onClick={() => { setActiveCategory(null); setMenuOpen(false) }}
-            className="w-full text-left px-4 py-3.5 rounded-xl text-sm font-medium transition-colors"
-            style={activeCategory === null
-              ? { backgroundColor: theme.bgTint, color: theme.accent }
-              : { color: '#6b7280' }
-            }
-          >
-            Toda la carta
-          </button>
-          {topCats.map(cat => (
-            <button
-              key={cat.id}
-              onClick={() => { setActiveCategory(cat.id); setMenuOpen(false) }}
-              className="w-full text-left px-4 py-3.5 rounded-xl text-sm font-medium transition-colors"
-              style={activeCategory === cat.id
-                ? { backgroundColor: theme.bgTint, color: theme.accent }
-                : { color: '#6b7280' }
-              }
-            >
-              {cat.name}
-            </button>
-          ))}
-        </nav>
-        {isFree && (
-          <div className="px-5 py-3 border-t border-gray-100">
-            <p className="text-xs text-gray-400">Carta digital por <span style={{ color: theme.accent }}>Messa</span></p>
-          </div>
-        )}
-      </aside>
-
-      {/* ── HEADER — nombre siempre visible */}
-      <header style={{
-        position: 'relative',
-        minHeight: 180,
-        overflow: 'hidden',
-        backgroundColor: theme.primary,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'flex-end',
-      }}>
-        {/* Banner como fondo absoluto */}
-        {restaurant.banner_url && (
-          <img
-            src={restaurant.banner_url}
-            alt={restaurant.name}
-            style={{
-              position: 'absolute', inset: 0,
-              width: '100%', height: '100%',
-              objectFit: 'cover', zIndex: 0,
-            }}
-          />
-        )}
-
-        {/* Overlay: gradiente oscuro cuando hay banner, suave sin él */}
-        <div style={{
-          position: 'absolute', inset: 0, zIndex: 1,
-          background: restaurant.banner_url
-            ? 'linear-gradient(to top, rgba(0,0,0,0.70) 0%, rgba(0,0,0,0.20) 60%, transparent 100%)'
-            : 'linear-gradient(to top, rgba(0,0,0,0.30) 0%, transparent 100%)',
-        }} />
-
-        {/* Contenido — siempre encima del overlay */}
-        <div style={{
-          position: 'relative', zIndex: 2,
-          padding: '24px 20px 28px',
-          boxSizing: 'border-box',
-        }}>
-          {/* Logo */}
-          {restaurant.logo_url ? (
-            <img
-              src={restaurant.logo_url}
-              alt="Logo"
-              style={{
-                width: 52, height: 52, borderRadius: '50%',
-                objectFit: 'cover', marginBottom: 12,
-                border: '2px solid rgba(255,255,255,0.70)',
-                display: 'block',
-              }}
-            />
-          ) : (
-            <div style={{
-              width: 52, height: 52, borderRadius: '50%',
-              background: 'rgba(255,255,255,0.22)',
-              border: '2px solid rgba(255,255,255,0.35)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              marginBottom: 12,
-            }}>
-              <span style={{ fontSize: 22, fontWeight: 700, color: '#FFF' }}>{initial}</span>
-            </div>
-          )}
-
-          {/* Nombre — siempre visible */}
-          <h1 style={{
-            margin: 0, fontSize: 26, fontWeight: 700,
-            color: '#FFF', lineHeight: 1.2,
-          }}>
-            {restaurant.name}
-          </h1>
-
-          {/* Descripción */}
-          {restaurant.description && (
-            <p style={{
-              margin: '6px 0 0', fontSize: 13,
-              color: 'rgba(255,255,255,0.82)', lineHeight: 1.5,
-            }}>
-              {restaurant.description}
-            </p>
-          )}
-        </div>
-      </header>
-
-      {/* ── CATEGORÍAS estilo historias ── */}
-      {topCats.length > 0 && (
-        <div className="border-b border-black/5">
-          <div className="flex gap-6 px-5 py-5 overflow-x-auto scrollbar-hide">
-
-            {/* Todos */}
-            <button onClick={() => setActiveCategory(null)} className="flex flex-col items-center gap-2 shrink-0">
-              <div
-                className="w-[70px] h-[70px] rounded-full flex items-center justify-center text-[28px] transition-all"
-                style={activeCategory === null
-                  ? { border: `3px solid ${theme.accent}`, backgroundColor: theme.bgTint }
-                  : { border: '1px solid #e5e7eb', backgroundColor: '#f9fafb' }
-                }
-              >
-                ✨
-              </div>
-              <span className="text-xs font-semibold w-[72px] text-center truncate" style={{ color: activeCategory === null ? theme.accent : '#6b7280' }}>
-                Todos
-              </span>
-            </button>
-
-            {topCats.map(cat => {
-              const isActive = activeCategory === cat.id
-              const img = catFirstImage[cat.id]
-              return (
-                <button key={cat.id} onClick={() => setActiveCategory(cat.id)} className="flex flex-col items-center gap-2 shrink-0">
-                  <div
-                    className="w-[70px] h-[70px] rounded-full overflow-hidden transition-all"
-                    style={isActive
-                      ? { border: `3px solid ${theme.accent}` }
-                      : { border: '1px solid #e5e7eb' }
-                    }
-                  >
-                    {img ? (
-                      <img src={img} alt={cat.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div
-                        className="w-full h-full flex items-center justify-center text-[28px]"
-                        style={{ backgroundColor: isActive ? theme.bgTint : '#f9fafb' }}
-                      >
-                        {getEmoji(cat.name)}
-                      </div>
-                    )}
-                  </div>
-                  <span className="text-xs font-semibold w-[72px] text-center truncate" style={{ color: isActive ? theme.accent : '#6b7280' }}>
-                    {cat.name}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* ── SECCIÓN DE PLATOS ── */}
-      <main className="max-w-lg mx-auto px-4 pt-5 pb-10">
-        <div className="text-center mb-5">
-          <h2 className="font-bold text-xl" style={{ color: theme.accent }}>{activeName}</h2>
-          <p className="text-gray-400 text-sm mt-0.5">{filtered.length} {filtered.length === 1 ? 'plato' : 'platos'}</p>
-        </div>
-
-        {/* ── ESPECIALES DE HOY — solo Plan Pro / Premium ── */}
-        {!isFree && specials.length > 0 && (
-          <div className="mb-6">
-            <div
-              className="rounded-2xl p-4"
-              style={{ border: `1px solid ${theme.accent}`, backgroundColor: theme.bgTint + 'aa' }}
-            >
-              <h2 className="font-bold text-[18px] mb-3 flex items-center gap-1.5" style={{ color: theme.accent }}>
-                ⭐ Especial de hoy
-              </h2>
-              <div className="grid grid-cols-2 gap-3">
-                {specials.map(dish => (
-                  <DishCard key={dish.id} dish={dish} variant="grid" onClick={() => handleDishClick(dish)} theme={theme} />
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {filtered.length === 0 ? (
-          <p className="text-center py-16 text-gray-400 text-sm">No hay platos disponibles.</p>
-        ) : (
-          <div className="grid grid-cols-2 gap-3">
-            {filtered.map(dish => (
-              <DishCard key={dish.id} dish={dish} variant="grid" onClick={() => handleDishClick(dish)} theme={theme} />
-            ))}
-          </div>
-        )}
-
+    <div className="messa-public-menu min-h-screen" style={{ backgroundColor: theme.bg, '--menu-bg': theme.bg, '--menu-tint': theme.bgTint, '--menu-accent': theme.accent, '--menu-text': theme.text ?? '#252a21', '--menu-card': theme.text ? theme.bgTint : '#ffffff', '--menu-border': theme.cardBorder ?? 'rgba(35,40,30,.09)' }}>
+      <RestaurantHeader restaurant={restaurant} theme={theme} favoriteCount={planDishes.filter(dish => favorites.includes(dish.id)).length} showFavorites={showFavorites} onToggleFavorites={() => { setActiveCategory(null); setShowFavorites(value => !value) }} />
+      {!showFavorites && <MenuHighlights slides={slides} />}
+      <div className="messa-menu-categories"><CategoryTabs categories={topCats} activeId={activeTab} onChange={setActiveCategory} theme={theme} onOpenDailyMenu={dailyMenu?.enabled ? openDailyMenu : undefined} dailyMenuOpen={showDailyMenu} /></div>
+      <main className="messa-menu-main">
+        {featured.length > 0 && <section className="messa-featured-section" aria-labelledby="featured-heading"><div className="messa-menu-section-heading"><div><p>LOS IMPRESCINDIBLES</p><h2 id="featured-heading">Platos destacados</h2></div></div><div className="messa-dishes-grid">{featured.map(dish => <DishGridCard key={dish.id} dish={dish} onClick={() => handleDishClick(dish)} theme={theme} isFavorite={favorites.includes(dish.id)} />)}</div></section>}
+        {(regularDishes.length > 0 || filtered.length === 0) && <section aria-labelledby="menu-list-heading">
+          <div className="messa-menu-section-heading"><div><p>ELIGE LO QUE TE APETECE</p><h2 id="menu-list-heading">{activeName}</h2></div><span className="messa-menu-count">{filtered.length} {filtered.length === 1 ? 'plato' : 'platos'}</span></div>
+          {filtered.length === 0 ? <p className="messa-menu-empty">{showFavorites ? 'Aún no tienes favoritos en esta selección. Abre un plato y toca el corazón para guardarlo.' : 'No hay platos disponibles.'}</p> : regularDishes.length > 0 ? <div className="messa-dishes-grid">{regularDishes.map(dish => <DishGridCard key={dish.id} dish={dish} onClick={() => handleDishClick(dish)} theme={theme} isFavorite={favorites.includes(dish.id)} />)}</div> : <p className="messa-menu-empty">Todos los platos de esta carta están en destacados.</p>}
+        </section>}
         {isFree && dishes.length > FREE_DISH_LIMIT && (
           <p className="text-center text-xs text-gray-400 mt-6">
             Mostrando {FREE_DISH_LIMIT} de {dishes.length} platos · Plan Free
@@ -412,7 +214,7 @@ export default function PublicMenuPage() {
         )}
       </main>
 
-      {/* ── FOOTER REDES SOCIALES — solo Plan Pro / Premium ── */}
+      {/* ── FOOTER REDES SOCIALES — solo Plan Pro ── */}
       {socialLinks.length > 0 && (
         <div className="pb-6 px-4 text-center">
           <div className="h-px bg-black/5 mb-6 max-w-lg mx-auto" />
@@ -436,8 +238,10 @@ export default function PublicMenuPage() {
       )}
 
       {selectedDish && (
-        <DishDetailSheet dish={selectedDish} onClose={() => setSelectedDish(null)} theme={theme} />
+        <DishDetailSheet key={selectedDish.id} dish={selectedDish} onClose={closeDish} theme={theme}
+          isFavorite={favorites.includes(selectedDish.id)} onToggleFavorite={toggleFavorite} />
       )}
+      {showDailyMenu && dailyMenu?.enabled && <DailyMenuSheet menu={dailyMenu} onClose={closeDailyMenu} theme={theme} />}
     </div>
   )
 }

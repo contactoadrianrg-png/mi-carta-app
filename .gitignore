@@ -6,3 +6,11 @@ dist/
 *.log
 
 .vercel
+.env.*
+!.env.example
+
+# Informes privados de la base de datos
+supabase/audits/
+REVISION-MESSA.md
+
+supabase/.temp/
