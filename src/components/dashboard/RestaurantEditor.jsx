@@ -694,7 +694,7 @@ export default function RestaurantEditor({ restaurant, onUpdate }) {
           {restaurant && (
             <div style={cardStyle}>
               <span style={sectionLabelStyle}>Pedir a domicilio</span>
-              <Row icon={<ExternalLink size={18} color="#9CA3AF" />} label="Plataformas de delivery" sublabel="Glovo, Uber Eats y Just Eat" onClick={() => toggle('delivery')} rightEl={<ChevronRight size={16} color="#9CA3AF" />} noBorder />
+              <Row icon={<ExternalLink size={18} color="#9CA3AF" />} label="Plataformas y pedidos propios" sublabel="Glovo, Uber Eats, Just Eat o tu propia web" onClick={() => toggle('delivery')} rightEl={<ChevronRight size={16} color="#9CA3AF" />} noBorder />
               {expanded === 'delivery' && <ExpandBox><DeliveryLinksEditor restaurant={restaurant} onUpdate={onUpdate} /></ExpandBox>}
             </div>
           )}

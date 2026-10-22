@@ -28,6 +28,7 @@ test('delivery URLs accept web links and reject executable, credentialed or inco
   assert.equal(deliveryUrl(' https://glovoapp.com/es/madrid/local/ '), 'https://glovoapp.com/es/madrid/local/')
   for (const value of ['', undefined, {}, 'javascript:alert(1)', 'data:text/html,example', '//glovoapp.com', 'glovoapp.com', 'https://user:password@example.com']) assert.equal(deliveryUrl(value), null)
   assert.deepEqual(getDeliveryLinks({ delivery_glovo_url: 'https://glovoapp.com/local', delivery_uber_eats_url: 'javascript:alert(1)' }).map(link => link.label), ['Glovo'])
+  assert.deepEqual(getDeliveryLinks({ delivery_custom_url: 'https://pedidos.local.es/' }).map(link => [link.label, link.href]), [['Pedir online', 'https://pedidos.local.es/']])
 })
 
 test('welcome shows the restaurant logo above text-only links, preserving menu and reservation destinations', () => {
@@ -65,7 +66,7 @@ test('editor saves links on the current restaurant and clears removed links', as
   act(() => view.root.findByProps({ id: 'delivery_glovo_url' }).props.onChange({ target: { value: '' } }))
   act(() => view.root.findByProps({ id: 'delivery_uber_eats_url' }).props.onChange({ target: { value: ' https://www.ubereats.com/local ' } }))
   await act(async () => view.root.findByType('form').props.onSubmit({ preventDefault() {} }))
-  assert.deepEqual(writes[0], { table: 'restaurants', value: { delivery_glovo_url: null, delivery_uber_eats_url: 'https://www.ubereats.com/local', delivery_just_eat_url: null }, filter: ['id', 'local'] })
+  assert.deepEqual(writes[0], { table: 'restaurants', value: { delivery_glovo_url: null, delivery_uber_eats_url: 'https://www.ubereats.com/local', delivery_just_eat_url: null, delivery_custom_url: null }, filter: ['id', 'local'] })
   assert.equal(updates.length, 1)
   act(() => view.root.findByProps({ id: 'delivery_glovo_url' }).props.onChange({ target: { value: 'javascript:alert(1)' } }))
   await act(async () => view.root.findByType('form').props.onSubmit({ preventDefault() {} }))

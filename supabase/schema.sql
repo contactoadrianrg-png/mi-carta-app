@@ -411,3 +411,6 @@ alter table public.restaurants
 
 grant update (delivery_glovo_url, delivery_uber_eats_url, delivery_just_eat_url)
   on public.restaurants to authenticated;
+-- The restaurant may link its own ordering website alongside delivery platforms.
+alter table public.restaurants add column if not exists delivery_custom_url text;
+grant update (delivery_custom_url) on public.restaurants to authenticated;

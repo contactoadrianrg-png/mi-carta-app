@@ -2,6 +2,7 @@ export const DELIVERY_PLATFORMS = [
   { key: 'delivery_glovo_url', label: 'Glovo', placeholder: 'https://glovoapp.com/…' },
   { key: 'delivery_uber_eats_url', label: 'Uber Eats', placeholder: 'https://www.ubereats.com/…' },
   { key: 'delivery_just_eat_url', label: 'Just Eat', placeholder: 'https://www.just-eat.es/…' },
+  { key: 'delivery_custom_url', label: 'Pedir online', fieldLabel: 'Web de pedidos propia', placeholder: 'https://pedidos.tu-restaurante.com/…' },
 ]
 
 export function deliveryUrl(value) {
