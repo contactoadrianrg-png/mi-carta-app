@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { SOCIALS } from '../../lib/socials'
 import MenuSlidesEditor from './MenuSlidesEditor'
+import DeliveryLinksEditor from './DeliveryLinksEditor'
 
 function slugify(text) {
   return text
@@ -687,6 +688,14 @@ export default function RestaurantEditor({ restaurant, onUpdate }) {
                   </RedBtn>
                 </ExpandBox>
               )}
+            </div>
+          )}
+
+          {restaurant && (
+            <div style={cardStyle}>
+              <span style={sectionLabelStyle}>Pedir a domicilio</span>
+              <Row icon={<ExternalLink size={18} color="#9CA3AF" />} label="Plataformas de delivery" sublabel="Glovo, Uber Eats y Just Eat" onClick={() => toggle('delivery')} rightEl={<ChevronRight size={16} color="#9CA3AF" />} noBorder />
+              {expanded === 'delivery' && <ExpandBox><DeliveryLinksEditor restaurant={restaurant} onUpdate={onUpdate} /></ExpandBox>}
             </div>
           )}
 
