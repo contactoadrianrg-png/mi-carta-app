@@ -31,12 +31,12 @@ test('delivery URLs accept web links and reject executable, credentialed or inco
   assert.deepEqual(getDeliveryLinks({ delivery_custom_url: 'https://pedidos.local.es/' }).map(link => [link.label, link.href]), [['Pedir online', 'https://pedidos.local.es/']])
 })
 
-test('welcome shows the restaurant logo above text-only links, preserving menu and reservation destinations', () => {
+test('welcome shows the uploaded cover without logo, preserving menu and reservation destinations', () => {
   let view
   act(() => { view = create(React.createElement(MemoryRouter, {}, React.createElement(Welcome, { restaurant: { name: 'Local', slug: 'local', plan: 'pro', logo_url: '/logo-local.png', welcome_image_url: '/old-banner.jpg', reservation_url: 'https://example.com/reservas', delivery_glovo_url: 'https://glovoapp.com/local', delivery_uber_eats_url: 'https://ubereats.com/local', delivery_just_eat_url: 'https://just-eat.es/local' } }))) })
   const images = view.root.findAllByType('img')
   assert.equal(images.length, 1)
-  assert.equal(images[0].props.src, '/logo-local.png')
+  assert.equal(images[0].props.src, '/old-banner.jpg')
   const links = view.root.findAllByType('a')
   assert.equal(links[0].props.href, '/carta/local/menu')
   assert.equal(links[1].props.href, 'https://example.com/reservas')
