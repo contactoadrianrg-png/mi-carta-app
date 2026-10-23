@@ -6,7 +6,7 @@ import { join } from 'node:path'
 import { build } from 'esbuild'
 import React from 'react'
 import { create, act } from 'react-test-renderer'
-import { MemoryRouter, useLocation } from 'react-router-dom'
+import { MemoryRouter, useLocation, useNavigate } from 'react-router-dom'
 const root=fileURLToPath(new URL('../',import.meta.url))
 const temp=await mkdtemp(join(root,'.messa-auth-tests-'))
 await build({entryPoints:[join(root,'src/pages/AuthPage.jsx')],outfile:join(temp,'auth.mjs'),bundle:true,platform:'node',format:'esm',packages:'external',jsx:'automatic',loader:{'.css':'empty'},plugins:[{name:'mock-services',setup(b){
@@ -18,7 +18,8 @@ await build({entryPoints:[join(root,'src/pages/AuthPage.jsx')],outfile:join(temp
 }}]})
 const {default:Auth}=await import(pathToFileURL(join(temp,'auth.mjs')).href)
 after(()=>rm(temp,{recursive:true,force:true}))
-function Location(){const location=useLocation();return React.createElement('output',{},location.pathname)}
+let historyNavigate
+function Location(){const location=useLocation();historyNavigate=useNavigate();return React.createElement('output',{},location.pathname)}
 function button(view,label){return view.root.findAllByType('button').find(n=>n.children.join('')===label)}
 function setup(state){let view;act(()=>{view=create(React.createElement(MemoryRouter,{initialEntries:[{pathname:'/',state}]},React.createElement(Auth),React.createElement(Location)))});return view}
 test('entry opens registration, login and recovery without leaving the home URL',()=>{
@@ -50,4 +51,23 @@ test('registration preserves account confirmation and legacy login state opens t
  const legacy=setup({authMode:'login'})
  assert.equal(legacy.root.findByProps({id:'auth-password'}).props.autoComplete,'current-password')
  act(()=>legacy.unmount())
+})
+
+test('browser back and forward restore auth screens on the same URL',()=>{
+ globalThis.__entryAuth={signIn:async()=>{},signUp:async()=>({session:null})}
+ const view=setup()
+ act(()=>button(view,'Crear cuenta gratis').props.onClick())
+ assert.equal(view.root.findByProps({id:'auth-password'}).props.autoComplete,'new-password')
+ act(()=>historyNavigate(-1))
+ assert.equal(view.root.findAllByType('form').length,0)
+ act(()=>historyNavigate(1))
+ assert.equal(view.root.findByProps({id:'auth-password'}).props.autoComplete,'new-password')
+ act(()=>button(view,'Inicia sesión').props.onClick())
+ act(()=>button(view,'¿Olvidaste tu contraseña?').props.onClick())
+ act(()=>historyNavigate(-1))
+ assert.equal(view.root.findByProps({id:'auth-password'}).props.autoComplete,'current-password')
+ act(()=>view.root.findAllByType('button').find(n=>n.props.className==='messa-register-back').props.onClick())
+ assert.equal(view.root.findByProps({id:'auth-password'}).props.autoComplete,'new-password')
+ assert.equal(view.root.findByType('output').children.join(''),'/')
+ act(()=>view.unmount())
 })

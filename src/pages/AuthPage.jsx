@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, ArrowLeft } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
@@ -10,8 +10,13 @@ import './AuthPage.css'
 
 export default function AuthPage() {
   const location = useLocation()
+  const navigate = useNavigate()
   const { signIn, signUp } = useAuth()
-  const [mode, setMode] = useState(location.state?.authMode || 'welcome')
+  const mode = location.state?.authMode || 'welcome'
+
+  function setMode(authMode) {
+    navigate(location.pathname, { state: { authMode, authPrevious: true } })
+  }
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -19,16 +24,13 @@ export default function AuthPage() {
   const [sent, setSent] = useState(null)
 
   useEffect(() => {
-    setMode(location.state?.authMode || 'welcome')
     setSent(null)
     setPassword('')
     setShowPassword(false)
   }, [location.key, location.state?.authMode])
 
   function showWelcome() {
-    setMode('welcome')
-    setSent(null)
-    setPassword('')
+    navigate('/', { replace: true, state: null })
   }
 
   async function handleSubmit(event) {
@@ -63,7 +65,7 @@ export default function AuthPage() {
 
   return <main className="messa-register">
     <header className="messa-register-header">
-      <Link to="/" className="messa-register-brand" aria-label="MESSA, inicio" onClick={showWelcome}>
+      <Link to="/" className="messa-register-brand" aria-label="MESSA, inicio" state={null}>
         <img src="/messa-mark.svg" alt="" width="42" height="34" /><span>Messa</span>
       </Link>
     </header>
@@ -82,7 +84,7 @@ export default function AuthPage() {
         <p className="messa-register-intro">{sent === 'register' ? 'Te hemos enviado un enlace para confirmar tu cuenta. Después podrás iniciar sesión.' : 'Te hemos enviado un enlace para restablecer tu contraseña.'}</p>
         {sent === 'register' ? <button type="button" className="messa-register-demo" onClick={() => { setSent(null); setMode('login') }}>Ir a iniciar sesión</button> : <button type="button" className="messa-register-submit" onClick={() => { setSent(null); setMode('login') }}>Volver a iniciar sesión</button>}
       </div> : <>
-        <button type="button" className="messa-register-back" onClick={isForgot ? () => setMode('login') : showWelcome}><ArrowLeft size={18} aria-hidden="true" /> Volver</button>
+        <button type="button" className="messa-register-back" onClick={() => location.state?.authPrevious ? navigate(-1) : showWelcome()}><ArrowLeft size={18} aria-hidden="true" /> Volver</button>
         <h1 id="auth-title">{isRegister ? 'Crea tu cuenta.' : isForgot ? 'Recupera tu acceso.' : 'Bienvenido de nuevo.'}</h1>
         <p className="messa-register-intro">{isRegister ? 'El primer paso para crear la carta de tu restaurante.' : isForgot ? 'Te enviaremos un enlace para restablecer tu contraseña.' : 'Entra para gestionar tu restaurante.'}</p>
         <form onSubmit={handleSubmit} className="messa-register-form" aria-busy={loading}>
