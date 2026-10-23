@@ -6,7 +6,6 @@ import DashboardPage from './pages/DashboardPage'
 import PublicMenuPage from './pages/PublicMenuPage'
 import CategoryPage from './pages/CategoryPage'
 import WelcomePage from './pages/WelcomePage'
-import LandingPage from './pages/LandingPage'
 import AdminPage from './pages/AdminPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 
@@ -46,9 +45,9 @@ function AdminRoute({ children }) {
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={<GuestRoute><AuthPage /></GuestRoute>} />
-      <Route path="/register" element={<GuestRoute><AuthPage /></GuestRoute>} />
+      <Route path="/" element={<GuestRoute><AuthPage /></GuestRoute>} />
+      <Route path="/login" element={<Navigate to="/" state={{ authMode: 'login' }} replace />} />
+      <Route path="/register" element={<Navigate to="/" replace />} />
       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
       <Route path="/carta/:slug" element={<WelcomePage />} />
       <Route path="/carta/:slug/menu" element={<PublicMenuPage />} />

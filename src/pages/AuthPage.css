@@ -50,3 +50,5 @@
 .messa-feature-pause{position:absolute;right:0}
 @media(max-width:480px){.messa-register-header{min-height:72px}.messa-register-welcome h1{font-size:42px}.messa-feature-stage{height:290px}.messa-register-existing{margin-top:20px}.messa-register-welcome .messa-register-intro{font-size:15px;margin:14px 0 20px}}
 @media(prefers-reduced-motion:reduce){.messa-feature-slide{transition:none}}
+.messa-register-forgot{justify-self:end;min-height:44px;padding:0;border:0;background:transparent;font:inherit;font-size:14px;color:#686156;text-decoration:underline;text-underline-offset:4px;cursor:pointer}
+.messa-register-existing button{background:transparent;border:0;padding:8px 0;min-height:44px;color:#28251f;font:inherit;text-decoration:underline;text-underline-offset:4px;cursor:pointer}
