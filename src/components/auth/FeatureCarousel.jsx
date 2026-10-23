@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 import { Pause, Play } from 'lucide-react'
 
 const features = [
-  { image: '/onboarding/carta.webp', title: 'Tu carta entra por los ojos', detail: 'Fotos que dan ganas de pedir.', alt: 'Plato de pollo con arroz y habichuelas', style: 'food' },
-  { image: '/onboarding/promociones.webp', title: 'Tus promociones, a la vista', detail: 'Destaca ofertas y menús del día.', alt: 'Ejemplo de una promoción en la carta de MESSA', style: 'promotions' },
-  { image: '/onboarding/panel.webp', title: 'Actualiza desde tu móvil', detail: 'Cambia platos, fotos y precios al momento.', alt: 'Panel de MESSA en formato móvil', style: 'panel' },
+  { image: '/onboarding/carta-oscura.webp', title: 'Tu carta entra por los ojos', detail: 'Fotos que dan ganas de pedir.', alt: 'Vista ilustrativa de una carta digital con fotos de platos en un móvil', style: 'food' },
+  { image: '/onboarding/promociones-oscuras.webp', title: 'Tus promociones, a la vista', detail: 'Destaca ofertas y menús del día.', alt: 'Vista ilustrativa de promociones y menú del día en un móvil', style: 'promotions' },
+  { image: '/onboarding/panel-oscuro.webp', title: 'Actualiza desde tu móvil', detail: 'Cambia platos, fotos y precios al momento.', alt: 'Vista ilustrativa de la edición de un plato desde el móvil', style: 'panel' },
 ]
 
 export default function FeatureCarousel() {

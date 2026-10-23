@@ -37,10 +37,8 @@
 .messa-feature-stage{position:relative;height:310px;border-radius:20px;overflow:hidden;background:#eee7dd;box-shadow:0 5px 18px #30241708}
 .messa-feature-slide{position:absolute;inset:0;margin:0;opacity:0;visibility:hidden;transition:opacity .55s ease,visibility .55s;pointer-events:none;display:flex;flex-direction:column;background:#fff}
 .messa-feature-slide.is-active{opacity:1;visibility:visible;pointer-events:auto}
-.messa-feature-image{flex:1;min-height:0;overflow:hidden;background:#ede7df}
-.messa-feature-image img{width:100%;height:100%;object-fit:cover;display:block}
-.messa-feature-slide.promotions img{object-position:50% 0}
-.messa-feature-slide.panel img{object-fit:contain;object-position:center 0;padding:12px 0 0}
+.messa-feature-image{flex:1;min-height:0;overflow:hidden;background:#17110d}
+.messa-feature-image img{width:100%;height:100%;object-fit:contain;display:block}
 .messa-feature-slide figcaption{padding:17px 20px 19px;min-height:92px}
 .messa-feature-slide h2{font-size:20px;font-weight:650;line-height:1.3;letter-spacing:-.025em;margin:0 0 5px}
 .messa-feature-slide p{font-size:15px;line-height:1.5;color:#686156;margin:0}
