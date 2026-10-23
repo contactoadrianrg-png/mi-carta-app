@@ -64,7 +64,7 @@ export default function AuthPage() {
   return <main className="messa-register">
     <header className="messa-register-header">
       <Link to="/" className="messa-register-brand" aria-label="MESSA, inicio" onClick={showWelcome}>
-        <img src="/logo.svg" alt="" width="32" height="32" /><span>MESSA</span>
+        <img src="/messa-mark.svg" alt="" width="42" height="34" /><span>Messa</span>
       </Link>
     </header>
     <section className="messa-register-content" aria-labelledby="auth-title">

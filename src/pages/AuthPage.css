@@ -1,8 +1,8 @@
 .messa-register{min-height:100vh;min-height:100svh;background:#fffdf9;color:#28251f;font-family:inherit;padding:0 28px 60px}
 .messa-register *{box-sizing:border-box}
 .messa-register-header{max-width:1120px;margin:0 auto;min-height:100px;display:flex;align-items:center;justify-content:space-between;gap:24px}
-.messa-register-brand{display:inline-flex;align-items:center;gap:10px;color:#28251f;text-decoration:none;font-size:18px;font-weight:650;letter-spacing:.04em}
-.messa-register-brand img{display:block;border-radius:7px}
+.messa-register-brand{display:inline-flex;align-items:center;gap:10px;color:#28251f;text-decoration:none;font-size:26px;font-weight:700;letter-spacing:-.05em}
+.messa-register-brand img{display:block;flex:none}
 .messa-register-login{display:inline-flex;align-items:center;min-height:44px;color:#575047;font-size:15px;text-decoration:none}
 .messa-register-content{width:100%;max-width:400px;margin:clamp(48px,10vh,112px) auto 0}
 .messa-register-content h1{font-size:clamp(32px,5vw,40px);font-weight:600;line-height:1.15;letter-spacing:-.04em;margin:0 0 14px}
