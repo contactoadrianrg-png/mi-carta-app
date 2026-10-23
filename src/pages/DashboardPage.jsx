@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useScreenNavigation } from '../hooks/useScreenNavigation'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { restaurantProfileUpdates } from '../lib/restaurantProfile'
@@ -15,6 +16,9 @@ import MenuSlidesEditor from '../components/dashboard/MenuSlidesEditor'
 import DailyMenuEditor from '../components/dashboard/DailyMenuEditor'
 import ReservationsPanel from '../components/dashboard/ReservationsPanel'
 import { IconBolt, IconExternalLink, IconX, IconCamera } from '@tabler/icons-react'
+
+const DASHBOARD_SCREEN = { tab: 'home', dialog: null }
+const DASHBOARD_TABS = ['home', 'restaurant', 'categories', 'dishes', 'daily-menu', 'slides', 'reservations', 'socials', 'stats', 'account']
 
 const ORANGE       = '#E65100'
 const ORANGE_LIGHT = '#FFF3E0'
@@ -309,21 +313,33 @@ export default function DashboardPage() {
   const { user } = useAuth()
   const [restaurant,     setRestaurant]     = useState(null)
   const [loading,        setLoading]        = useState(true)
-  const [activeTab,      setActiveTab]      = useState('home')
+  const [screen, openScreen, backScreen] = useScreenNavigation('dashboardScreen', DASHBOARD_SCREEN)
+  const activeTab = DASHBOARD_TABS.includes(screen.tab) ? screen.tab : 'home'
+  const setActiveTab = tab => openScreen({ tab, dialog: null })
   const [dishCount,      setDishCount]      = useState(null)
   const [categoryCount,  setCategoryCount]  = useState(null)
-  const [showQR,         setShowQR]         = useState(false)
-  const [showCustomize,  setShowCustomize]  = useState(false)
+  const showQR = screen.dialog === 'qr'
+  const showCustomize = screen.dialog === 'customize'
+  const setShowQR = open => open ? openScreen({ dialog: 'qr' }) : backScreen({ dialog: null })
+  const setShowCustomize = open => open ? openScreen({ dialog: 'customize' }) : backScreen({ dialog: null })
+  const [loadError, setLoadError] = useState(false)
+  const [retry, setRetry] = useState(0)
 
   useEffect(() => {
     if (!user) return
-    supabase.from('restaurants').select('*').eq('owner_id', user.id).maybeSingle()
+    let alive = true
+    setLoading(true)
+    setLoadError(false)
+    Promise.resolve().then(() => supabase.from('restaurants').select('*').eq('owner_id', user.id).maybeSingle())
       .then(({ data, error }) => {
-        if (error) toast.error('Error al cargar el restaurante')
-        else setRestaurant(data)
-        setLoading(false)
+        if (!alive) return
+        if (error) throw error
+        setRestaurant(data)
       })
-  }, [user])
+      .catch(() => { if (alive) setLoadError(true) })
+      .finally(() => { if (alive) setLoading(false) })
+    return () => { alive = false }
+  }, [user?.id, retry])
 
   useEffect(() => {
     if (!restaurant || activeTab !== 'home') return
@@ -347,6 +363,8 @@ export default function DashboardPage() {
     )
   }
 
+  if (loadError) return <main className="md-empty" role="alert"><h1>No se ha podido cargar el restaurante</h1><p>Comprueba tu conexión y vuelve a intentarlo.</p><button type="button" className="md-primary" onClick={() => setRetry(value => value + 1)}>Reintentar</button></main>
+
   function customize() {
     if (restaurant) setShowCustomize(true)
     else setActiveTab('restaurant')
@@ -367,7 +385,7 @@ export default function DashboardPage() {
       {activeTab === 'account' && <div className="md-content-card"><AccountPanel /></div>}
       {!restaurant && ['categories', 'dishes', 'daily-menu', 'slides', 'reservations'].includes(activeTab) && <section className="md-empty"><h2>Primero crea tu restaurante</h2><p>Después podrás gestionar todos los detalles de tu carta.</p><button type="button" className="md-primary" onClick={() => setActiveTab('restaurant')}>Configurar restaurante</button></section>}
       {showQR && menuUrl && <QRModal url={menuUrl} socialUrl={socialUrl} onClose={() => setShowQR(false)} />}
-      {showCustomize && restaurant && <CustomizeModal restaurant={restaurant} user={user} onClose={() => setShowCustomize(false)} onUpdate={updated => { setRestaurant(updated); setShowCustomize(false) }} />}
+      {showCustomize && restaurant && <CustomizeModal restaurant={restaurant} user={user} onClose={() => setShowCustomize(false)} onUpdate={setRestaurant} />}
     </DashboardLayout>
   )
 }

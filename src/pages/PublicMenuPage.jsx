@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { useScreenNavigation } from '../hooks/useScreenNavigation'
 import { supabase } from '../lib/supabase'
 import DishDetailSheet from '../components/menu/DishDetailSheet'
 import RestaurantHeader from '../components/menu/RestaurantHeader'
@@ -25,18 +26,21 @@ export default function PublicMenuPage() {
   const [dishes, setDishes] = useState([])
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
-  const [activeCategory, setActiveCategory] = useState(catId ?? null)
-  const [showFavorites, setShowFavorites] = useState(false)
-  const [selectedDish, setSelectedDish] = useState(null)
-  const [showDailyMenu, setShowDailyMenu] = useState(false)
+  const menuDefaults = useMemo(() => ({ category: catId ?? null, favorites: false, dishId: null, daily: false }), [catId])
+  const [screen, openScreen, backScreen] = useScreenNavigation('menuScreen', menuDefaults)
+  const activeCategory = screen.category
+  const showFavorites = screen.favorites
+  const visibleDishes = restaurant?.plan === 'free' ? dishes.slice(0, FREE_DISH_LIMIT) : dishes
+  const selectedDish = visibleDishes.find(dish => dish.id === screen.dishId) ?? null
+  const setActiveCategory = category => openScreen({ category, dishId: null, daily: false })
   const [loadError, setLoadError] = useState(false)
   const [retry, setRetry] = useState(0)
   const [favorites, setFavorites] = useState(() => readMenuFavorites(slug))
-  const closeDish = useCallback(() => setSelectedDish(null), [])
-  const closeDailyMenu = useCallback(() => setShowDailyMenu(false), [])
-  const openDailyMenu = useCallback(() => { setSelectedDish(null); setShowDailyMenu(true) }, [])
+  const closeDish = useCallback(() => backScreen({ dishId: null }), [backScreen])
+  const closeDailyMenu = useCallback(() => backScreen({ daily: false }), [backScreen])
+  const openDailyMenu = useCallback(() => openScreen({ dishId: null, daily: true }), [openScreen])
   const dailyMenu = useMemo(() => normalizeDailyMenu(restaurant?.daily_menu), [restaurant?.daily_menu])
-  useEffect(() => { if (!dailyMenu?.enabled) setShowDailyMenu(false) }, [dailyMenu?.enabled])
+  const showDailyMenu = screen.daily && !!dailyMenu?.enabled
 
   const trackPlateView = useCallback(async (restaurantId, dish) => {
     await supabase.from('plate_views').insert({
@@ -57,9 +61,6 @@ export default function PublicMenuPage() {
     setRestaurant(null)
     setCategories([])
     setDishes([])
-    setSelectedDish(null)
-    setShowDailyMenu(false)
-    setShowFavorites(false)
     setFavorites(readMenuFavorites(slug))
 
     async function refresh() {
@@ -99,18 +100,15 @@ export default function PublicMenuPage() {
     }
   }, [slug, retry])
 
-  useEffect(() => { setActiveCategory(catId ?? null) }, [slug, catId])
-
   useEffect(() => {
     applyTheme(restaurant?.theme ?? 'default')
     return () => applyTheme('default')
   }, [restaurant?.theme])
 
   const handleDishClick = useCallback((dish) => {
-    setShowDailyMenu(false)
-    setSelectedDish(dish)
+    openScreen({ daily: false, dishId: dish.id })
     if (restaurant?.id) trackPlateView(restaurant.id, dish).catch(() => {})
-  }, [restaurant, trackPlateView])
+  }, [restaurant, trackPlateView, openScreen])
 
   const toggleFavorite = () => {
     if (!selectedDish) return
@@ -198,7 +196,7 @@ export default function PublicMenuPage() {
 
   return (
     <div className="messa-public-menu min-h-screen" style={{ backgroundColor: theme.bg, '--menu-bg': theme.bg, '--menu-tint': theme.bgTint, '--menu-accent': theme.accent, '--menu-text': theme.text ?? '#252a21', '--menu-card': theme.text ? theme.bgTint : '#ffffff', '--menu-border': theme.cardBorder ?? 'rgba(35,40,30,.09)' }}>
-      <RestaurantHeader restaurant={restaurant} theme={theme} favoriteCount={planDishes.filter(dish => favorites.includes(dish.id)).length} showFavorites={showFavorites} onToggleFavorites={() => { setActiveCategory(null); setShowFavorites(value => !value) }} />
+      <RestaurantHeader restaurant={restaurant} theme={theme} favoriteCount={planDishes.filter(dish => favorites.includes(dish.id)).length} showFavorites={showFavorites} onToggleFavorites={() => openScreen({ category: null, favorites: !showFavorites, dishId: null, daily: false })} />
       {!showFavorites && <MenuHighlights slides={slides} />}
       <div className="messa-menu-categories"><CategoryTabs categories={topCats} activeId={activeTab} onChange={setActiveCategory} theme={theme} onOpenDailyMenu={dailyMenu?.enabled ? openDailyMenu : undefined} dailyMenuOpen={showDailyMenu} /></div>
       <main className="messa-menu-main">

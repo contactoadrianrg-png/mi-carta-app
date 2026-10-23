@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { Eye, EyeOff } from 'lucide-react'
 import logo from '../assets/logo.png'
@@ -21,7 +21,7 @@ export default function ResetPasswordPage() {
       const { error } = await supabase.auth.updateUser({ password })
       if (error) throw error
       toast.success('Contraseña actualizada correctamente')
-      navigate('/dashboard')
+      navigate('/', { replace: true })
     } catch (error) {
       toast.error(error.message || 'No se ha podido actualizar la contraseña. Inténtalo de nuevo.')
     } finally {
@@ -39,6 +39,7 @@ export default function ResetPasswordPage() {
         </div>
 
         <div className="bg-white rounded-3xl shadow-xl p-8">
+          <Link to="/" className="inline-block text-sm text-gray-600 mb-5">← Volver a Messa</Link>
           <h2 className="text-lg font-bold text-gray-900 mb-1">Nueva contraseña</h2>
           <p className="text-sm text-gray-400 mb-6">Elige una nueva contraseña para tu cuenta.</p>
 
@@ -59,7 +60,7 @@ export default function ResetPasswordPage() {
                 <button
                   type="button"
                   onClick={() => setShowPass(v => !v)}
-                  tabIndex={-1}
+                  aria-label={showPass ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                 >
                   {showPass ? <EyeOff size={18} /> : <Eye size={18} />}

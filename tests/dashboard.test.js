@@ -5,6 +5,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { join } from 'node:path'
 import { build } from 'esbuild'
 import React from 'react'
+import { MemoryRouter, useNavigate } from 'react-router-dom'
 import { create, act } from 'react-test-renderer'
 
 const root = fileURLToPath(new URL('../', import.meta.url))
@@ -16,8 +17,13 @@ await build({ entryPoints: [join(root, 'src/pages/DashboardPage.jsx')], outfile:
   builder.onResolve({ filter: /^react-hot-toast$/ }, () => ({ path: 'toast', namespace: 'mock' }))
   builder.onResolve({ filter: /\/(RestaurantEditor|DishManager|CategoryManager|AccountPanel|SocialsPanel|StatsPanel)$/ }, args => ({ path: args.path.split('/').pop(), namespace: 'widget' }))
   builder.onLoad({ filter: /.*/, namespace: 'mock' }, ({ path }) => ({ contents: path === 'client' ? 'export const supabase = new Proxy({}, {get(_, key) {return globalThis.__dashboardClient[key]}})' : path === 'auth' ? 'export function useAuth() {return {user:globalThis.__dashboardUser}}' : 'export default {success(){},error(){}}', loader: 'js' }))
-  builder.onLoad({ filter: /.*/, namespace: 'widget' }, ({ path }) => ({ contents: `import React from 'react';export default function Widget(){return React.createElement('div',{'data-widget':'${path}'},'${path}')}`, resolveDir: root, loader: 'js' }))
+  builder.onLoad({ filter: /.*/, namespace: 'widget' }, ({ path }) => ({ contents: `import React from 'react'
+import { MemoryRouter, useNavigate } from 'react-router-dom';export default function Widget(){return React.createElement('div',{'data-widget':'${path}'},'${path}')}`, resolveDir: root, loader: 'js' }))
 } }] })
+let historyNavigate
+function Navigation(){historyNavigate=useNavigate();return React.createElement(Dashboard)}
+function dashboardView(){return React.createElement(MemoryRouter,{initialEntries:['/dashboard']},React.createElement(Navigation))}
+
 const { default: Dashboard } = await import(pathToFileURL(output).href)
 after(async () => { await rm(temp, { recursive: true, force: true }) })
 function setup(plan = 'pro', restaurantExists = true) {
@@ -39,7 +45,7 @@ test('los accesos abren platos, categorías, destacado, identidad, reservas y QR
   const { counts, updates } = setup()
   let tree
   try {
-    await act(async () => { tree = create(React.createElement(Dashboard)) })
+    await act(async () => { tree = create(dashboardView()) })
     assert.ok(counts.find(count => count.table === 'dishes' && count.filters.available === true))
     await act(async () => button(tree, 'Menú del día').props.onClick())
     assert.equal(tree.root.findByProps({ 'aria-label': 'Primeros del menú' }).type, 'textarea')
@@ -73,15 +79,50 @@ test('los accesos abren platos, categorías, destacado, identidad, reservas y QR
 test('un restaurante Free mantiene el bloqueo Pro y una cuenta nueva llega a configuración', async () => {
   setup('free'); let tree
   try {
-    await act(async () => { tree = create(React.createElement(Dashboard)) })
+    await act(async () => { tree = create(dashboardView()) })
     await act(async () => button(tree, 'Destacado').props.onClick())
     assert.match(JSON.stringify(tree.toJSON()), /Disponible en el Plan Pro/)
     assert.equal(tree.root.findAllByProps({ type: 'file' }).length, 0)
   } finally { if (tree) await act(async () => tree.unmount()) }
   setup('free', false)
   try {
-    await act(async () => { tree = create(React.createElement(Dashboard)) })
+    await act(async () => { tree = create(dashboardView()) })
     await act(async () => button(tree, 'Crear mi restaurante').props.onClick())
     assert.equal(tree.root.findByProps({ 'data-widget': 'RestaurantEditor' }).type, 'div')
   } finally { if (tree) await act(async () => tree.unmount()) }
+})
+
+test('el historial del panel restaura secciones y cierra QR antes de salir', async () => {
+ setup();let tree
+ try {
+  await act(async()=>{tree=create(dashboardView())})
+  await act(async()=>button(tree,'Mi carta').props.onClick())
+  await act(async()=>button(tree,'Categorías').props.onClick())
+  await act(async()=>historyNavigate(-1))
+  assert.equal(tree.root.findByProps({'data-widget':'DishManager'}).type,'div')
+  await act(async()=>historyNavigate(1))
+  assert.equal(tree.root.findByProps({'data-widget':'CategoryManager'}).type,'div')
+  await act(async()=>button(tree,'Inicio').props.onClick())
+  await act(async()=>button(tree,'Mi QR').props.onClick())
+  assert.equal(tree.root.findAllByProps({role:'dialog'}).length,1)
+  await act(async()=>historyNavigate(-1))
+  assert.equal(tree.root.findAllByProps({role:'dialog'}).length,0)
+  await act(async()=>historyNavigate(1))
+  assert.equal(tree.root.findAllByProps({role:'dialog'}).length,1)
+ } finally {if(tree)await act(async()=>tree.unmount())}
+})
+
+test('un fallo de red muestra Reintentar y permite recuperar el panel', async () => {
+ setup();let tree
+ const client=globalThis.__dashboardClient
+ globalThis.__dashboardClient={from(){return {select(){return this},eq(){return this},maybeSingle(){return Promise.reject(new Error('offline'))}}}}
+ try {
+  await act(async()=>{tree=create(dashboardView())})
+  assert.match(text(tree.toJSON()),/No se ha podido cargar/)
+  assert.equal(tree.root.findAllByProps({'data-widget':'RestaurantEditor'}).length,0)
+  globalThis.__dashboardClient=client
+  await act(async()=>button(tree,'Reintentar').props.onClick())
+  assert.equal(tree.root.findAllByProps({role:'alert'}).length,0)
+  assert.ok(button(tree,'Mi QR'))
+ } finally {if(tree)await act(async()=>tree.unmount())}
 })

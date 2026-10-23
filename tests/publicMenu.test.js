@@ -7,7 +7,7 @@ import { build } from 'esbuild'
 import React from 'react'
 import { create, act } from 'react-test-renderer'
 import { emptyDailyMenu } from '../src/lib/dailyMenu.js'
-import { MemoryRouter, Routes, Route } from 'react-router-dom'
+import { MemoryRouter, Routes, Route, useNavigate } from 'react-router-dom'
 
 // Bundle the actual JSX, replacing only the external Supabase connection.
 // This exercises routing, effects, filtering and modal actions without emails
@@ -78,10 +78,13 @@ function setup(responses = {}) {
   return { state, inserts, channels, storage, listeners }
 }
 
+let historyNavigate
+function Navigation(){historyNavigate=useNavigate();return null}
+
 function view(path = '/carta/demo/menu') {
   return React.createElement(MemoryRouter, {
     initialEntries: [path], future: { v7_startTransition: true, v7_relativeSplatPath: true },
-  }, React.createElement(Routes, null,
+  }, React.createElement(Navigation), React.createElement(Routes, null,
     React.createElement(Route, { path: '/carta/:slug/menu', element: React.createElement(PublicMenuPage) }),
     React.createElement(Route, { path: '/carta/:slug/:catId', element: React.createElement(PublicMenuPage) }),
   ))
@@ -187,4 +190,37 @@ test('el menú del día abre su ficha, mantiene sus platos fuera de la carta y s
     assert.equal(button(tree, 'Menú del día'), undefined)
     assert.match(text(tree), /Ensalada/)
   } finally { if (tree) await act(async () => tree.unmount()) }
+})
+
+test('Atrás cierra la ficha de un plato y Adelante la restaura',async()=>{
+ setup();let tree
+ try {
+  await act(async()=>{tree=create(view())})
+  const card=tree.root.findAllByType('button').find(n=>n.props.className?.includes('messa-dish-card '))
+  assert.ok(card)
+  await act(async()=>card.props.onClick())
+  assert.equal(tree.root.findAllByProps({role:'dialog'}).length,1)
+  await act(async()=>historyNavigate(-1))
+  assert.equal(tree.root.findAllByProps({role:'dialog'}).length,0)
+  await act(async()=>historyNavigate(1))
+  assert.equal(tree.root.findAllByProps({role:'dialog'}).length,1)
+ } finally {if(tree)await act(async()=>tree.unmount())}
+})
+
+test('Atrás restaura categorías, favoritos y menú del día sin abandonar la carta',async()=>{
+ const menu={...emptyDailyMenu(),enabled:true,price:12,firsts:['Sopa'],seconds:['Pollo']}
+ setup({restaurants:{data:{...restaurant,daily_menu:menu},error:null}});let tree
+ try {
+  await act(async()=>{tree=create(view())})
+  await act(async()=>button(tree,'Entrantes').props.onClick())
+  assert.match(text(tree),/Entrantes/)
+  await act(async()=>tree.root.findByProps({'aria-label':'Ver favoritos'}).props.onClick())
+  assert.match(text(tree),/Tus favoritos/)
+  await act(async()=>historyNavigate(-1))
+  assert.equal(tree.root.findByProps({'aria-label':'Ver favoritos'}).props['aria-pressed'],false)
+  await act(async()=>button(tree,'Menú del día').props.onClick())
+  assert.equal(tree.root.findAllByProps({role:'dialog'}).length,1)
+  await act(async()=>historyNavigate(-1))
+  assert.equal(tree.root.findAllByProps({role:'dialog'}).length,0)
+ } finally {if(tree)await act(async()=>tree.unmount())}
 })
