@@ -37,7 +37,7 @@ export default function DeliveryLinksEditor({ restaurant, onUpdate }) {
 
   return <form onSubmit={save}>
     <p style={{ fontSize: 13, color: '#6B7280', lineHeight: 1.6, margin: '8px 0 16px' }}>Añade tus plataformas o la web de pedidos de tu restaurante. Cada enlace mostrará su botón en la pantalla de entrada. Deja un campo vacío para ocultarlo.</p>
-    {DELIVERY_PLATFORMS.map(({ key, label, fieldLabel, placeholder }) => <label key={key} htmlFor={key} style={{ display: 'block', fontSize: 14, fontWeight: 500, color: '#374151', marginBottom: 14 }}>
+    {DELIVERY_PLATFORMS.map(({ key, label, fieldLabel, placeholder }) => <label key={key} htmlFor={key} style={{ display: 'block', fontSize: 14, fontWeight: 600, color: '#374151', marginBottom: 14 }}>
       {fieldLabel || label}
       <input id={key} type="url" inputMode="url" autoComplete="off" placeholder={placeholder} value={values[key] || ''} onChange={event => setValues(previous => ({ ...previous, [key]: event.target.value }))} style={{ display: 'block', width: '100%', minHeight: 44, marginTop: 7, border: '1px solid #D1D5DB', borderRadius: 8, padding: '10px 12px', fontSize: 16, fontWeight: 400 }} />
     </label>)}

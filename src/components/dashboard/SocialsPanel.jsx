@@ -108,7 +108,7 @@ export default function SocialsPanel({ restaurant, onUpdate }) {
                       <path d={path} />
                     </svg>
                   </div>
-                  <span style={{ flex: 1, fontSize: 15, fontWeight: 500, color: isFree ? '#9CA3AF' : '#1A1A1A' }}>
+                  <span style={{ flex: 1, fontSize: 15, fontWeight: 600, color: isFree ? '#9CA3AF' : '#1A1A1A' }}>
                     {label}
                   </span>
                   <button

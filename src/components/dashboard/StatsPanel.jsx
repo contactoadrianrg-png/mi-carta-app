@@ -28,7 +28,7 @@ function MetricCard({ value, label, trend }) {
       border: '0.5px solid #E5E7EB',
       padding: '14px 10px', textAlign: 'center',
     }}>
-      <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: '#1A1A1A', lineHeight: 1 }}>
+      <p style={{ margin: 0, fontSize: 22, fontWeight: 700, color: '#1A1A1A', lineHeight: 1 }}>
         {value ?? '—'}
       </p>
       {trend !== null && trend !== undefined && (
@@ -214,7 +214,7 @@ export default function StatsPanel({ restaurantId }) {
     <div style={{ padding: '20px 16px 8px' }}>
 
       {/* ── 3 metric cards ─────────────────────────── */}
-      <p style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 800, color: '#1A1A1A' }}>
+      <p style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700, color: '#1A1A1A' }}>
         Resumen
       </p>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 20 }}>
@@ -231,7 +231,7 @@ export default function StatsPanel({ restaurantId }) {
       }}>
         {/* Header + period filter */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: '#1A1A1A' }}>
+          <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#1A1A1A' }}>
             Visitas esta semana
           </p>
           <div style={{ display: 'flex', gap: 4 }}>
@@ -270,7 +270,7 @@ export default function StatsPanel({ restaurantId }) {
                   height: barH,
                   transition: 'height 0.35s ease',
                 }} />
-                <span style={{ fontSize: 10, color: '#9CA3AF', fontWeight: 500 }}>
+                <span style={{ fontSize: 10, color: '#9CA3AF', fontWeight: 600 }}>
                   {DAY_LABELS[i]}
                 </span>
               </div>
@@ -286,7 +286,7 @@ export default function StatsPanel({ restaurantId }) {
           border: '0.5px solid #E5E7EB', padding: 16,
           marginBottom: 8,
         }}>
-          <p style={{ margin: '0 0 14px', fontSize: 15, fontWeight: 800, color: '#1A1A1A' }}>
+          <p style={{ margin: '0 0 14px', fontSize: 15, fontWeight: 700, color: '#1A1A1A' }}>
             Platos más vistos
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

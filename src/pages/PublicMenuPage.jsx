@@ -233,7 +233,7 @@ export default function PublicMenuPage() {
       {/* ── FOOTER MARCA MESSA — solo Plan Free ── */}
       {isFree && (
         <footer className="text-center pb-8 text-xs text-gray-400">
-          Carta digital por <span className="font-medium" style={{ color: theme.accent }}>Messa</span>
+          Carta digital por <span className="font-semibold" style={{ color: theme.accent }}>Messa</span>
         </footer>
       )}
 

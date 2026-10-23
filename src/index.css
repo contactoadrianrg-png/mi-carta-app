@@ -1,8 +1,21 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    --font-brand: 'Plus Jakarta Sans', sans-serif;
+  }
+  html {
+    font-family:var(--font-brand);
+    font-weight: 400;
+  }
+  body { font-family:var(--font-brand); }
+  h1, h2, h3, h4, h5, h6 { font-weight: 700; }
+  button, input, textarea, select { font-family: inherit; }
+  button, label { font-weight: 600; }
+  strong, b { font-weight: 600; }
+}
 
 @layer utilities {
   .scrollbar-hide {

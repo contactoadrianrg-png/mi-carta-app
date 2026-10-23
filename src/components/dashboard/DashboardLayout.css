@@ -7,7 +7,7 @@
   min-height:100dvh;
   background:radial-gradient(ellipse at 90% 0%,#fff0e8 0,transparent 45%),#f8f7f5;
   color:var(--md-ink);
-  font-family:'Plus Jakarta Sans',sans-serif;
+  font-family:var(--font-brand);
   padding:24px;
 }
 .messa-dashboard * {
@@ -45,7 +45,7 @@
 }
 .md-wordmark {
   font-size:26px;
-  font-weight:850;
+  font-weight:700;
   letter-spacing:-1.3px;
   margin:0 14px 34px;
   align-self:flex-start;
@@ -65,7 +65,7 @@
   min-height:47px;
   padding:10px 14px;
   font-size:12px;
-  font-weight:550;
+  font-weight:600;
   text-align:left;
   color:#65637c;
   background:transparent;
@@ -101,7 +101,7 @@
 }
 .md-toolbar h1 {
   font-size:18px;
-  font-weight:800;
+  font-weight:700;
   letter-spacing:-.5px;
 }
 .md-mobile-wordmark {
@@ -113,7 +113,7 @@
   align-items:center;
   min-height:44px;
   font-size:10px;
-  font-weight:750;
+  font-weight:700;
   max-width:47%;
   text-align:left;
 }
@@ -131,7 +131,7 @@
   flex-shrink:0;
   background:#fff0e8;
   color:var(--md-purple);
-  font-weight:800;
+  font-weight:700;
   overflow:hidden;
 }
 .md-avatar img {
@@ -183,7 +183,7 @@
 }
 .md-welcome h2 {
   font-size:clamp(24px,2.6vw,34px);
-  font-weight:800;
+  font-weight:700;
   line-height:1.15;
   letter-spacing:-1px;
   overflow-wrap:anywhere;
@@ -199,7 +199,7 @@
   align-items:center;
   gap:6px;
   font-size:10px;
-  font-weight:550;
+  font-weight:600;
   background:#ffffff21;
   border:1px solid #ffffff16;
   backdrop-filter:blur(8px);
@@ -227,7 +227,7 @@
   background:var(--md-orange);
   color:#fff;
   font-size:12px;
-  font-weight:750;
+  font-weight:700;
   flex-shrink:0;
   text-align:center;
 }
@@ -261,7 +261,7 @@
 }
 .md-metrics strong {
   font-size:29px;
-  font-weight:800;
+  font-weight:700;
   line-height:1.2;
   display:block;
   letter-spacing:-.8px;
@@ -281,7 +281,7 @@
 }
 .md-section-heading h2 {
   font-size:18px;
-  font-weight:800;
+  font-weight:700;
   letter-spacing:-.5px;
 }
 .md-section-heading>button {
@@ -335,7 +335,7 @@
 }
 .md-action-card>strong {
   font-size:13px;
-  font-weight:800;
+  font-weight:700;
   margin-top:14px;
   line-height:1.4;
   overflow-wrap:anywhere;
@@ -376,7 +376,7 @@
   gap:8px;
 }
 .md-plan-note>a {
-  font-weight:750;
+  font-weight:700;
   flex-shrink:0;
 }
 .md-footer {
@@ -437,7 +437,7 @@
 }
 .md-empty h2 {
   font-size:21px;
-  font-weight:800;
+  font-weight:700;
 }
 .md-empty p {
   font-size:13px;
@@ -451,7 +451,7 @@
 }
 .md-slides-content>h2,.md-reservations-card>h2 {
   font-size:19px;
-  font-weight:800;
+  font-weight:700;
   letter-spacing:-.4px;
   margin-bottom:8px;
 }
@@ -514,7 +514,7 @@
 .md-account-intro p {
   color:var(--md-orange);
   font-size:10px;
-  font-weight:850;
+  font-weight:700;
   letter-spacing:.14em;
 }
 .md-account-intro h2 {
@@ -550,7 +550,7 @@
   color:#fff;
   background:var(--md-orange);
   font-size:20px;
-  font-weight:850;
+  font-weight:700;
 }
 .md-account-identity>div { min-width:0; }
 .md-account-identity strong,.md-account-identity span { display:block; }
@@ -575,10 +575,10 @@
 .md-account-section { padding:19px; }
 .md-account-heading { display:flex; align-items:center; gap:11px; margin-bottom:18px; }
 .md-account-heading>span { width:38px; height:38px; display:grid; place-items:center; border-radius:12px; color:var(--md-orange); background:#fff0e8; }
-.md-account-heading h3 { font-size:15px; font-weight:800; }
+.md-account-heading h3 { font-size:15px; font-weight:700; }
 .md-account-heading p { color:var(--md-muted); font-size:11px; margin-top:3px; }
 .md-account-form { display:grid; gap:13px; }
-.md-account-form label { color:#514d5a; font-size:12px; font-weight:750; }
+.md-account-form label { color:#514d5a; font-size:12px; font-weight:700; }
 .md-account-form input {
   display:block;
   width:100%;
@@ -604,7 +604,7 @@
   color:#fff;
   background:var(--md-orange);
   font-size:12px;
-  font-weight:800;
+  font-weight:700;
 }
 .md-account-submit:hover { background:#d94b08; }
 .md-account-logout {
@@ -618,7 +618,7 @@
   background:#fffafa;
   border-radius:14px;
   font-size:12px;
-  font-weight:800;
+  font-weight:700;
 }
 @media(max-width:1100px) {
   .md-shell {
@@ -722,14 +722,14 @@
     font-size:11px;
     letter-spacing:0;
     color:#9390a4;
-    font-weight:500;
+    font-weight:600;
     margin-top:3px;
   }
   .md-mobile-wordmark {
     display:block;
     font-size:25px;
     letter-spacing:-1.3px;
-    font-weight:850;
+    font-weight:700;
   }
   .md-user {
     max-width:38%;
@@ -897,7 +897,7 @@
   }
   .md-bottom-nav>button.is-active {
     color:var(--md-orange);
-    font-weight:750;
+    font-weight:700;
   }
   .md-bottom-nav>button.is-active:after {
     content:'';

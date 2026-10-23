@@ -206,7 +206,7 @@ function SettingsModal({ user, onClose, onSignOut, theme, onThemeChange }) {
               <div style={{ width: 32, height: 32, borderRadius: 10, background: `${theme.accent}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Settings size={14} style={{ color: theme.accent }} />
               </div>
-              <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 18, fontWeight: 800, color: CHARCOAL, margin: 0 }}>Configuración</h2>
+              <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 18, fontWeight: 700, color: CHARCOAL, margin: 0 }}>Configuración</h2>
             </div>
             <button
               onClick={onClose}
@@ -225,7 +225,7 @@ function SettingsModal({ user, onClose, onSignOut, theme, onThemeChange }) {
               <p style={{ fontSize: 10, fontWeight: 700, color: CHARCOAL_L, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Email actual</p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 12, background: CREAM_LIGHT, border: `1px solid ${CREAM_DARK}` }}>
                 <Mail size={13} style={{ color: CHARCOAL_L, flexShrink: 0 }} />
-                <span style={{ fontSize: 13, color: CHARCOAL, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email}</span>
+                <span style={{ fontSize: 13, color: CHARCOAL, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email}</span>
               </div>
             </div>
 
@@ -545,7 +545,7 @@ export default function AdminPage() {
 
   const headingSerif = {
     fontFamily: "'Plus Jakarta Sans', sans-serif",
-    fontWeight: 800,
+    fontWeight: 700,
     color: CHARCOAL,
   }
 
@@ -565,8 +565,8 @@ export default function AdminPage() {
         <div
           style={{
             width: '100%', marginBottom: 30, background: 'transparent', display: 'flex', alignItems: 'center',
-            justifyContent: 'flex-start', color: '#fff', fontWeight: 800, fontSize: 30,
-            fontFamily: "'Playfair Display', serif", flexShrink: 0, letterSpacing: '-0.04em', padding: '0 12px', position: 'relative',
+            justifyContent: 'flex-start', color: '#fff', fontWeight: 700, fontSize: 30,
+            fontFamily: "'Plus Jakarta Sans', sans-serif", flexShrink: 0, letterSpacing: '-0.04em', padding: '0 12px', position: 'relative',
           }}
         >
           MESSA
@@ -625,7 +625,7 @@ export default function AdminPage() {
             style={{
               width: '100%', height: 42, padding: '0 8px', borderRadius: 10, border: `1px solid ${theme.accent}60`,
               cursor: 'pointer', background: theme.accent,
-              color: '#fff', fontWeight: 800, fontSize: 14, display: 'flex',
+              color: '#fff', fontWeight: 700, fontSize: 14, display: 'flex',
               alignItems: 'center', justifyContent: 'flex-start', gap: 10, fontFamily: "'Plus Jakarta Sans', sans-serif",
             }}
           >
@@ -676,7 +676,7 @@ export default function AdminPage() {
               onClick={() => setSettingsOpen(true)}
               style={{
                 width: 36, height: 36, borderRadius: 10, background: theme.accent,
-                border: 'none', cursor: 'pointer', color: '#fff', fontWeight: 800,
+                border: 'none', cursor: 'pointer', color: '#fff', fontWeight: 700,
                 fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
               }}
@@ -707,7 +707,7 @@ export default function AdminPage() {
                   <ArrowUpRight size={14} style={{ color: CHARCOAL_L, marginTop: 4 }} />
                 </div>
                 <p style={{ ...labelStyle, marginBottom: 4 }}>{label}</p>
-                <p style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 30, fontWeight: 800, letterSpacing: '-0.04em', color: CHARCOAL, margin: 0, lineHeight: 1 }}>{value}</p>
+                <p style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 30, fontWeight: 700, letterSpacing: '-0.04em', color: CHARCOAL, margin: 0, lineHeight: 1 }}>{value}</p>
                 <p style={{ fontSize: 11, color: CHARCOAL_L, marginTop: 6, marginBottom: 0 }}>{sub}</p>
               </div>
             ))}
@@ -719,10 +719,10 @@ export default function AdminPage() {
                 <h2 style={{ ...headingSerif, fontSize: 19, margin: 0 }}>Acciones pendientes</h2>
                 <p style={{ fontSize: 12, color: CHARCOAL_L, margin: '3px 0 0' }}>Completa la configuración de tus restaurantes.</p>
               </div>
-              <button type="button" onClick={() => showPendingAccounts()} style={{ border: `1px solid ${theme.accent}`, background: 'transparent', color: theme.accent, borderRadius: 9, padding: '8px 11px', fontSize: 11, fontWeight: 800, cursor: 'pointer' }}>Ver pendientes</button>
+              <button type="button" onClick={() => showPendingAccounts()} style={{ border: `1px solid ${theme.accent}`, background: 'transparent', color: theme.accent, borderRadius: 9, padding: '8px 11px', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>Ver pendientes</button>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10 }}>
-              {pendingItems.map(item => <button type="button" key={item.label} onClick={() => showPendingAccounts(item.filter)} style={{ textAlign: 'left', border: `1px solid ${CREAM_DARK}`, background: CREAM, borderRadius: 12, padding: '12px 14px', cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif" }}><span style={{ display: 'block', fontSize: 18, fontWeight: 800, color: item.count ? CHARCOAL : '#15803d' }}>{item.count} {item.label.toLowerCase()}</span><span style={{ display: 'block', fontSize: 11, color: CHARCOAL_L, marginTop: 3 }}>{item.count ? item.hint : 'Todo correcto'}</span></button>)}
+              {pendingItems.map(item => <button type="button" key={item.label} onClick={() => showPendingAccounts(item.filter)} style={{ textAlign: 'left', border: `1px solid ${CREAM_DARK}`, background: CREAM, borderRadius: 12, padding: '12px 14px', cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif" }}><span style={{ display: 'block', fontSize: 18, fontWeight: 700, color: item.count ? CHARCOAL : '#15803d' }}>{item.count} {item.label.toLowerCase()}</span><span style={{ display: 'block', fontSize: 11, color: CHARCOAL_L, marginTop: 3 }}>{item.count ? item.hint : 'Todo correcto'}</span></button>)}
             </div>
           </section>
 
@@ -823,7 +823,7 @@ export default function AdminPage() {
 
                 <div style={{ paddingTop: 12, marginTop: 4, borderTop: `1px solid ${CREAM_DARK}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: 11, color: CHARCOAL_L }}>Ingreso estimado</span>
-                  <span style={{ fontSize: 14, fontWeight: 800, color: theme.accent, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: theme.accent, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                     {proCount * 19}€/mes
                   </span>
                 </div>
@@ -1008,7 +1008,7 @@ export default function AdminPage() {
                           {/* Acciones */}
                           <td style={{ padding: '14px 20px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                              <a href={`/carta/${r.slug}`} target="_blank" rel="noopener noreferrer" title={`Ver carta de ${r.name}`} style={{ minHeight: 30, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '0 9px', borderRadius: 8, color: theme.accent, background: `${theme.accent}12`, fontSize: 10, fontWeight: 800, textDecoration: 'none', whiteSpace: 'nowrap' }}><Eye size={14} />Ver carta</a>
+                              <a href={`/carta/${r.slug}`} target="_blank" rel="noopener noreferrer" title={`Ver carta de ${r.name}`} style={{ minHeight: 30, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '0 9px', borderRadius: 8, color: theme.accent, background: `${theme.accent}12`, fontSize: 10, fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' }}><Eye size={14} />Ver carta</a>
                               <button type="button" title="Copiar enlace" onClick={async () => { try { await navigator.clipboard.writeText(`${window.location.origin}/carta/${r.slug}`); toast.success('Enlace copiado') } catch { toast.error('No se ha podido copiar el enlace') } }} style={{ padding: '7px 8px', borderRadius: 8, border: `1px solid ${CREAM_DARK}`, background: CREAM_LIGHT, color: CHARCOAL, fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>Copiar</button>
                               <button type="button" aria-expanded={notesOpen === r.id} onClick={() => openNotes(r)} style={{ padding: '7px 8px', borderRadius: 8, border: `1px solid ${notesOpen === r.id ? theme.accent : CREAM_DARK}`, background: notesOpen === r.id ? `${theme.accent}12` : CREAM_LIGHT, color: notesOpen === r.id ? theme.accent : CHARCOAL, fontSize: 10, fontWeight: 700, cursor: 'pointer' }}>Notas</button>
                               <button

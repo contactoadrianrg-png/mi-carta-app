@@ -1,5 +1,5 @@
 .messa-public-menu {
-  font-family:'Plus Jakarta Sans',sans-serif;
+  font-family:var(--font-brand);
   color:var(--menu-text);
   overflow-wrap:anywhere;
 }
@@ -54,7 +54,7 @@
 .messa-restaurant-name h1 {
   font-size:24px;
   line-height:1.2;
-  font-weight:800;
+  font-weight:700;
   letter-spacing:-.7px;
 }
 .messa-restaurant-name>span {
@@ -107,14 +107,14 @@
 }
 .messa-menu-section-heading p {
   font-size:9px;
-  font-weight:750;
+  font-weight:700;
   letter-spacing:1.4px;
   opacity:.55;
   margin-bottom:6px;
 }
 .messa-menu-section-heading h2 {
   font-size:23px;
-  font-weight:800;
+  font-weight:700;
   letter-spacing:-.7px;
   line-height:1.2;
 }
@@ -227,7 +227,7 @@
   border-radius:7px;
   background:#fffdf7;
   color:#343c2c;
-  font-weight:750;
+  font-weight:700;
   max-width:calc(100% - 58px);
 }
 .messa-dish-heart {
@@ -253,7 +253,7 @@
 }
 .messa-dish-card-copy h3 {
   font-size:18px;
-  font-weight:800;
+  font-weight:700;
   line-height:1.4;
   display:-webkit-box;
   -webkit-line-clamp:2;
@@ -286,7 +286,7 @@
 }
 .messa-dish-card-bottom strong {
   font-size:20px;
-  font-weight:800;
+  font-weight:700;
 }
 .messa-dish-card-bottom del {
   font-size:11px;
@@ -518,13 +518,13 @@
 .messa-daily-card-image img{width:100%;height:100%;object-fit:cover}
 .messa-daily-card-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:5px}
 .messa-daily-eyebrow{font-size:9px;font-weight:700;letter-spacing:1px;opacity:.65}
-.messa-daily-card-copy>strong{font-size:20px;line-height:1.2;font-weight:800;overflow-wrap:anywhere}
+.messa-daily-card-copy>strong{font-size:20px;line-height:1.2;font-weight:700;overflow-wrap:anywhere}
 .messa-daily-card-copy>span:not(.messa-daily-eyebrow){font-size:12px;line-height:1.5;opacity:.7}
-.messa-daily-card-copy>b{font-size:17px;font-weight:800}.messa-daily-card-copy small{font-size:10px;font-weight:400;opacity:.65}
+.messa-daily-card-copy>b{font-size:17px;font-weight:700}.messa-daily-card-copy small{font-size:10px;font-weight:400;opacity:.65}
 .messa-daily-card>svg{flex-shrink:0}.messa-daily-card:focus-visible{outline:3px solid var(--menu-accent);outline-offset:3px}
 .messa-daily-sections{margin-top:22px;color:#262626}.messa-daily-sections>section+section{margin-top:24px}
 .messa-daily-section-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;flex-wrap:wrap}
-.messa-daily-section-heading h3,.messa-daily-includes h3{font-size:21px;font-weight:800}.messa-daily-section-heading>span{font-size:13px;color:#626262}
+.messa-daily-section-heading h3,.messa-daily-includes h3{font-size:21px;font-weight:700}.messa-daily-section-heading>span{font-size:13px;color:#626262}
 .messa-daily-sections ul{list-style:none;padding:0;margin:0}.messa-daily-sections li{display:flex;align-items:baseline;gap:10px;padding:12px 0;border-bottom:1px solid #f0eeea;font-size:17px;font-weight:700;line-height:1.5;overflow-wrap:anywhere}
 .messa-daily-sections li>span{width:5px;height:5px;border-radius:50%;flex-shrink:0}.messa-daily-includes{background:#faf7f1;padding:16px;border-radius:14px}
 .messa-daily-includes p{font-size:16px;font-weight:600;line-height:1.6;color:#444;margin-top:6px;overflow-wrap:anywhere}.messa-daily-availability{display:flex;align-items:center;gap:8px;font-size:14px;color:#555;margin-bottom:20px}.messa-daily-availability>svg{flex-shrink:0}

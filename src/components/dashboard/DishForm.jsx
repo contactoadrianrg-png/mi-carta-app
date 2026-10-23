@@ -20,7 +20,7 @@ function Toggle({ checked, onChange, label, icon: Icon, color = 'orange' }) {
     >
       <div className="flex items-center gap-2.5">
         <Icon size={16} className={checked ? 'text-[#FF6B35]' : 'text-gray-400'} />
-        <span className={`text-sm font-medium ${checked ? 'text-[#FF6B35]' : 'text-gray-600'}`}>{label}</span>
+        <span className={`text-sm font-semibold ${checked ? 'text-[#FF6B35]' : 'text-gray-600'}`}>{label}</span>
       </div>
       <div className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${colors[color]}`}>
         <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
@@ -164,12 +164,12 @@ export default function DishForm({ restaurantId, categories, dish, onSuccess, on
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* Image */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Foto del plato</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Foto del plato</label>
             {imagePreview ? (
               <div className="relative w-full h-44 rounded-2xl overflow-hidden bg-gray-100">
                 <img src={imagePreview} alt="" className="w-full h-full object-cover" />
                 <label className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 hover:opacity-100 transition-opacity cursor-pointer rounded-2xl">
-                  <span className="text-white text-sm font-medium flex items-center gap-2">
+                  <span className="text-white text-sm font-semibold flex items-center gap-2">
                     <Upload size={16} /> Cambiar foto
                   </span>
                   <input type="file" accept="image/*" onChange={handleImage} className="hidden" />
@@ -178,7 +178,7 @@ export default function DishForm({ restaurantId, categories, dish, onSuccess, on
             ) : (
               <label className="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-gray-200 rounded-2xl cursor-pointer hover:border-amber-400 hover:bg-amber-50 transition-all">
                 <Upload size={22} className="text-gray-400 mb-2" />
-                <span className="text-sm text-gray-500 font-medium">Subir foto</span>
+                <span className="text-sm text-gray-500 font-semibold">Subir foto</span>
                 <span className="text-xs text-gray-400 mt-0.5">JPG, PNG, WebP — máx. 5 MB</span>
                 <input type="file" accept="image/*" onChange={handleImage} className="hidden" />
               </label>
@@ -186,7 +186,7 @@ export default function DishForm({ restaurantId, categories, dish, onSuccess, on
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
               Nombre <span className="text-red-400">*</span>
             </label>
             <input
@@ -200,7 +200,7 @@ export default function DishForm({ restaurantId, categories, dish, onSuccess, on
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Descripción</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Descripción</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -212,7 +212,7 @@ export default function DishForm({ restaurantId, categories, dish, onSuccess, on
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                 Precio (€) <span className="text-red-400">*</span>
               </label>
               <input
@@ -227,7 +227,7 @@ export default function DishForm({ restaurantId, categories, dish, onSuccess, on
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Categoría</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">Categoría</label>
               <select
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
@@ -243,7 +243,7 @@ export default function DishForm({ restaurantId, categories, dish, onSuccess, on
 
           {/* Precio original (oferta) */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
               <span className="flex items-center gap-1.5">
                 <Tag size={14} className="text-gray-400" />
                 Precio antes de la oferta (€)

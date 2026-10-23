@@ -137,7 +137,7 @@ export default function DishManager({ restaurantId, plan = 'free' }) {
             {dishes.length} {dishes.length === 1 ? 'plato' : 'platos'}
           </p>
           {isFree && (
-            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+            <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
               atFreeLimit ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-500'
             }`}>
               {dishes.length}/{FREE_DISH_LIMIT} Free
@@ -215,7 +215,7 @@ export default function DishManager({ restaurantId, plan = 'free' }) {
       {dishes.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-100 p-14 text-center text-gray-400">
           <UtensilsCrossed size={48} className="mx-auto mb-3 opacity-20" />
-          <p className="font-medium text-gray-500">Aún no tienes platos</p>
+          <p className="font-semibold text-gray-500">Aún no tienes platos</p>
           <p className="text-sm mt-1">Haz clic en "Nuevo plato" para empezar</p>
         </div>
       ) : (
@@ -258,22 +258,22 @@ export default function DishManager({ restaurantId, plan = 'free' }) {
                     </span>
                   )}
                   {dish.featured && (
-                    <span className="inline-flex items-center gap-0.5 text-xs bg-orange-50 text-[#FF6B35] border border-orange-100 px-2 py-0.5 rounded-full font-medium">
+                    <span className="inline-flex items-center gap-0.5 text-xs bg-orange-50 text-[#FF6B35] border border-orange-100 px-2 py-0.5 rounded-full font-semibold">
                       <Star size={9} /> Destacado
                     </span>
                   )}
                   {dish.best_seller && (
-                    <span className="inline-flex items-center gap-0.5 text-xs bg-orange-50 text-[#FF6B35] border border-orange-100 px-2 py-0.5 rounded-full font-medium">
+                    <span className="inline-flex items-center gap-0.5 text-xs bg-orange-50 text-[#FF6B35] border border-orange-100 px-2 py-0.5 rounded-full font-semibold">
                       <TrendingUp size={9} /> + Vendido
                     </span>
                   )}
                   {dish.is_special && (
-                    <span className="inline-flex items-center gap-0.5 text-xs bg-orange-50 text-[#FF6B35] border border-orange-100 px-2 py-0.5 rounded-full font-medium">
+                    <span className="inline-flex items-center gap-0.5 text-xs bg-orange-50 text-[#FF6B35] border border-orange-100 px-2 py-0.5 rounded-full font-semibold">
                       <Flame size={9} /> Especial hoy
                     </span>
                   )}
                   {dish.original_price && (
-                    <span className="inline-flex items-center gap-0.5 text-xs bg-red-50 text-red-500 border border-red-100 px-2 py-0.5 rounded-full font-medium">
+                    <span className="inline-flex items-center gap-0.5 text-xs bg-red-50 text-red-500 border border-red-100 px-2 py-0.5 rounded-full font-semibold">
                       <Tag size={9} /> Oferta
                     </span>
                   )}

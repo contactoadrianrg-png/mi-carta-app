@@ -44,7 +44,7 @@ export default function ResetPasswordPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Nueva contraseña</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">Nueva contraseña</label>
               <div className="relative">
                 <input
                   type={showPass ? 'text' : 'password'}
@@ -68,7 +68,7 @@ export default function ResetPasswordPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirmar contraseña</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">Confirmar contraseña</label>
               <input
                 type={showPass ? 'text' : 'password'}
                 value={confirm}

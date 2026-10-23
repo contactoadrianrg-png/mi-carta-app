@@ -7,7 +7,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        display: ["'Playfair Display'", 'Georgia', 'serif'],
+        sans: ["'Plus Jakarta Sans'", 'sans-serif'],
+        display: ["'Plus Jakarta Sans'", 'sans-serif'],
+        serif: ["'Plus Jakarta Sans'", 'sans-serif'],
       },
     },
   },

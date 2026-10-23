@@ -5,7 +5,7 @@
   min-height:100vh;
   background:var(--paper);
   color:var(--ink);
-  font-family:'Plus Jakarta Sans',sans-serif;
+  font-family:var(--font-brand);
   overflow:hidden;
 }
 .messa-landing * {
@@ -30,7 +30,7 @@
   align-items:center;
   font-size:29px;
   letter-spacing:-1.6px;
-  font-weight:800;
+  font-weight:700;
 }
 .messa-brand-dot {
   color:var(--orange);
@@ -76,7 +76,7 @@
 }
 .messa-eyebrow {
   font-size:10px;
-  font-weight:800;
+  font-weight:700;
   letter-spacing:1.6px;
   display:flex;
   align-items:center;
@@ -92,15 +92,15 @@
 }
 .messa-hero h1 {
   font-size:clamp(42px,4.5vw,64px);
-  font-weight:750;
+  font-weight:700;
   letter-spacing:-3px;
   line-height:1.09;
   max-width:570px;
   margin:0;
 }
 .messa-hero h1 em {
-  font-family:'Playfair Display',Georgia,serif;
-  font-weight:500;
+  font-family:var(--font-brand);
+  font-weight:600;
   color:var(--orange);
   letter-spacing:-2.3px;
   line-height:1.16;
@@ -126,7 +126,7 @@
   border-radius:12px;
   padding:0 20px;
   font-size:12px;
-  font-weight:750;
+  font-weight:700;
   transition:background .2s,transform .2s;
 }
 .messa-button:hover {
@@ -296,7 +296,7 @@
   justify-content:space-between;
   padding:0 14px;
   font-size:8px;
-  font-weight:750;
+  font-weight:700;
   background:#fbf9f4;
   position:relative;
   z-index:1;
@@ -331,7 +331,7 @@
   border-bottom:1px solid #ece8dd;
 }
 .messa-menu-top>span {
-  font-family:Georgia,serif;
+  font-family:var(--font-brand);
   font-size:20px;
   font-weight:bold;
   font-style:italic;
@@ -343,10 +343,10 @@
   font-size:6px;
   letter-spacing:1.5px;
   color:#8c7051;
-  font-weight:800;
+  font-weight:700;
 }
 .messa-menu-title h3 {
-  font-family:Georgia,serif;
+  font-family:var(--font-brand);
   font-size:25px;
   letter-spacing:-.5px;
   margin:6px 0;
@@ -401,7 +401,7 @@
 }
 .messa-menu-cards h4 {
   font-size:10px;
-  font-weight:750;
+  font-weight:700;
   margin:0;
 }
 .messa-menu-cards p {
@@ -473,7 +473,7 @@
   padding:15px;
 }
 .messa-detail-copy h3 {
-  font-family:Georgia,serif;
+  font-family:var(--font-brand);
   font-size:23px;
   margin:7px 0 9px;
 }
@@ -500,7 +500,7 @@
   margin:13px 0 10px;
 }
 .messa-detail-copy .messa-detail-note {
-  font-family:Georgia,serif;
+  font-family:var(--font-brand);
   font-style:italic;
   font-size:10px;
   line-height:1.5;
@@ -521,7 +521,7 @@
   gap:11px;
   transform:rotate(-3deg);
   font-size:10px;
-  font-weight:750;
+  font-weight:700;
 }
 .messa-qr-note>span {
   background:#ecefdf;
@@ -585,7 +585,7 @@
 }
 .messa-benefits strong {
   font-size:12px;
-  font-weight:750;
+  font-weight:700;
   display:block;
 }
 .messa-benefits p>span {

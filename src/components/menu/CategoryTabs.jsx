@@ -30,7 +30,7 @@ export default function CategoryTabs({ categories = [], activeId = null, onChang
                 onClick={cat.onClick ?? (() => onChange?.(cat.id))}
                 aria-pressed={active}
                 aria-haspopup={cat.onClick ? 'dialog' : undefined}
-                className="whitespace-nowrap rounded-full px-5 py-3 text-base font-extrabold transition-colors"
+                className="whitespace-nowrap rounded-full px-5 py-3 text-base font-bold transition-colors"
                 style={
                   active
                     ? { backgroundColor: t.accent, color: textOnAccent(t.accent) }

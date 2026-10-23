@@ -66,10 +66,10 @@ export default function DishDetailSheet({ dish, onClose, theme, isFavorite = fal
 
         {/* Contenido */}
         <div className="flex-1 overflow-y-auto bg-white rounded-t-3xl -mt-5 relative z-10 px-5 pt-6 pb-28">
-          <h2 id="dish-detail-title" className="font-extrabold text-[#1A1A1A] leading-tight break-words" style={{ fontSize: 30 }}>{dish.name}</h2>
+          <h2 id="dish-detail-title" className="font-bold text-[#1A1A1A] leading-tight break-words" style={{ fontSize: 30 }}>{dish.name}</h2>
 
           <div className="mt-4 flex items-baseline gap-3">
-            <p className="font-extrabold" style={{ fontSize: 27, color: accentOnWhite(accent) }}>
+            <p className="font-bold" style={{ fontSize: 27, color: accentOnWhite(accent) }}>
               {Number(dish.price).toFixed(2)}€
             </p>
             {Number(dish.original_price) > Number(dish.price) && (
@@ -113,7 +113,7 @@ export default function DishDetailSheet({ dish, onClose, theme, isFavorite = fal
                 {allergens.map((a, i) => (
                   <span
                     key={i}
-                    className="px-3 py-1 text-xs font-medium rounded-full"
+                    className="px-3 py-1 text-xs font-semibold rounded-full"
                     style={{ backgroundColor: bgTint, border: `1px solid ${accent}40`, color: accent }}
                   >
                     {a}

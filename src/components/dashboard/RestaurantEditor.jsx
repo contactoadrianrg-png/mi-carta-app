@@ -75,7 +75,7 @@ function Row({ icon, label, sublabel, onClick, rightEl, noBorder }) {
     >
       <div style={iconBox}>{icon}</div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ margin: 0, fontSize: 15, fontWeight: 500, color: '#1A1A1A' }}>{label}</p>
+        <p style={{ margin: 0, fontSize: 15, fontWeight: 600, color: '#1A1A1A' }}>{label}</p>
         {sublabel && <p style={{ margin: 0, marginTop: 2, fontSize: 12, color: '#9CA3AF' }}>{sublabel}</p>}
       </div>
       {rightEl}
@@ -495,7 +495,7 @@ export default function RestaurantEditor({ restaurant, onUpdate }) {
                   padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 8,
                 }}>
                   <ChefHat size={16} color="#D97706" />
-                  <p style={{ margin: 0, fontSize: 13, color: '#92400E', fontWeight: 500 }}>
+                  <p style={{ margin: 0, fontSize: 13, color: '#92400E', fontWeight: 600 }}>
                     Toca el lápiz para crear tu restaurante
                   </p>
                 </div>
@@ -586,7 +586,7 @@ export default function RestaurantEditor({ restaurant, onUpdate }) {
                       cursor: 'pointer', marginBottom: 10,
                     }}>
                       <Upload size={24} color="#D1D5DB" />
-                      <p style={{ margin: '8px 0 2px', fontSize: 14, color: '#6B7280', fontWeight: 500 }}>Subir banner</p>
+                      <p style={{ margin: '8px 0 2px', fontSize: 14, color: '#6B7280', fontWeight: 600 }}>Subir banner</p>
                       <p style={{ margin: 0, fontSize: 12, color: '#9CA3AF' }}>16:9 recomendado · máx. 5 MB</p>
                       <input type="file" accept="image/*" onChange={handleBannerFile} style={{ display: 'none' }} />
                     </label>
@@ -639,7 +639,7 @@ export default function RestaurantEditor({ restaurant, onUpdate }) {
                       cursor: 'pointer', marginBottom: 10,
                     }}>
                       <Upload size={24} color="#D1D5DB" />
-                      <p style={{ margin: '8px 0 2px', fontSize: 14, color: '#6B7280', fontWeight: 500 }}>Subir imagen</p>
+                      <p style={{ margin: '8px 0 2px', fontSize: 14, color: '#6B7280', fontWeight: 600 }}>Subir imagen</p>
                       <p style={{ margin: 0, fontSize: 12, color: '#9CA3AF' }}>máx. 5 MB</p>
                       <input type="file" accept="image/*" onChange={handleWelcomeFile} style={{ display: 'none' }} />
                     </label>
@@ -728,7 +728,7 @@ export default function RestaurantEditor({ restaurant, onUpdate }) {
                       <div key={key} style={{ borderRadius: 8, border: '1px solid #F3F4F6', marginBottom: 8, overflow: 'hidden' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px' }}>
                           <svg viewBox="0 0 24 24" width={16} height={16} fill="#9CA3AF"><path d={path} /></svg>
-                          <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: '#374151' }}>{label}</span>
+                          <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: '#374151' }}>{label}</span>
                           <button
                             onClick={() => setToggled(t => ({ ...t, [key]: !t[key] }))}
                             style={{

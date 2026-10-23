@@ -135,13 +135,13 @@ export default function CategoryManager({ restaurantId }) {
                     <div className="w-7 h-7 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
                       <Tag size={13} className="text-amber-500" />
                     </div>
-                    <span className="flex-1 font-medium text-gray-800 text-sm">{cat.name}</span>
+                    <span className="flex-1 font-semibold text-gray-800 text-sm">{cat.name}</span>
                     <button
                       onClick={() => {
                         setAddingSubFor(addingSubFor === cat.id ? null : cat.id)
                         setNewSubName('')
                       }}
-                      className="flex items-center gap-1 text-xs text-amber-600 hover:text-amber-700 bg-amber-50 hover:bg-amber-100 px-2.5 py-1.5 rounded-lg transition-all font-medium shrink-0"
+                      className="flex items-center gap-1 text-xs text-amber-600 hover:text-amber-700 bg-amber-50 hover:bg-amber-100 px-2.5 py-1.5 rounded-lg transition-all font-semibold shrink-0"
                       title="Añadir subcategoría"
                     >
                       <Plus size={12} />
