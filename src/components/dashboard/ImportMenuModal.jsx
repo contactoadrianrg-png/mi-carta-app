@@ -3,21 +3,6 @@ import { X, Upload, Loader2, Check, Sparkles } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import toast from 'react-hot-toast'
 
-const GEMINI_KEY = 'AIzaSyD1_VwTc4nCUVPquDy2tqelUR95Kp4sKck'
-const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta'
-
-const PROMPT =
-  'Analiza esta imagen de una carta de restaurante. Extrae todos los platos que veas y devuelve SOLO un JSON válido con este formato exacto, sin texto adicional: {"categorias": [{"nombre": "Nombre categoría", "platos": [{"nombre": "Nombre plato", "descripcion": "Descripción si existe o cadena vacía", "precio": 0.00}]}]}'
-
-function parseGeminiJSON(text) {
-  // Intento 1: parseo directo
-  try { return JSON.parse(text) } catch (_) {}
-  // Intento 2: extraer bloque JSON del texto
-  const match = text.match(/\{[\s\S]*\}/)
-  if (match) { try { return JSON.parse(match[0]) } catch (_) {} }
-  return null
-}
-
 export default function ImportMenuModal({ restaurantId, onSuccess, onClose }) {
   const [step, setStep] = useState('upload') // upload | analyzing | review | importing
   const [imageFile, setImageFile] = useState(null)
@@ -30,6 +15,7 @@ export default function ImportMenuModal({ restaurantId, onSuccess, onClose }) {
   /* ── Gestión de imagen ── */
   const loadFile = (file) => {
     if (!file) return
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) { toast.error('Usa una imagen JPG, PNG o WebP'); return }
     if (file.size > 5 * 1024 * 1024) { toast.error('La imagen no puede superar 5 MB'); return }
     setImageFile(file)
     setImagePreview(URL.createObjectURL(file))
@@ -47,42 +33,17 @@ export default function ImportMenuModal({ restaurantId, onSuccess, onClose }) {
     setApiError(null)
 
     try {
-      // 1) Listar modelos disponibles y elegir el primero que soporte generateContent
-      const modelsRes = await fetch(`${GEMINI_BASE}/models?key=${GEMINI_KEY}`)
-      const modelsData = await modelsRes.json()
-      const allModels = modelsData.models || []
-      console.log('MODELOS:', JSON.stringify(allModels.map(m => m.name)))
-
-      const capable = allModels.find(m =>
-        Array.isArray(m.supportedGenerationMethods) &&
-        m.supportedGenerationMethods.includes('generateContent')
-      )
-      const modelName = capable ? capable.name.replace('models/', '') : 'gemini-1.5-flash-latest'
-      console.log('Modelo seleccionado:', modelName)
-
-      const url = `${GEMINI_BASE}/models/${modelName}:generateContent?key=${GEMINI_KEY}`
-
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{
-            parts: [
-              { text: PROMPT },
-              { inline_data: { mime_type: imageFile?.type || 'image/jpeg', data: imageBase64 } },
-            ],
-          }],
-        }),
+      const { data: parsed, error } = await supabase.functions.invoke('import-menu', {
+        body: { restaurantId, imageBase64, mimeType: imageFile?.type || 'image/jpeg' },
       })
-
-      if (!res.ok) {
-        const err = await res.json()
-        throw new Error(err.error?.message || `Error ${res.status} de la API`)
+      if (error) {
+        let message = 'No se pudo analizar la carta. Inténtalo de nuevo.'
+        if (error.context instanceof Response) {
+          const detail = await error.context.json().catch(() => null)
+          if (typeof detail?.error === 'string') message = detail.error
+        }
+        throw new Error(message)
       }
-
-      const data = await res.json()
-      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
-      const parsed = parseGeminiJSON(rawText)
 
       if (!parsed?.categorias?.length) {
         throw new Error('La IA no detectó ningún plato. Prueba con una imagen más nítida.')
@@ -242,7 +203,7 @@ export default function ImportMenuModal({ restaurantId, onSuccess, onClose }) {
                   <input
                     ref={fileRef}
                     type="file"
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/webp"
                     className="hidden"
                     onChange={(e) => loadFile(e.target.files[0])}
                   />
@@ -256,7 +217,7 @@ export default function ImportMenuModal({ restaurantId, onSuccess, onClose }) {
                     </span>
                     <input
                       type="file"
-                      accept="image/*"
+                      accept="image/jpeg,image/png,image/webp"
                       className="hidden"
                       onChange={(e) => loadFile(e.target.files[0])}
                     />
