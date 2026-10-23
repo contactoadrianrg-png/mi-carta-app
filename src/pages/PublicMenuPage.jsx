@@ -11,7 +11,7 @@ import './PublicMenuPage.css'
 import { normalizeMenuSlides } from '../lib/menuSlides'
 import CategoryTabs from '../components/menu/CategoryTabs'
 import DishGridCard from '../components/menu/DishGridCard'
-import { UtensilsCrossed } from 'lucide-react'
+import { LayoutList, PanelsTopLeft, UtensilsCrossed } from 'lucide-react'
 import { SOCIALS, buildSocialUrl } from '../lib/socials'
 import { getTheme, applyTheme, getVisualTheme } from '../lib/themes'
 import { loadPublicMenu, filterMenuDishes, visibleMenuCategories, categoryFamilyIds } from '../lib/menuData'
@@ -196,6 +196,10 @@ export default function PublicMenuPage() {
 
   return (
     <div className="messa-public-menu min-h-screen" style={{ backgroundColor: theme.bg, '--menu-bg': theme.bg, '--menu-tint': theme.bgTint, '--menu-accent': theme.accent, '--menu-text': theme.text ?? '#252a21', '--menu-card': theme.text ? theme.bgTint : '#ffffff', '--menu-border': theme.cardBorder ?? 'rgba(35,40,30,.09)' }}>
+      <nav className="messa-view-toggle" aria-label="Modo de visualización">
+        <span className="is-active" title="Vista normal"><LayoutList size={19} /></span>
+        <Link to={`/carta/${slug}/descubre${activeCategory ? `?category=${encodeURIComponent(activeCategory)}` : ''}`} title="Vista feed" aria-label="Cambiar a vista feed"><PanelsTopLeft size={19} /></Link>
+      </nav>
       <RestaurantHeader restaurant={restaurant} theme={theme} favoriteCount={planDishes.filter(dish => favorites.includes(dish.id)).length} showFavorites={showFavorites} onToggleFavorites={() => openScreen({ category: null, favorites: !showFavorites, dishId: null, daily: false })} />
       {!showFavorites && <MenuHighlights slides={slides} />}
       <div className="messa-menu-categories"><CategoryTabs categories={topCats} activeId={activeTab} onChange={setActiveCategory} theme={theme} onOpenDailyMenu={dailyMenu?.enabled ? openDailyMenu : undefined} dailyMenuOpen={showDailyMenu} /></div>

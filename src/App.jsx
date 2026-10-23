@@ -8,6 +8,7 @@ import CategoryPage from './pages/CategoryPage'
 import WelcomePage from './pages/WelcomePage'
 import AdminPage from './pages/AdminPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
+import DiscoverMenuPage from './pages/DiscoverMenuPage'
 
 const ADMIN_EMAIL = 'infocreativeadrian@gmail.com'
 
@@ -51,6 +52,7 @@ function AppRoutes() {
       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
       <Route path="/carta/:slug" element={<WelcomePage />} />
       <Route path="/carta/:slug/menu" element={<PublicMenuPage />} />
+      <Route path="/carta/:slug/descubre" element={<DiscoverMenuPage />} />
       <Route path="/carta/:slug/:catId" element={<CategoryPage />} />
       <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
