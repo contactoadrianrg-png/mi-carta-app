@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { requestPasswordReset } from '../lib/authActions'
 import toast from 'react-hot-toast'
 import { Eye, EyeOff, ArrowRight, Mail, Lock, User, ArrowLeft, UtensilsCrossed } from 'lucide-react'
+import './AuthPage.css'
+import FeatureCarousel from '../components/auth/FeatureCarousel'
 
 /* ── QR ilustración ─────────────────────────────────────────── */
 function QRIllustration() {
@@ -123,6 +125,7 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [forgotSent, setForgotSent] = useState(false)
+  const [registrationOpen, setRegistrationOpen] = useState(false)
 
   // La pestaña sigue a la ruta: /register abre registro y /login abre acceso.
   // Solo reacciona al cambio de pathname, así que no interfiere con el modo
@@ -166,6 +169,52 @@ export default function AuthPage() {
 
   const isForgot = mode === 'forgot'
 
+  if (mode === 'register') {
+    return <main className="messa-register">
+      <header className="messa-register-header">
+        <Link to="/" className="messa-register-brand" aria-label="MESSA, inicio">
+          <img src="/logo.svg" alt="" width="32" height="32" />
+          <span>MESSA</span>
+        </Link>
+
+      </header>
+      <section className="messa-register-content" aria-labelledby="register-title">
+        {registrationOpen ? <>
+        <button type="button" className="messa-register-back" onClick={() => setRegistrationOpen(false)}><ArrowLeft size={18} aria-hidden="true" /> Volver</button>
+        <h1 id="register-title">Crea tu cuenta.</h1>
+        <p className="messa-register-intro">El primer paso para crear la carta de tu restaurante.</p>
+        <form onSubmit={handleSubmit} className="messa-register-form" aria-busy={loading}>
+          <div className="messa-register-field">
+            <label htmlFor="register-email">Correo electrónico</label>
+            <input id="register-email" name="email" type="email" autoComplete="email" placeholder="tu@email.com" value={email} onChange={event => setEmail(event.target.value)} required />
+          </div>
+          <div className="messa-register-field">
+            <label htmlFor="register-password">Contraseña</label>
+            <div className="messa-register-password">
+              <input id="register-password" name="password" type={showPassword ? 'text' : 'password'} autoComplete="new-password" value={password} onChange={event => setPassword(event.target.value)} minLength={6} aria-describedby="register-password-hint" required />
+              <button type="button" className="messa-register-visibility" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'} aria-pressed={showPassword}>
+                {showPassword ? <EyeOff size={20} aria-hidden="true" /> : <Eye size={20} aria-hidden="true" />}
+              </button>
+            </div>
+            <p id="register-password-hint" className="messa-register-hint">Mínimo 6 caracteres.</p>
+          </div>
+          <button className="messa-register-submit" type="submit" disabled={loading}>{loading ? 'Creando cuenta…' : 'Crear cuenta gratis'}</button>
+        </form>
+        <p className="messa-register-existing">¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link></p>
+        </> : <div className="messa-register-welcome">
+          <h1 id="register-title">Tu local,<br />siempre al día.</h1>
+          <p className="messa-register-intro">Tu carta, tus promociones y tus enlaces en un solo lugar.</p>
+          <FeatureCarousel />
+          <div className="messa-register-options">
+            <button type="button" className="messa-register-submit" onClick={() => setRegistrationOpen(true)}>Crear cuenta gratis</button>
+            <Link className="messa-register-demo" to="/carta/comeycalla-mp3s28ri/menu">Ver demo</Link>
+          </div>
+          <p className="messa-register-existing"><Link to="/login">Ya tengo una cuenta</Link></p>
+        </div>}
+      </section>
+    </main>
+  }
+
   return (
     <div style={{ backgroundColor: '#FFF8F2', minHeight: '100vh' }}>
 
@@ -206,7 +255,7 @@ export default function AuthPage() {
 
             {/* Título */}
             <h1 className="text-[32px] sm:text-[36px] lg:text-[48px] font-bold text-[#1A1A1A] leading-[1.15] tracking-tight mb-4">
-              Tu carta digital,<br />
+              Tu local,<br />
               <span className="text-[#FF6B35]">siempre al día.</span>
             </h1>
 
