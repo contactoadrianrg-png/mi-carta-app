@@ -703,29 +703,41 @@ export default function AdminPage() {
 
         <main style={{ padding: '28px 32px', display: 'flex', flexDirection: 'column', gap: 24 }}>
           {activeNav === 'nextly' ? (
-            <section aria-label="Panel Superadmin de Nextly" style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-              <div style={{ ...card, padding: 24 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
-                  <div>
-                    <h2 style={{ ...headingSerif, margin: 0, fontSize: 26 }}>Nextly</h2>
-                    <p style={{ margin: '8px 0 0', color: CHARCOAL_L, fontSize: 13, maxWidth: 620 }}>
-                      Consulta los negocios, las citas y las estadísticas de Nextly desde tu centro de administración.
-                      Nextly mantiene su propio acceso de administrador; es posible que debas iniciar sesión allí.
-                    </p>
-                  </div>
-                  <a href="https://nextly-app-eta.vercel.app/superadmin" target="_blank" rel="noopener noreferrer"
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: 8, borderRadius: 11, padding: '11px 16px', fontSize: 13, fontWeight: 700, background: '#365CF5', color: '#fff', textDecoration: 'none' }}>
-                    Abrir Nextly en otra pestaña <ArrowUpRight size={16} />
-                  </a>
-                </div>
-                <p style={{ margin: '14px 0 0', fontSize: 12, color: CHARCOAL_L }}>
-                  Si el navegador bloquea la vista integrada, utiliza el botón «Abrir Nextly en otra pestaña».
-                  No se comparten datos ni contraseñas entre las dos aplicaciones.
+            <section aria-label="Administración de Nextly" style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+              <div>
+                <p style={{ ...labelStyle, margin: '0 0 8px', color: '#365CF5' }}>PLATAFORMA DE RESERVAS</p>
+                <h2 style={{ ...headingSerif, margin: 0, fontSize: 29 }}>Panel de Nextly</h2>
+                <p style={{ margin: '8px 0 0', color: CHARCOAL_L, fontSize: 14 }}>
+                  Cambia de proyecto sin salir del centro de administración.
                 </p>
               </div>
-              <div style={{ ...card, padding: 8, overflow: 'hidden', minHeight: 610 }}>
-                <iframe title="Superadmin de Nextly" src="https://nextly-app-eta.vercel.app/superadmin"
-                  referrerPolicy="no-referrer" style={{ display: 'block', width: '100%', height: 'min(78vh, 920px)', minHeight: 590, border: 0, borderRadius: 10, background: '#F7F9FD' }} />
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 16 }}>
+                {[
+                  { label: 'Negocios', Icon: Store, hint: 'Cuentas registradas en Nextly' },
+                  { label: 'Reservas', Icon: CalendarDays, hint: 'Citas de la plataforma' },
+                  { label: 'Profesionales', Icon: Users, hint: 'Equipos de los negocios' },
+                  { label: 'Estadísticas', Icon: BarChart2, hint: 'Actividad y crecimiento' },
+                ].map(({ label, Icon, hint }) => (
+                  <div key={label} style={{ ...card, padding: 20, minHeight: 142 }}>
+                    <div style={{ width: 36, height: 36, display: 'grid', placeItems: 'center', background: '#E8EEFF', color: '#365CF5', borderRadius: 11, marginBottom: 14 }}>
+                      <Icon size={19} />
+                    </div>
+                    <p style={{ ...labelStyle, margin: '0 0 6px' }}>{label}</p>
+                    <p style={{ fontSize: 13, color: CHARCOAL_L, margin: 0 }}>{hint}</p>
+                    <p style={{ fontSize: 11, color: '#365CF5', fontWeight: 700, margin: '10px 0 0' }}>Conexión pendiente</p>
+                  </div>
+                ))}
+              </div>
+              <div style={{ ...card, padding: 24, borderLeft: '4px solid #365CF5' }}>
+                <h3 style={{ ...headingSerif, fontSize: 18, margin: 0 }}>Conectar los datos de Nextly</h3>
+                <p style={{ margin: '9px 0 17px', fontSize: 13, lineHeight: 1.7, color: CHARCOAL_L, maxWidth: 700 }}>
+                  Esta vista ya forma parte de MESSA: no hay paneles incrustados. Para mostrar cifras reales aquí,
+                  todavía hay que configurar una conexión segura con Nextly. Mientras tanto puedes consultar su panel original.
+                </p>
+                <a href="https://nextly-app-eta.vercel.app/superadmin" target="_blank" rel="noopener noreferrer"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 8, borderRadius: 11, padding: '12px 16px', fontSize: 13, fontWeight: 700, background: '#365CF5', color: '#fff', textDecoration: 'none' }}>
+                  Abrir Superadmin de Nextly <ArrowUpRight size={16} />
+                </a>
               </div>
             </section>
           ) : (
