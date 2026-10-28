@@ -6,7 +6,7 @@ import toast from 'react-hot-toast'
 import {
   LayoutDashboard, Store, Users, BarChart2, Settings, LogOut,
   X, Mail, Eye, EyeOff, Check, Crown, Search,
-  TrendingUp, ArrowUpRight,
+  TrendingUp, ArrowUpRight, CalendarDays,
 } from 'lucide-react'
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -437,6 +437,7 @@ export default function AdminPage() {
 
   const handleNavigation = (section) => {
     setActiveNav(section)
+    if (section === 'nextly') return
     const target = section === 'dashboard' ? 'dashboard-top' : section === 'stats' ? 'statistics-section' : 'restaurants-section'
     requestAnimationFrame(() => document.getElementById(target)?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
   }
@@ -580,6 +581,7 @@ export default function AdminPage() {
             { Icon: Store,           tip: 'Restaurantes', id: 'restaurants' },
             { Icon: Users,           tip: 'Usuarios', id: 'users' },
             { Icon: BarChart2,       tip: 'Estadísticas', id: 'stats' },
+            { Icon: CalendarDays,    tip: 'Nextly', id: 'nextly' },
           ].map(({ Icon, tip, id }) => {
             const active = activeNav === id
             return (
@@ -648,13 +650,13 @@ export default function AdminPage() {
           }}
         >
           <div>
-            <h1 style={{ ...headingSerif, fontSize: 22, margin: 0 }}>Panel de Administración</h1>
+            <h1 style={{ ...headingSerif, fontSize: 22, margin: 0 }}>{activeNav === 'nextly' ? 'Nextly · Superadmin' : 'Panel de Administración'}</h1>
             <p style={{ ...labelStyle, marginTop: 2, marginBottom: 0 }}>
               {today.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
             </p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ position: 'relative' }}>
+            {activeNav !== 'nextly' && <div style={{ position: 'relative' }}>
               <Search size={12} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: CHARCOAL_L }} />
               <input
                 type="text"
@@ -671,7 +673,7 @@ export default function AdminPage() {
                 onFocus={e => { e.target.style.borderColor = theme.accent; e.target.style.boxShadow = `0 0 0 3px ${theme.accent}18` }}
                 onBlur={e => { e.target.style.borderColor = CREAM_DARK; e.target.style.boxShadow = 'none' }}
               />
-            </div>
+            </div>}
             <button
               onClick={() => setSettingsOpen(true)}
               style={{
@@ -687,6 +689,34 @@ export default function AdminPage() {
         </header>
 
         <main style={{ padding: '28px 32px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+          {activeNav === 'nextly' ? (
+            <section aria-label="Panel Superadmin de Nextly" style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+              <div style={{ ...card, padding: 24 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
+                  <div>
+                    <h2 style={{ ...headingSerif, margin: 0, fontSize: 26 }}>Nextly</h2>
+                    <p style={{ margin: '8px 0 0', color: CHARCOAL_L, fontSize: 13, maxWidth: 620 }}>
+                      Consulta los negocios, las citas y las estadísticas de Nextly desde tu centro de administración.
+                      Nextly mantiene su propio acceso de administrador; es posible que debas iniciar sesión allí.
+                    </p>
+                  </div>
+                  <a href="https://nextly-app-eta.vercel.app/superadmin" target="_blank" rel="noopener noreferrer"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 8, borderRadius: 11, padding: '11px 16px', fontSize: 13, fontWeight: 700, background: '#365CF5', color: '#fff', textDecoration: 'none' }}>
+                    Abrir Nextly en otra pestaña <ArrowUpRight size={16} />
+                  </a>
+                </div>
+                <p style={{ margin: '14px 0 0', fontSize: 12, color: CHARCOAL_L }}>
+                  Si el navegador bloquea la vista integrada, utiliza el botón «Abrir Nextly en otra pestaña».
+                  No se comparten datos ni contraseñas entre las dos aplicaciones.
+                </p>
+              </div>
+              <div style={{ ...card, padding: 8, overflow: 'hidden', minHeight: 610 }}>
+                <iframe title="Superadmin de Nextly" src="https://nextly-app-eta.vercel.app/superadmin"
+                  referrerPolicy="no-referrer" style={{ display: 'block', width: '100%', height: 'min(78vh, 920px)', minHeight: 590, border: 0, borderRadius: 10, background: '#F7F9FD' }} />
+              </div>
+            </section>
+          ) : (
+          <>
 
           {/* ── WELCOME BANNER ── */}
           <section id="dashboard-top">
@@ -1032,6 +1062,8 @@ export default function AdminPage() {
           </div>
 
           </div>
+          </>
+          )}
 
         </main>
       </div>
