@@ -6,7 +6,7 @@ import toast from 'react-hot-toast'
 import {
   LayoutDashboard, Store, Users, BarChart2, Settings, LogOut,
   X, Mail, Eye, EyeOff, Check, Crown, Search,
-  TrendingUp, ArrowUpRight, CalendarDays,
+  TrendingUp, ArrowUpRight, ArrowLeftRight,
 } from 'lucide-react'
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -564,25 +564,38 @@ export default function AdminPage() {
       >
         {/* Logo */}
         <div
+          data-mark={activeNav === 'nextly' ? 'N' : 'M'}
           style={{
             width: '100%', marginBottom: 30, background: 'transparent', display: 'flex', alignItems: 'center',
             justifyContent: 'flex-start', color: '#fff', fontWeight: 700, fontSize: 30,
             fontFamily: "'Plus Jakarta Sans', sans-serif", flexShrink: 0, letterSpacing: '-0.04em', padding: '0 12px', position: 'relative',
           }}
         >
-          MESSA
-          <span style={{ position: 'absolute', top: 35, fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 9, color: theme.accentLight, letterSpacing: '0.16em', fontWeight: 700 }}>CARTAS QUE CONECTAN</span>
+          {activeNav === 'nextly' ? 'Nextly' : 'MESSA'}
+          <span style={{ position: 'absolute', top: 35, fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 9, color: theme.accentLight, letterSpacing: '0.16em', fontWeight: 700 }}>{activeNav === 'nextly' ? 'SISTEMA DE RESERVAS' : 'CARTAS QUE CONECTAN'}</span>
         </div>
 
+        {/* Selector de proyecto visible también en pantallas estrechas */}
+        <button type="button" className="admin-project-switch"
+          title={activeNav === 'nextly' ? 'Cambiar a MESSA' : 'Cambiar a Nextly'}
+          aria-label={activeNav === 'nextly' ? 'Cambiar proyecto a MESSA' : 'Cambiar proyecto a Nextly'}
+          onClick={() => handleNavigation(activeNav === 'nextly' ? 'dashboard' : 'nextly')}
+          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0,
+            borderRadius: 12, marginBottom: 18, padding: '12px',
+            border: '1px solid rgba(255,255,255,0.28)', background: 'rgba(255,255,255,0.12)',
+            color: '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 700,
+            fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          <ArrowLeftRight size={18} style={{ flexShrink: 0 }} />
+          <span>{activeNav === 'nextly' ? 'Cambiar a MESSA' : 'Cambiar a Nextly'}</span>
+        </button>
         {/* Nav */}
         <nav style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 5, flex: 1 }}>
-          {[
+          {(activeNav === 'nextly' ? [] : [
             { Icon: LayoutDashboard, tip: 'Panel de control', id: 'dashboard' },
             { Icon: Store,           tip: 'Restaurantes', id: 'restaurants' },
             { Icon: Users,           tip: 'Usuarios', id: 'users' },
             { Icon: BarChart2,       tip: 'Estadísticas', id: 'stats' },
-            { Icon: CalendarDays,    tip: 'Nextly', id: 'nextly' },
-          ].map(({ Icon, tip, id }) => {
+          ]).map(({ Icon, tip, id }) => {
             const active = activeNav === id
             return (
             <button
@@ -1095,8 +1108,10 @@ export default function AdminPage() {
           .admin-bottom-grid { grid-template-columns: 1fr !important; }
           .admin-sidebar { width: 64px !important; padding: 20px 0 !important; align-items: center !important; }
           .admin-sidebar > div:first-child { width: 40px !important; padding: 0 !important; font-size: 0 !important; background: var(--menu-accent, #a03b13) !important; border-radius: 12px; justify-content: center !important; }
-          .admin-sidebar > div:first-child::before { content: 'M'; font-size: 15px; }
+          .admin-sidebar > div:first-child::before { content: attr(data-mark); font-size: 15px; }
           .admin-sidebar > div:first-child span, .admin-sidebar button span { display: none !important; }
+          .admin-sidebar .admin-project-switch { width: 40px !important; height: 44px !important; padding: 0 !important; justify-content: center !important; margin-bottom: 18px !important; }
+          .admin-sidebar .admin-project-switch span { display: none !important; }
           .admin-sidebar nav { align-items: center !important; }
           .admin-sidebar nav button { width: 40px !important; padding: 0 !important; justify-content: center !important; }
           .admin-sidebar > div:last-child { align-items: center !important; }
