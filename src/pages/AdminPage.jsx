@@ -6,7 +6,7 @@ import toast from 'react-hot-toast'
 import {
   LayoutDashboard, Store, Users, BarChart2, Settings, LogOut,
   X, Mail, Eye, EyeOff, Check, Crown, Search,
-  TrendingUp, ArrowUpRight, ArrowLeftRight,
+  TrendingUp, ArrowUpRight,
 } from 'lucide-react'
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -437,7 +437,6 @@ export default function AdminPage() {
 
   const handleNavigation = (section) => {
     setActiveNav(section)
-    if (section === 'nextly') return
     const target = section === 'dashboard' ? 'dashboard-top' : section === 'stats' ? 'statistics-section' : 'restaurants-section'
     requestAnimationFrame(() => document.getElementById(target)?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
   }
@@ -564,38 +563,24 @@ export default function AdminPage() {
       >
         {/* Logo */}
         <div
-          data-mark={activeNav === 'nextly' ? 'N' : 'M'}
           style={{
             width: '100%', marginBottom: 30, background: 'transparent', display: 'flex', alignItems: 'center',
             justifyContent: 'flex-start', color: '#fff', fontWeight: 700, fontSize: 30,
             fontFamily: "'Plus Jakarta Sans', sans-serif", flexShrink: 0, letterSpacing: '-0.04em', padding: '0 12px', position: 'relative',
           }}
         >
-          {activeNav === 'nextly' ? 'Nextly' : 'MESSA'}
-          <span style={{ position: 'absolute', top: 35, fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 9, color: theme.accentLight, letterSpacing: '0.16em', fontWeight: 700 }}>{activeNav === 'nextly' ? 'SISTEMA DE RESERVAS' : 'CARTAS QUE CONECTAN'}</span>
+          MESSA
+          <span style={{ position: 'absolute', top: 35, fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 9, color: theme.accentLight, letterSpacing: '0.16em', fontWeight: 700 }}>CARTAS QUE CONECTAN</span>
         </div>
 
-        {/* Selector de proyecto visible también en pantallas estrechas */}
-        <button type="button" className="admin-project-switch"
-          title={activeNav === 'nextly' ? 'Cambiar a MESSA' : 'Cambiar a Nextly'}
-          aria-label={activeNav === 'nextly' ? 'Cambiar proyecto a MESSA' : 'Cambiar proyecto a Nextly'}
-          onClick={() => handleNavigation(activeNav === 'nextly' ? 'dashboard' : 'nextly')}
-          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0,
-            borderRadius: 12, marginBottom: 18, padding: '12px',
-            border: '1px solid rgba(255,255,255,0.28)', background: 'rgba(255,255,255,0.12)',
-            color: '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 700,
-            fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-          <ArrowLeftRight size={18} style={{ flexShrink: 0 }} />
-          <span>{activeNav === 'nextly' ? 'Cambiar a MESSA' : 'Cambiar a Nextly'}</span>
-        </button>
         {/* Nav */}
         <nav style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 5, flex: 1 }}>
-          {(activeNav === 'nextly' ? [] : [
+          {[
             { Icon: LayoutDashboard, tip: 'Panel de control', id: 'dashboard' },
             { Icon: Store,           tip: 'Restaurantes', id: 'restaurants' },
             { Icon: Users,           tip: 'Usuarios', id: 'users' },
             { Icon: BarChart2,       tip: 'Estadísticas', id: 'stats' },
-          ]).map(({ Icon, tip, id }) => {
+          ].map(({ Icon, tip, id }) => {
             const active = activeNav === id
             return (
             <button
@@ -663,13 +648,13 @@ export default function AdminPage() {
           }}
         >
           <div>
-            <h1 style={{ ...headingSerif, fontSize: 22, margin: 0 }}>{activeNav === 'nextly' ? 'Nextly · Superadmin' : 'Panel de Administración'}</h1>
+            <h1 style={{ ...headingSerif, fontSize: 22, margin: 0 }}>Panel de Administración</h1>
             <p style={{ ...labelStyle, marginTop: 2, marginBottom: 0 }}>
               {today.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
             </p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            {activeNav !== 'nextly' && <div style={{ position: 'relative' }}>
+            <div style={{ position: 'relative' }}>
               <Search size={12} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: CHARCOAL_L }} />
               <input
                 type="text"
@@ -686,7 +671,7 @@ export default function AdminPage() {
                 onFocus={e => { e.target.style.borderColor = theme.accent; e.target.style.boxShadow = `0 0 0 3px ${theme.accent}18` }}
                 onBlur={e => { e.target.style.borderColor = CREAM_DARK; e.target.style.boxShadow = 'none' }}
               />
-            </div>}
+            </div>
             <button
               onClick={() => setSettingsOpen(true)}
               style={{
@@ -702,46 +687,6 @@ export default function AdminPage() {
         </header>
 
         <main style={{ padding: '28px 32px', display: 'flex', flexDirection: 'column', gap: 24 }}>
-          {activeNav === 'nextly' ? (
-            <section aria-label="Administración de Nextly" style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
-              <div>
-                <p style={{ ...labelStyle, margin: '0 0 8px', color: '#365CF5' }}>PLATAFORMA DE RESERVAS</p>
-                <h2 style={{ ...headingSerif, margin: 0, fontSize: 29 }}>Panel de Nextly</h2>
-                <p style={{ margin: '8px 0 0', color: CHARCOAL_L, fontSize: 14 }}>
-                  Cambia de proyecto sin salir del centro de administración.
-                </p>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 16 }}>
-                {[
-                  { label: 'Negocios', Icon: Store, hint: 'Cuentas registradas en Nextly' },
-                  { label: 'Reservas', Icon: CalendarDays, hint: 'Citas de la plataforma' },
-                  { label: 'Profesionales', Icon: Users, hint: 'Equipos de los negocios' },
-                  { label: 'Estadísticas', Icon: BarChart2, hint: 'Actividad y crecimiento' },
-                ].map(({ label, Icon, hint }) => (
-                  <div key={label} style={{ ...card, padding: 20, minHeight: 142 }}>
-                    <div style={{ width: 36, height: 36, display: 'grid', placeItems: 'center', background: '#E8EEFF', color: '#365CF5', borderRadius: 11, marginBottom: 14 }}>
-                      <Icon size={19} />
-                    </div>
-                    <p style={{ ...labelStyle, margin: '0 0 6px' }}>{label}</p>
-                    <p style={{ fontSize: 13, color: CHARCOAL_L, margin: 0 }}>{hint}</p>
-                    <p style={{ fontSize: 11, color: '#365CF5', fontWeight: 700, margin: '10px 0 0' }}>Conexión pendiente</p>
-                  </div>
-                ))}
-              </div>
-              <div style={{ ...card, padding: 24, borderLeft: '4px solid #365CF5' }}>
-                <h3 style={{ ...headingSerif, fontSize: 18, margin: 0 }}>Conectar los datos de Nextly</h3>
-                <p style={{ margin: '9px 0 17px', fontSize: 13, lineHeight: 1.7, color: CHARCOAL_L, maxWidth: 700 }}>
-                  Esta vista ya forma parte de MESSA: no hay paneles incrustados. Para mostrar cifras reales aquí,
-                  todavía hay que configurar una conexión segura con Nextly. Mientras tanto puedes consultar su panel original.
-                </p>
-                <a href="https://nextly-app-eta.vercel.app/superadmin" target="_blank" rel="noopener noreferrer"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: 8, borderRadius: 11, padding: '12px 16px', fontSize: 13, fontWeight: 700, background: '#365CF5', color: '#fff', textDecoration: 'none' }}>
-                  Abrir Superadmin de Nextly <ArrowUpRight size={16} />
-                </a>
-              </div>
-            </section>
-          ) : (
-          <>
 
           {/* ── WELCOME BANNER ── */}
           <section id="dashboard-top">
@@ -1087,8 +1032,6 @@ export default function AdminPage() {
           </div>
 
           </div>
-          </>
-          )}
 
         </main>
       </div>
@@ -1120,10 +1063,8 @@ export default function AdminPage() {
           .admin-bottom-grid { grid-template-columns: 1fr !important; }
           .admin-sidebar { width: 64px !important; padding: 20px 0 !important; align-items: center !important; }
           .admin-sidebar > div:first-child { width: 40px !important; padding: 0 !important; font-size: 0 !important; background: var(--menu-accent, #a03b13) !important; border-radius: 12px; justify-content: center !important; }
-          .admin-sidebar > div:first-child::before { content: attr(data-mark); font-size: 15px; }
+          .admin-sidebar > div:first-child::before { content: 'M'; font-size: 15px; }
           .admin-sidebar > div:first-child span, .admin-sidebar button span { display: none !important; }
-          .admin-sidebar .admin-project-switch { width: 40px !important; height: 44px !important; padding: 0 !important; justify-content: center !important; margin-bottom: 18px !important; }
-          .admin-sidebar .admin-project-switch span { display: none !important; }
           .admin-sidebar nav { align-items: center !important; }
           .admin-sidebar nav button { width: 40px !important; padding: 0 !important; justify-content: center !important; }
           .admin-sidebar > div:last-child { align-items: center !important; }
